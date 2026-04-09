@@ -575,76 +575,117 @@
         'use strict';
 
         // ── Ishihara Engine ──────────────────────────────────────────
+        //
+        // Color science approach:
+        // - Each palette defined by HSL center + variation ranges
+        // - Per-dot random HSL perturbation creates natural Ishihara look
+        // - Control plate uses high hue + luminance contrast (everyone sees it)
+        // - Test plates use confusion-line-aligned hue pairs with matched luminance
+        // - Protan/deutan confusion axis: red-orange vs yellow-green (a* axis in CIELAB)
+        // - Tritan confusion axis: blue vs yellow (b* axis in CIELAB)
 
-        // Plate configurations with luminance-matched palettes
-        const PLATES = [
+        // HSL to hex with clamping
+        function hslToHex(h, s, l) {
+            h = ((h % 360) + 360) % 360;
+            s = Math.max(0, Math.min(100, s)) / 100;
+            l = Math.max(0, Math.min(100, l)) / 100;
+            var c = (1 - Math.abs(2 * l - 1)) * s;
+            var x = c * (1 - Math.abs((h / 60) % 2 - 1));
+            var m = l - c / 2;
+            var r, g, b;
+            if (h < 60)       { r = c; g = x; b = 0; }
+            else if (h < 120) { r = x; g = c; b = 0; }
+            else if (h < 180) { r = 0; g = c; b = x; }
+            else if (h < 240) { r = 0; g = x; b = c; }
+            else if (h < 300) { r = x; g = 0; b = c; }
+            else              { r = c; g = 0; b = x; }
+            var toHex = function(v) {
+                var n = Math.max(0, Math.min(255, Math.round((v + m) * 255)));
+                return (n < 16 ? '0' : '') + n.toString(16);
+            };
+            return '#' + toHex(r) + toHex(g) + toHex(b);
+        }
+
+        // Generate a random color from an HSL range
+        function randomColor(cfg) {
+            var h = cfg.h + (Math.random() - 0.5) * cfg.hR;
+            var s = cfg.s + (Math.random() - 0.5) * cfg.sR;
+            var l = cfg.l + (Math.random() - 0.5) * cfg.lR;
+            return hslToHex(h, s, l);
+        }
+
+        // Plate configs with HSL ranges for natural variation
+        // fg = number (foreground) colors, bg = background colors
+        var PLATES = [
             {
                 number: '12',
                 label: 'Control',
-                // Orange-red number on green background — everyone should see this
-                numberColors: ['#E25822','#D94E1F','#C74518','#F06830','#E8602A','#D35520','#BF4015'],
-                bgColors: ['#3B7A4A','#4A8C5C','#2E6B3E','#5A9E6A','#448B55','#367042','#509860'],
-                correct: '12'
+                correct: '12',
+                // Bright red-orange on vivid green — maximum contrast, everyone sees it
+                fg: { h: 12, hR: 24, s: 75, sR: 20, l: 48, lR: 16 },
+                bg: { h: 140, hR: 30, s: 62, sR: 20, l: 40, lR: 16 },
             },
             {
                 number: '7',
                 label: 'Red-Green',
-                // Red number on green — invisible to protanopia/deuteranopia
-                numberColors: ['#CC4125','#B5382E','#D94E38','#C23B20','#BE3A28','#D1442E','#B83525'],
-                bgColors: ['#6B8E4E','#5C8244','#7D9B5A','#4E7A3A','#8CAA65','#5A7E40','#6E9050'],
-                correct: '7'
+                correct: '7',
+                // Red-orange vs yellow-green: protan/deutan confusion axis
+                // Both at similar luminance; hue differs along red-green confusion line
+                fg: { h: 10, hR: 18, s: 65, sR: 18, l: 44, lR: 12 },
+                bg: { h: 95, hR: 22, s: 55, sR: 18, l: 44, lR: 12 },
             },
             {
                 number: '5',
                 label: 'Blue-Yellow',
-                // Blue number on yellow-green — invisible to tritanopia
-                numberColors: ['#3366AA','#2B5C9E','#4070B0','#2A5490','#3E6DB5','#305FA0','#3868A8'],
-                bgColors: ['#A0A040','#8E9038','#B0B048','#7E8230','#9A9C42','#889035','#A5A545'],
-                correct: '5'
+                correct: '5',
+                // Blue vs yellow-green: tritan confusion axis (b* axis in CIELAB)
+                fg: { h: 225, hR: 22, s: 55, sR: 18, l: 46, lR: 12 },
+                bg: { h: 65, hR: 22, s: 50, sR: 18, l: 50, lR: 12 },
             },
             {
                 number: '42',
                 label: 'Subtle',
-                // Muted orange-brown on yellow-green — even mild CVD may miss this
-                numberColors: ['#9E7050','#A07858','#8C6648','#B08060','#947055','#A67B5A','#96704D'],
-                bgColors: ['#8A9E50','#7C9048','#98AC58','#708238','#88A055','#7E9445','#92A550'],
-                correct: '42'
+                correct: '42',
+                // Lower saturation red-green — even mild CVD may miss
+                fg: { h: 18, hR: 16, s: 48, sR: 16, l: 43, lR: 10 },
+                bg: { h: 82, hR: 18, s: 44, sR: 16, l: 43, lR: 10 },
             }
         ];
 
         // ── Poisson Disk Sampling ────────────────────────────────────
+        // Generates densely packed non-overlapping circles with variable radii
 
         function poissonDiskSample(cx, cy, plateRadius, minR, maxR, k) {
             k = k || 30;
-            const cellSize = minR * 2 / Math.SQRT2;
-            const gridW = Math.ceil(plateRadius * 2 / cellSize);
-            const grid = new Array(gridW * gridW).fill(-1);
-            const dots = [];
-            const active = [];
+            var cellSize = minR * 1.5 / Math.SQRT2;
+            var gridW = Math.ceil(plateRadius * 2 / cellSize);
+            var grid = new Array(gridW * gridW).fill(-1);
+            var dots = [];
+            var active = [];
 
             function gridIndex(x, y) {
-                const gx = Math.floor((x - cx + plateRadius) / cellSize);
-                const gy = Math.floor((y - cy + plateRadius) / cellSize);
+                var gx = Math.floor((x - cx + plateRadius) / cellSize);
+                var gy = Math.floor((y - cy + plateRadius) / cellSize);
                 if (gx < 0 || gx >= gridW || gy < 0 || gy >= gridW) return -1;
                 return gy * gridW + gx;
             }
 
             function canPlace(x, y, r) {
-                if (Math.hypot(x - cx, y - cy) + r > plateRadius - 2) return false;
-                const gi = gridIndex(x, y);
+                if (Math.hypot(x - cx, y - cy) + r > plateRadius - 1) return false;
+                var gi = gridIndex(x, y);
                 if (gi < 0) return false;
-                const gx = Math.floor((x - cx + plateRadius) / cellSize);
-                const gy = Math.floor((y - cy + plateRadius) / cellSize);
-                const searchRadius = 3;
-                for (let dy = -searchRadius; dy <= searchRadius; dy++) {
-                    for (let dx = -searchRadius; dx <= searchRadius; dx++) {
-                        const nx = gx + dx, ny = gy + dy;
+                var gx = Math.floor((x - cx + plateRadius) / cellSize);
+                var gy = Math.floor((y - cy + plateRadius) / cellSize);
+                var sr = 3;
+                for (var dy = -sr; dy <= sr; dy++) {
+                    for (var dx = -sr; dx <= sr; dx++) {
+                        var nx = gx + dx, ny = gy + dy;
                         if (nx < 0 || nx >= gridW || ny < 0 || ny >= gridW) continue;
-                        const ni = ny * gridW + nx;
+                        var ni = ny * gridW + nx;
                         if (grid[ni] >= 0) {
-                            const other = dots[grid[ni]];
-                            const dist = Math.hypot(x - other.x, y - other.y);
-                            if (dist < r + other.r + 1.5) return false;
+                            var other = dots[grid[ni]];
+                            var dist = Math.hypot(x - other.x, y - other.y);
+                            if (dist < r + other.r + 0.8) return false;
                         }
                     }
                 }
@@ -652,12 +693,12 @@
             }
 
             function addDot(x, y) {
-                const r = minR + Math.random() * (maxR - minR);
+                var r = minR + Math.random() * (maxR - minR);
                 if (!canPlace(x, y, r)) return false;
-                const idx = dots.length;
-                dots.push({ x, y, r });
+                var idx = dots.length;
+                dots.push({ x: x, y: y, r: r });
                 active.push(idx);
-                const gi = gridIndex(x, y);
+                var gi = gridIndex(x, y);
                 if (gi >= 0) grid[gi] = idx;
                 return true;
             }
@@ -666,15 +707,15 @@
             addDot(cx, cy);
 
             while (active.length > 0) {
-                const ai = Math.floor(Math.random() * active.length);
-                const src = dots[active[ai]];
-                let found = false;
-                for (let i = 0; i < k; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const dist = (minR * 2) + Math.random() * (minR * 3);
-                    const nx = src.x + Math.cos(angle) * dist;
-                    const ny = src.y + Math.sin(angle) * dist;
-                    if (addDot(nx, ny)) { found = true; break; }
+                var ai = Math.floor(Math.random() * active.length);
+                var src = dots[active[ai]];
+                var found = false;
+                for (var i = 0; i < k; i++) {
+                    var angle = Math.random() * Math.PI * 2;
+                    var dist = (minR * 2) + Math.random() * (minR * 2.5);
+                    var px = src.x + Math.cos(angle) * dist;
+                    var py = src.y + Math.sin(angle) * dist;
+                    if (addDot(px, py)) { found = true; break; }
                 }
                 if (!found) active.splice(ai, 1);
             }
@@ -684,18 +725,42 @@
 
         // ── Plate Rendering ──────────────────────────────────────────
 
+        function createNumberMask(size, number) {
+            var mask = document.createElement('canvas');
+            mask.width = size;
+            mask.height = size;
+            var ctx = mask.getContext('2d');
+
+            var numDigits = number.length;
+            var fontSize = numDigits > 1 ? size * 0.42 : size * 0.55;
+
+            ctx.font = '900 ' + fontSize + 'px Arial, Helvetica, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.lineJoin = 'round';
+
+            // Stroke first for thicker shape, then fill
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = fontSize * 0.08;
+            ctx.strokeText(number, size / 2, size / 2);
+            ctx.fillStyle = '#fff';
+            ctx.fillText(number, size / 2, size / 2);
+
+            return ctx.getImageData(0, 0, size, size).data;
+        }
+
         function renderPlate(canvas, plate, size) {
-            const dpr = window.devicePixelRatio || 1;
+            var dpr = window.devicePixelRatio || 1;
             canvas.width = size * dpr;
             canvas.height = size * dpr;
             canvas.style.width = size + 'px';
             canvas.style.height = size + 'px';
 
-            const ctx = canvas.getContext('2d');
+            var ctx = canvas.getContext('2d');
             ctx.scale(dpr, dpr);
 
-            const cx = size / 2, cy = size / 2;
-            const plateRadius = size / 2 - 4;
+            var cx = size / 2, cy = size / 2;
+            var plateRadius = size / 2 - 4;
 
             // Dark background circle
             ctx.beginPath();
@@ -703,39 +768,26 @@
             ctx.fillStyle = '#111';
             ctx.fill();
 
-            // Create number mask on offscreen canvas
-            const mask = document.createElement('canvas');
-            mask.width = size;
-            mask.height = size;
-            const mctx = mask.getContext('2d');
+            // Create number mask with thick strokes
+            var maskData = createNumberMask(size, plate.number);
 
-            // Adjust font size based on number of digits
-            const numDigits = plate.number.length;
-            const fontSize = numDigits > 1 ? size * 0.38 : size * 0.5;
-            mctx.font = `bold ${fontSize}px Arial, sans-serif`;
-            mctx.textAlign = 'center';
-            mctx.textBaseline = 'middle';
-            mctx.fillStyle = '#000';
-            mctx.fillText(plate.number, cx, cy);
-            const maskData = mctx.getImageData(0, 0, size, size).data;
+            // Generate dots — SMALL dots for density (critical for readability)
+            var minR = size > 200 ? 2.5 : 2;
+            var maxR = size > 200 ? 6.5 : 4.5;
+            var dots = poissonDiskSample(cx, cy, plateRadius, minR, maxR, 30);
 
-            // Generate dots
-            const minR = size > 200 ? 4.5 : 3;
-            const maxR = size > 200 ? 11 : 7;
-            const dots = poissonDiskSample(cx, cy, plateRadius, minR, maxR, 30);
-
-            // Render dots with color assignment
+            // Render dots with HSL-varied color assignment
             dots.forEach(function(dot) {
-                const px = Math.floor(dot.x);
-                const py = Math.floor(dot.y);
+                var px = Math.floor(dot.x);
+                var py = Math.floor(dot.y);
                 if (px < 0 || px >= size || py < 0 || py >= size) return;
 
-                const mi = (py * size + px) * 4;
-                const isNumber = maskData[mi + 3] > 128;
-                const palette = isNumber ? plate.numberColors : plate.bgColors;
-                const color = palette[Math.floor(Math.random() * palette.length)];
+                // Check mask — use red channel (we drew white text)
+                // Low threshold (40) captures anti-aliased edges for thicker number
+                var mi = (py * size + px) * 4;
+                var isNumber = maskData[mi] > 40;
+                var color = randomColor(isNumber ? plate.fg : plate.bg);
 
-                // Subtle luminance variation
                 ctx.beginPath();
                 ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
                 ctx.fillStyle = color;
