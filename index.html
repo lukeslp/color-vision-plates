@@ -621,9 +621,11 @@
                 number: '12',
                 label: 'Control',
                 correct: '12',
-                // Bright red-orange on vivid green — maximum contrast, everyone sees it
-                fg: { h: 12, hR: 24, s: 75, sR: 20, l: 48, lR: 16 },
-                bg: { h: 140, hR: 30, s: 62, sR: 20, l: 40, lR: 16 },
+                // Control plate: visible to EVERYONE including colorblind
+                // Uses LUMINANCE contrast (bright vs dark) so color vision isn't needed
+                // Real Ishihara plate 1 uses this same principle
+                fg: { h: 30, hR: 30, s: 70, sR: 22, l: 62, lR: 10 },
+                bg: { h: 160, hR: 40, s: 55, sR: 22, l: 33, lR: 10 },
             },
             {
                 number: '7',
@@ -899,29 +901,25 @@
         // ── Scoring & Results ────────────────────────────────────────
 
         function scoreResults() {
-            const control = answers[0];
-            if (!control.isCorrect && control.cantSee) {
-                return {
-                    type: 'inconclusive',
-                    label: 'Inconclusive',
-                    badgeClass: 'badge-inconclusive',
-                    description: "The control plate wasn't identified correctly. This could be a screen calibration issue, or the test conditions weren't ideal. Try again in better lighting."
-                };
-            }
+            var control = answers[0];
+            var redGreen1 = !answers[1].isCorrect;
+            var tritan = !answers[2].isCorrect;
+            var redGreen2 = !answers[3].isCorrect;
 
-            const redGreen1 = !answers[1].isCorrect;
-            const tritan = !answers[2].isCorrect;
-            const redGreen2 = !answers[3].isCorrect;
+            // Evaluate CVD pattern regardless of control plate result
+            // Control plate failing doesn't invalidate the test — it may indicate
+            // severe CVD if the luminance contrast wasn't enough on this display
+            var hasCVDPattern = redGreen1 || redGreen2 || tritan;
 
             if (redGreen1 && redGreen2 && !tritan) {
                 return {
                     type: 'red-green',
                     label: 'Red-Green Color Vision Deficiency',
                     badgeClass: 'badge-cvd',
-                    description: "You may have protanopia or deuteranopia — difficulty distinguishing reds and greens. About 8% of men and 0.5% of women share this. This app was built for you."
+                    description: "You likely have protanopia or deuteranopia — difficulty distinguishing reds and greens. About 8% of men and 0.5% of women share this. This app was built for you."
                 };
             }
-            if (tritan && !redGreen1) {
+            if (tritan && !redGreen1 && !redGreen2) {
                 return {
                     type: 'blue-yellow',
                     label: 'Blue-Yellow Color Vision Deficiency',
@@ -929,7 +927,7 @@
                     description: "You may have tritanopia — difficulty distinguishing blues and yellows. This is rare but real. This app was built for you."
                 };
             }
-            if ((redGreen1 || redGreen2) && tritan) {
+            if (hasCVDPattern && tritan) {
                 return {
                     type: 'multiple',
                     label: 'Atypical Color Vision',
@@ -945,6 +943,18 @@
                     description: "You may have a mild red-green deficiency. The subtler plates were harder for you. This app can help you catch the colors you might miss."
                 };
             }
+
+            // No CVD pattern detected
+            if (!control.isCorrect) {
+                // Control failed but no CVD pattern — genuinely inconclusive
+                return {
+                    type: 'inconclusive',
+                    label: 'Inconclusive',
+                    badgeClass: 'badge-inconclusive',
+                    description: "We couldn't get a clear reading. This could be a screen calibration or lighting issue. Try again in a well-lit room with screen brightness up."
+                };
+            }
+
             return {
                 type: 'normal',
                 label: 'Normal Color Vision',
