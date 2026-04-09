@@ -715,6 +715,12 @@
             var hasNearMisses = rgNearMiss + byNearMiss > 0;
             var nearMissNote = hasNearMisses ? ' Some of your answers were close — indicating partial color discrimination rather than absent.' : '';
 
+            function result(type, label, badgeClass, desc, addNote) {
+                return { type: type, label: label, badgeClass: badgeClass,
+                    description: desc + (addNote ? nearMissNote : ''),
+                    rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
+            }
+
             // Control failed — cannot trust test results (screen/lighting issue)
             // Must be checked FIRST: a failed control invalidates the session
             if (!controlOk) {
