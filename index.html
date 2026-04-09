@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color Vision Screening — What Color Is This?</title>
-    <meta name="description" content="Free 8-plate color vision screening inspired by Ishihara and HRR methodologies. Tests for red-green and blue-yellow deficiency.">
-    <meta property="og:title" content="Color Vision Screening — Free Online Test">
-    <meta property="og:description" content="A free 8-plate color vision screening. Find out how you see color.">
+    <title>Color Vision Deficiency Test — What Color Is This?</title>
+    <meta name="description" content="9-plate color vision screening based on Ishihara (1917) and HRR (1954) clinical methods. Tests red-green and blue-yellow deficiency. Free, no signup, sources cited.">
+    <meta property="og:title" content="Color Vision Deficiency Test">
+    <meta property="og:description" content="A real one, not marketing. With sources.">
+    <meta property="og:image" content="https://whatcoloristhis.one/og-beta.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:url" content="https://whatcoloristhis.one/beta/">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://whatcoloristhis.one/og-beta.png">
     <meta name="theme-color" content="#1a1a1a">
     <link rel="icon" type="image/x-icon" href="https://whatcoloristhis.one/favicon.ico">
     <link rel="apple-touch-icon" href="https://whatcoloristhis.one/apple-touch-icon.png">
@@ -17,8 +21,8 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --bg: #1a1a1a; --surface: #242424; --surface-raised: #2e2e2e;
-            --text: #f0f0f0; --text-muted: #999; --accent: #6c8cff;
-            --accent-dim: #4a64c0; --border: #3a3a3a; --danger: #e05555;
+            --text: #f0f0f0; --text-muted: #999; --accent: #5070d9;
+            --accent-dim: #3d569e; --border: #3a3a3a; --danger: #f07070;
             --success: #55b87a; --radius: 12px; --radius-sm: 8px;
         }
         html { scroll-behavior: smooth; }
@@ -77,7 +81,8 @@
             border: 2px solid var(--border); background: var(--surface); color: var(--text);
             font-size: 1.4rem; text-align: center; font-weight: 600; letter-spacing: 0.1em;
         }
-        .answer-input:focus { border-color: var(--accent); outline: none; }
+        .answer-input:focus { border-color: var(--accent); }
+        .answer-input:focus:not(:focus-visible) { outline: none; }
         .answer-input::placeholder { color: var(--text-muted); font-weight: 400; font-size: 1rem; letter-spacing: 0; }
         .shape-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         .shape-btn {
@@ -99,13 +104,27 @@
         .badge-inconclusive { background: rgba(153,153,153,0.15); color: var(--text-muted); }
         .result-detail { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; text-align: left; }
         .result-detail h3 { font-size: 0.95rem; margin-bottom: 12px; }
-        .plate-results-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .plate-result-item { text-align: center; }
-        .plate-result-item canvas { border-radius: 50%; margin-bottom: 4px; }
-        .plate-result-item .plate-status { font-size: 0.75rem; }
-        .plate-result-item .plate-status.pass { color: var(--success); }
-        .plate-result-item .plate-status.fail { color: var(--danger); }
+        .plate-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .plate-result-item { display: flex; align-items: center; gap: 10px; background: var(--surface-raised); border-radius: var(--radius-sm); padding: 10px; }
+        .plate-result-item canvas { border-radius: 50%; flex-shrink: 0; }
+        .plate-result-info { text-align: left; min-width: 0; }
+        .plate-result-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+        .plate-result-answer { font-size: 0.85rem; font-weight: 600; }
+        .plate-result-answer.pass { color: var(--success); }
+        .plate-result-answer.fail { color: var(--danger); }
+        .plate-result-correct { font-size: 0.75rem; color: var(--text-muted); }
+        @media (max-width: 420px) { .plate-results-grid { grid-template-columns: 1fr; } }
         .cta-divider { width: 48px; height: 2px; background: var(--border); margin: 32px auto; }
+        /* About / Citations */
+        .about-test { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; text-align: left; margin-bottom: 24px; }
+        .about-test h3 { font-size: 0.95rem; margin-bottom: 10px; }
+        .about-test p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 10px; }
+        .about-test p:last-child { margin-bottom: 0; }
+        .about-test .citation { font-size: 0.78rem; color: var(--text-muted); padding-left: 16px; border-left: 2px solid var(--border); margin-bottom: 8px; }
+        .about-test .citation:last-child { margin-bottom: 0; }
+        .hero-method { color: var(--text-muted); font-size: 0.82rem; max-width: 380px; margin: 0 auto 28px; line-height: 1.5; opacity: 0.85; }
+        .hero-method a { color: var(--text-muted); text-decoration: underline; text-underline-offset: 2px; }
+        .hero-method a:hover { color: var(--text); }
         /* Signup */
         .signup-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-align: center; }
         .signup-card h2 { font-size: 1.3rem; margin-bottom: 6px; }
@@ -119,7 +138,8 @@
             border: 2px solid var(--border); background: var(--surface-raised);
             color: var(--text); font-size: 1rem; min-height: 48px;
         }
-        .email-input:focus { border-color: var(--accent); outline: none; }
+        .email-input:focus { border-color: var(--accent); }
+        .email-input:focus:not(:focus-visible) { outline: none; }
         .email-input::placeholder { color: var(--text-muted); }
         .signup-fine-print { font-size: 0.78rem; color: var(--text-muted); }
         .signup-success { display: none; padding: 16px; }
@@ -160,8 +180,9 @@
                     <canvas id="hero-canvas" class="plate-canvas" aria-label="Ishihara-style color vision test plate"></canvas>
                 </div>
                 <h1>Can you see the number?</h1>
-                <p>8-plate color vision screening inspired by Ishihara and HRR methodologies.</p>
+                <p>9-plate color vision screening inspired by Ishihara and HRR methodologies.</p>
                 <p class="note">Full brightness, good lighting. About 60 seconds.</p>
+                <p class="hero-method">Uses pseudoisochromatic plates based on the <a href="#about-screening">Ishihara</a> (1917) and <a href="#about-screening">HRR</a> (1954) clinical tests. Not a medical diagnosis.</p>
                 <button class="btn btn-primary" id="start-btn">Start Screening</button>
             </div>
         </section>
@@ -169,8 +190,9 @@
         <!-- Test -->
         <section id="test-section" class="container" aria-label="Color vision test" role="region" aria-live="polite">
             <div>
-                <div class="progress-bar" role="progressbar" aria-valuemin="1" aria-valuemax="8" aria-valuenow="1" id="progress">
+                <div class="progress-bar" role="progressbar" aria-valuemin="1" aria-valuemax="9" aria-valuenow="1" id="progress">
                     <div class="progress-dot active"></div>
+                    <div class="progress-dot"></div>
                     <div class="progress-dot"></div>
                     <div class="progress-dot"></div>
                     <div class="progress-dot"></div>
@@ -227,18 +249,12 @@
                 <div class="signup-card">
                     <h2>What Color Is This?</h2>
                     <p class="subtitle">A color identification app built for how you actually see.</p>
-                    <div class="features">
-                        <div class="feature"><span class="feature-icon" aria-hidden="true">&#x1F4F7;</span><span>Camera identification from 30,000 named colors</span></div>
-                        <div class="feature"><span class="feature-icon" aria-hidden="true">&#x1F3A8;</span><span>Colorblind-safe palettes based on research</span></div>
-                        <div class="feature"><span class="feature-icon" aria-hidden="true">&#x1F441;</span><span>CVD simulation so others see what you see</span></div>
-                        <div class="feature"><span class="feature-icon" aria-hidden="true">&#x1F512;</span><span>Privacy-first: no accounts, no tracking</span></div>
-                    </div>
+                    <p class="signup-fine-print" style="margin-bottom:16px;">This is free and there's no marketing list. Signing up is actually a favor to me — Google Play requires 12 testers. <a href="https://whatcoloristhis.one/privacy.html">Privacy</a></p>
                     <div id="signup-form-container">
                         <form class="signup-form" id="signup-form">
                             <input type="email" class="email-input" id="email-input" placeholder="your@email.com" required aria-label="Email for beta testing">
                             <button type="submit" class="btn btn-primary" id="signup-btn">Join the Beta</button>
                         </form>
-                        <p class="signup-fine-print">I'll only email you about the beta. No spam. <a href="https://whatcoloristhis.one/privacy.html">Privacy</a></p>
                         <p class="signup-error" id="signup-error" role="alert"></p>
                     </div>
                     <div class="signup-success" id="signup-success">
@@ -246,6 +262,27 @@
                         <p>You're in! I'll email you when the beta is ready.</p>
                     </div>
                     <p class="signup-count" id="signup-count" aria-live="polite"></p>
+                    <div class="features" style="margin-top:16px;">
+                        <div class="feature"><span class="feature-icon" aria-hidden="true">&#x1F4F7;</span><span>Camera identification from 30,000 named colors</span></div>
+                        <div class="feature"><span class="feature-icon" aria-hidden="true">&#x1F3A8;</span><span>Colorblind-safe palettes based on research</span></div>
+                        <div class="feature"><span class="feature-icon" aria-hidden="true">&#x1F441;</span><span>CVD simulation so others see what you see</span></div>
+                        <div class="feature"><span class="feature-icon" aria-hidden="true">&#x1F512;</span><span>Privacy-first: no accounts, no tracking</span></div>
+                    </div>
+                    <a href="https://whatcoloristhis.one" class="btn btn-secondary" style="margin-top:16px;">Try it on the web</a>
+                </div>
+
+                <div class="about-test" id="about-screening">
+                    <h3>About this screening</h3>
+                    <p>This is a 9-plate pseudoisochromatic screening that tests for red-green and blue-yellow color vision deficiency. It uses two established clinical methodologies:</p>
+                    <p><strong>Ishihara-style plates</strong> (6 plates) present numbers hidden in fields of colored dots. The foreground and background colors sit on opposite sides of the red-green or blue-yellow confusion axis, with matched luminance so hue is the only available cue. Individuals with color vision deficiency cannot distinguish the figure from the background.</p>
+                    <p><strong>HRR-style plates</strong> (3 plates) use geometric shapes instead of numbers, which avoids digit-recognition bias and allows testing participants who cannot read numerals. The Hardy-Rand-Rittler test is the standard clinical complement to Ishihara for identifying both the type and severity of deficiency.</p>
+                    <p>Plate 1 is a control: it uses luminance contrast rather than chromatic contrast, so it should be visible regardless of color vision type. If the control plate is missed, the result is flagged as inconclusive (likely a screen brightness or lighting issue).</p>
+                    <p><strong>Limitations:</strong> This is a screen-based approximation. Clinical Ishihara and HRR tests use precisely calibrated printed pigments under standardized illumination (CIE Illuminant C). Display color rendering varies by device, panel type, brightness, and ambient lighting. This screening can indicate the likely presence and type of color vision deficiency, but it cannot replace a clinical evaluation.</p>
+                    <p style="font-size:0.8rem; margin-top:14px; margin-bottom:6px;"><strong>References</strong></p>
+                    <div class="citation">Ishihara, S. (1917). <em>Tests for Colour-Blindness</em>. Handaya, Tokyo, Hongo Harukicho.</div>
+                    <div class="citation">Hardy, L.H., Rand, G., &amp; Rittler, M.C. (1954). <em>HRR Pseudoisochromatic Plates for Detecting and Classifying Color Vision Deficiency</em>. American Optical Company.</div>
+                    <div class="citation">Birch, J. (2012). Worldwide prevalence of red-green color deficiency. <em>Journal of the Optical Society of America A</em>, 29(3), 313-320.</div>
+                    <div class="citation">Cole, B.L. (2007). Assessment of inherited colour vision defects in clinical practice. <em>Clinical and Experimental Optometry</em>, 90(3), 157-175.</div>
                 </div>
 
                 <div style="margin-top:20px; text-align:center;">
@@ -280,85 +317,126 @@
             };
         }
 
-        // ── Color Generation ─────────────────────────────────────────
+        // ── Color Generation (CIELAB) ────────────────────────────────
+        //
+        // Colors are defined in CIELAB (L*, a*, b*) to guarantee perceptual
+        // luminance matching. HSL "lightness" is a geometric property of the
+        // RGB cube and does NOT correspond to perceived brightness — equal
+        // HSL L for red and green produces ~20 L* units of luminance leak.
+        //
+        // CIELAB L* is perceptually uniform: matched L* = matched brightness.
+        // a* encodes the red(+)/green(-) opponent channel.
+        // b* encodes the yellow(+)/blue(-) opponent channel.
+        //
+        // Pipeline: CIELAB → XYZ (D65) → linear sRGB → gamma sRGB → hex
 
-        function hslToHex(h, s, l) {
-            h = ((h % 360) + 360) % 360;
-            s = Math.max(0, Math.min(100, s)) / 100;
-            l = Math.max(0, Math.min(100, l)) / 100;
-            var c = (1 - Math.abs(2 * l - 1)) * s;
-            var x = c * (1 - Math.abs((h / 60) % 2 - 1));
-            var m = l - c / 2;
-            var r, g, b;
-            if (h < 60) { r=c; g=x; b=0; } else if (h < 120) { r=x; g=c; b=0; }
-            else if (h < 180) { r=0; g=c; b=x; } else if (h < 240) { r=0; g=x; b=c; }
-            else if (h < 300) { r=x; g=0; b=c; } else { r=c; g=0; b=x; }
-            function hex(v) { var n = Math.max(0,Math.min(255,Math.round((v+m)*255))); return (n<16?'0':'')+n.toString(16); }
-            return '#' + hex(r) + hex(g) + hex(b);
+        function labToHex(L, a, b) {
+            // CIELAB → XYZ via inverse f function
+            var delta = 6 / 29;
+            var delta3 = delta * delta * delta;
+            var k = 3 * delta * delta;
+
+            function fInv(t) { return t > delta ? t * t * t : k * (t - 4 / 29); }
+
+            var fy = (L + 16) / 116;
+            var X = 0.95047 * fInv(fy + a / 500);
+            var Y = 1.00000 * fInv(fy);
+            var Z = 1.08883 * fInv(fy - b / 200);
+
+            // XYZ → linear sRGB (IEC 61966-2-1)
+            var rl =  3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z;
+            var gl = -0.9692660 * X + 1.8760108 * Y + 0.0415560 * Z;
+            var bl =  0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z;
+
+            // Gamut clamp + sRGB gamma
+            function gamma(c) {
+                c = Math.max(0, Math.min(1, c));
+                return c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+            }
+            function hex(v) {
+                var n = Math.round(Math.max(0, Math.min(255, v * 255)));
+                return (n < 16 ? '0' : '') + n.toString(16);
+            }
+            return '#' + hex(gamma(rl)) + hex(gamma(gl)) + hex(gamma(bl));
         }
 
         function rndColor(cfg, rng) {
-            return hslToHex(
-                cfg.h + (rng() - 0.5) * cfg.hR,
-                cfg.s + (rng() - 0.5) * cfg.sR,
-                cfg.l + (rng() - 0.5) * cfg.lR
+            return labToHex(
+                cfg.L + (rng() - 0.5) * cfg.LR,
+                cfg.a + (rng() - 0.5) * cfg.aR,
+                cfg.b + (rng() - 0.5) * cfg.bR
             );
         }
 
         // ── Plate Definitions ────────────────────────────────────────
         //
-        // 8 plates: 5 test red-green, 2 test blue-yellow, 1 control
+        // 9 plates: 5 test red-green, 3 test blue-yellow, 1 control
         // Mix of numbers (Ishihara-style) and shapes (HRR-style)
-        // Seeded for consistent generation across visits
+        // Seeded PRNG for consistent generation across visits
         //
         // Color science:
-        //   Red-green plates: fg and bg differ on the protan/deutan confusion axis
-        //     (CIELAB a* axis). Matched luminance so hue is the only cue.
-        //   Blue-yellow plates: fg and bg differ on the tritan confusion axis
-        //     (CIELAB b* axis). Matched luminance.
-        //   Control plate: luminance contrast (bright vs dark) — visible regardless
-        //     of color vision type.
+        //   All colors defined in CIELAB (L*, a*, b*).
+        //   Test plates: FG and BG share identical L* and LR (luminance noise
+        //   range), so there is zero systematic luminance difference at the
+        //   figure boundary. The ONLY cue is chromatic.
+        //
+        //   Red-green plates: FG and BG separated on a* (red-green opponent
+        //     axis). This targets protan/deutan confusion lines. Cross-axis
+        //     noise on b* adds visual complexity without affecting the test.
+        //   Blue-yellow plates: FG and BG separated on b* (blue-yellow
+        //     opponent axis). This targets tritan confusion lines. Cross-axis
+        //     noise on a* adds visual complexity.
+        //   Control plate: intentional L* difference (bright vs dark) —
+        //     visible regardless of color vision type. Validates that the
+        //     screen and lighting conditions are adequate.
+        //
+        // Refs: Ishihara (1917), Hardy-Rand-Rittler (1954)
 
         var PLATES = [
-            // 1. Control — luminance contrast, everyone sees it
+            // 1. Control — L* contrast (65 vs 38), everyone sees it
             { type: 'number', value: '12', correct: '12', tests: 'control', seed: 42,
-              fg: { h: 30, hR: 30, s: 70, sR: 22, l: 63, lR: 10 },
-              bg: { h: 160, hR: 40, s: 55, sR: 22, l: 32, lR: 10 } },
+              fg: { L: 65, LR: 12, a: 10, aR: 16, b: 15, bR: 16 },
+              bg: { L: 38, LR: 12, a: -6, aR: 16, b: -10, bR: 16 } },
 
-            // 2. Red-green: number 74
+            // 2. Red-green: number 74 — a* separation 54
             { type: 'number', value: '74', correct: '74', tests: 'red-green', seed: 137,
-              fg: { h: 10, hR: 18, s: 66, sR: 18, l: 44, lR: 12 },
-              bg: { h: 95, hR: 22, s: 56, sR: 18, l: 44, lR: 12 } },
+              fg: { L: 50, LR: 14, a: 30, aR: 12, b: 5, bR: 14 },
+              bg: { L: 50, LR: 14, a: -24, aR: 12, b: 5, bR: 14 } },
 
-            // 3. Red-green: circle (HRR-style)
+            // 3. Red-green: circle (HRR) — a* separation 50
             { type: 'shape', value: 'circle', correct: 'circle', tests: 'red-green', seed: 256,
-              fg: { h: 8, hR: 16, s: 63, sR: 16, l: 45, lR: 11 },
-              bg: { h: 100, hR: 20, s: 53, sR: 16, l: 45, lR: 11 } },
+              fg: { L: 50, LR: 14, a: 28, aR: 10, b: 3, bR: 12 },
+              bg: { L: 50, LR: 14, a: -22, aR: 10, b: 3, bR: 12 } },
 
-            // 4. Blue-yellow: number 2
+            // 4. Blue-yellow: number 2 — b* separation 58
             { type: 'number', value: '2', correct: '2', tests: 'blue-yellow', seed: 389,
-              fg: { h: 225, hR: 22, s: 56, sR: 18, l: 47, lR: 12 },
-              bg: { h: 65, hR: 22, s: 50, sR: 18, l: 50, lR: 12 } },
+              fg: { L: 50, LR: 14, a: 2, aR: 12, b: -30, bR: 10 },
+              bg: { L: 50, LR: 14, a: 2, aR: 12, b: 28, bR: 10 } },
 
-            // 5. Red-green: number 8
+            // 5. Red-green: number 8 — a* separation 58
             { type: 'number', value: '8', correct: '8', tests: 'red-green', seed: 512,
-              fg: { h: 12, hR: 16, s: 61, sR: 16, l: 43, lR: 11 },
-              bg: { h: 92, hR: 20, s: 54, sR: 16, l: 43, lR: 11 } },
+              fg: { L: 50, LR: 14, a: 32, aR: 12, b: 4, bR: 14 },
+              bg: { L: 50, LR: 14, a: -26, aR: 12, b: 4, bR: 14 } },
 
-            // 6. Blue-yellow: triangle (HRR-style)
+            // 6. Blue-yellow: triangle (HRR) — b* separation 54
             { type: 'shape', value: 'triangle', correct: 'triangle', tests: 'blue-yellow', seed: 634,
-              fg: { h: 230, hR: 20, s: 53, sR: 16, l: 48, lR: 11 },
-              bg: { h: 60, hR: 20, s: 48, sR: 16, l: 50, lR: 11 } },
+              fg: { L: 50, LR: 14, a: 0, aR: 12, b: -28, bR: 10 },
+              bg: { L: 50, LR: 14, a: 0, aR: 12, b: 26, bR: 10 } },
 
-            // 7. Subtle red-green: number 6
+            // 7. Subtle blue-yellow: number 5 — b* separation 42
+            { type: 'number', value: '5', correct: '5', tests: 'blue-yellow', seed: 700,
+              fg: { L: 50, LR: 14, a: 1, aR: 12, b: -22, bR: 10 },
+              bg: { L: 50, LR: 14, a: 1, aR: 12, b: 20, bR: 10 } },
+
+            // 8. Subtle red-green: number 6 — a* separation 36
             { type: 'number', value: '6', correct: '6', tests: 'red-green', seed: 777,
-              fg: { h: 18, hR: 14, s: 48, sR: 14, l: 43, lR: 9 },
-              bg: { h: 82, hR: 16, s: 44, sR: 14, l: 43, lR: 9 } },
+              fg: { L: 50, LR: 14, a: 20, aR: 10, b: 4, bR: 12 },
+              bg: { L: 50, LR: 14, a: -16, aR: 10, b: 4, bR: 12 } },
 
-            // 8. Subtle red-green: star (HRR-style)
+            // 9. Subtle red-green: star (HRR) — a* separation 32
             { type: 'shape', value: 'star', correct: 'star', tests: 'red-green', seed: 901,
-              fg: { h: 15, hR: 14, s: 46, sR: 14, l: 42, lR: 9 },
-              bg: { h: 85, hR: 16, s: 43, sR: 14, l: 42, lR: 9 } },
+              fg: { L: 50, LR: 14, a: 18, aR: 10, b: 3, bR: 12 },
+              bg: { L: 50, LR: 14, a: -14, aR: 10, b: 3, bR: 12 } },
         ];
 
         // ── Poisson Disk Sampling ────────────────────────────────────
@@ -492,12 +570,11 @@
                 ctx.fillStyle = rndColor(isShape ? plate.fg : plate.bg, rng);
                 ctx.fill();
             });
-            return dots.length;
         }
 
         // ── Test State Machine ───────────────────────────────────────
 
-        var currentPlate = 0, answers = [], miniCanvases = [];
+        var currentPlate = 0, answers = [];
         var heroSection = document.getElementById('hero-section');
         var testSection = document.getElementById('test-section');
         var resultsSection = document.getElementById('results-section');
@@ -517,7 +594,7 @@
         document.getElementById('start-btn').addEventListener('click', function() {
             heroSection.style.display = 'none';
             testSection.style.display = 'flex';
-            currentPlate = 0; answers.length = 0; miniCanvases.length = 0;
+            currentPlate = 0; answers.length = 0;
             showPlate(0);
             testSection.scrollIntoView({ behavior: 'smooth' });
         });
@@ -534,10 +611,11 @@
 
             renderPlate(testCanvas, plate, size);
 
-            // Mini for results
-            var mini = document.createElement('canvas');
-            renderPlate(mini, plate, 56);
-            miniCanvases[index] = mini;
+            // Accessible label for screen readers
+            var testName = plate.tests === 'control' ? 'control' : plate.tests;
+            var prompt = plate.type === 'number' ? 'identify the number' : 'identify the shape';
+            testCanvas.setAttribute('aria-label', 'Plate ' + (index + 1) + ' of ' + PLATES.length + ': ' + testName + ' test — ' + prompt + ' hidden in the colored dots');
+            testCanvas.setAttribute('role', 'img');
 
             // Progress
             var dots = progressBar.querySelectorAll('.progress-dot');
@@ -611,6 +689,13 @@
 
             var controlOk = answers[0].isCorrect;
 
+            // Control failed — cannot trust test results (screen/lighting issue)
+            // Must be checked FIRST: a failed control invalidates the session
+            if (!controlOk) {
+                return { type: 'inconclusive', label: 'Inconclusive', badgeClass: 'badge-inconclusive',
+                    description: 'The control plate was not identified correctly. This usually indicates a display brightness or lighting issue rather than a color vision deficiency. Try again with screen brightness at maximum in a well-lit room.',
+                    rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
+            }
             // Strong red-green CVD (failed most red-green plates)
             if (rgFailed >= 3 && byFailed <= 1) {
                 return { type: 'red-green', label: 'Red-Green Color Vision Deficiency', badgeClass: 'badge-cvd',
@@ -629,27 +714,27 @@
                     description: 'Your results suggest atypical color perception across multiple ranges (' + rgFailed + '/' + rgTotal + ' red-green, ' + byFailed + '/' + byTotal + ' blue-yellow). This app is built to help you identify and name colors confidently.',
                     rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
             }
-            // Mild red-green
+            // Mild combined (both axes affected)
+            if (rgFailed >= 1 && byFailed >= 1) {
+                return { type: 'mild-combined', label: 'Possible Mild Color Vision Deficiency', badgeClass: 'badge-cvd',
+                    description: 'You missed ' + rgFailed + ' red-green and ' + byFailed + ' blue-yellow plate' + (byFailed > 1 ? 's' : '') + '. This may indicate a mild color vision deficiency across both axes. The app can help you identify colors more confidently.',
+                    rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
+            }
+            // Mild red-green only
             if (rgFailed >= 1) {
                 return { type: 'mild-red-green', label: 'Possible Mild Red-Green Deficiency', badgeClass: 'badge-cvd',
                     description: 'You missed ' + rgFailed + ' of ' + rgTotal + ' red-green plates, including the more subtle ones. This may indicate a mild color vision deficiency. The app can help you catch colors you might otherwise miss.',
                     rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
             }
-            // Mild blue-yellow
+            // Mild blue-yellow only
             if (byFailed >= 1) {
                 return { type: 'mild-blue-yellow', label: 'Possible Mild Blue-Yellow Deficiency', badgeClass: 'badge-cvd',
                     description: 'You missed ' + byFailed + ' of ' + byTotal + ' blue-yellow plates. This may indicate a mild tritanomaly.',
                     rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
             }
-            // Control failed but nothing else — inconclusive
-            if (!controlOk) {
-                return { type: 'inconclusive', label: 'Inconclusive', badgeClass: 'badge-inconclusive',
-                    description: 'The control plate was not identified but all test plates passed. This may indicate a display calibration or lighting issue. Try again with screen brightness at maximum in a well-lit room.',
-                    rgFailed: 0, rgTotal: rgTotal, byFailed: 0, byTotal: byTotal };
-            }
             // All pass
             return { type: 'normal', label: 'Normal Color Vision', badgeClass: 'badge-normal',
-                description: 'You identified all 8 plates correctly — consistent with typical trichromatic vision. However, 1 in 12 men and 1 in 200 women have some form of color vision deficiency. Share this test with someone who might benefit.',
+                description: 'You identified all 9 plates correctly — consistent with typical trichromatic vision. However, 1 in 12 men and 1 in 200 women have some form of color vision deficiency. Share this test with someone who might benefit.',
                 rgFailed: 0, rgTotal: rgTotal, byFailed: 0, byTotal: byTotal };
         }
 
@@ -669,23 +754,47 @@
             var grid = document.getElementById('plate-results-grid');
             grid.innerHTML = '';
             answers.forEach(function(a, i) {
+                var plate = PLATES[i];
                 var item = document.createElement('div');
                 item.className = 'plate-result-item';
-                var mini = miniCanvases[i];
-                if (mini) { mini.style.width = '56px'; mini.style.height = '56px'; item.appendChild(mini); }
-                var status = document.createElement('div');
-                var isControl = PLATES[i].tests === 'control';
+
+                // Render a recognizable mini plate (80px)
+                var mini = document.createElement('canvas');
+                renderPlate(mini, plate, 80);
+                mini.style.width = '56px'; mini.style.height = '56px';
+                item.appendChild(mini);
+
+                var info = document.createElement('div');
+                info.className = 'plate-result-info';
+
+                // Label: plate number + what it tests
+                var label = document.createElement('div');
+                label.className = 'plate-result-label';
+                var testName = plate.tests === 'control' ? 'Control' : plate.tests === 'red-green' ? 'Red-green' : 'Blue-yellow';
+                label.textContent = 'Plate ' + (i + 1) + ' \u00b7 ' + testName;
+                info.appendChild(label);
+
+                // User's answer
+                var answer = document.createElement('div');
+                var userText = a.cantSee ? 'Can\'t see' : (a.userAnswer || 'No answer');
                 if (a.isCorrect) {
-                    status.className = 'plate-status pass';
-                    status.textContent = a.userAnswer;
-                } else if (a.cantSee) {
-                    status.className = 'plate-status fail';
-                    status.textContent = '—';
+                    answer.className = 'plate-result-answer pass';
+                    answer.textContent = userText;
                 } else {
-                    status.className = 'plate-status fail';
-                    status.textContent = a.userAnswer || '—';
+                    answer.className = 'plate-result-answer fail';
+                    answer.textContent = userText;
                 }
-                item.appendChild(status);
+                info.appendChild(answer);
+
+                // Correct answer (show when wrong)
+                if (!a.isCorrect) {
+                    var correct = document.createElement('div');
+                    correct.className = 'plate-result-correct';
+                    correct.textContent = 'Answer: ' + plate.correct;
+                    info.appendChild(correct);
+                }
+
+                item.appendChild(info);
                 grid.appendChild(item);
             });
 
@@ -697,7 +806,7 @@
         // ── Signup ───────────────────────────────────────────────────
 
         function loadSignupCount() {
-            fetch('/api/signup/count').then(function(r) { return r.json(); }).then(function(d) {
+            fetch('api/signup/count').then(function(r) { return r.json(); }).then(function(d) {
                 if (d.count > 0) document.getElementById('signup-count').textContent = d.count + (d.count === 1 ? ' person has' : ' people have') + ' joined the beta';
             }).catch(function(){});
         }
@@ -710,7 +819,7 @@
             var err = document.getElementById('signup-error');
             err.style.display = 'none'; btn.classList.add('loading'); btn.disabled = true;
 
-            fetch('/api/signup', {
+            fetch('api/signup', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: email, vision_type: resultsSection.dataset.visionType || 'skipped', test_results: answers })
             })
@@ -736,7 +845,7 @@
 
         document.getElementById('share-btn').addEventListener('click', function() {
             var url = 'https://whatcoloristhis.one/beta/';
-            var text = 'Free 8-plate color vision screening — find out how you see color.';
+            var text = 'Color vision deficiency test. A real one, not marketing. With sources.';
             if (navigator.share) { navigator.share({title:'Color Vision Screening', text:text, url:url}).catch(function(){}); }
             else if (navigator.clipboard) {
                 navigator.clipboard.writeText(url).then(function() {

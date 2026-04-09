@@ -21,9 +21,9 @@ CORS(app, origins=[
 ])
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'beta.db')
-RESEND_API_KEY = os.environ.get('RESEND_API_KEY', 'RESEND_API_KEY_REDACTED')
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 NOTIFY_EMAIL = 'luke@lukesteuber.com'
-ADMIN_KEY = os.environ.get('BETA_ADMIN_KEY', 'whatcolor-beta-2026')
+ADMIN_KEY = os.environ.get('BETA_ADMIN_KEY', '')
 
 EMAIL_RE = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
 
@@ -57,6 +57,12 @@ init_db()
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
+
+
+@app.route('/og-beta.png')
+@app.route('/og-beta-v2.png')
+def og_image():
+    return send_from_directory('.', 'og-beta-v2.png', mimetype='image/png')
 
 
 @app.route('/health')
