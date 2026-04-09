@@ -82,7 +82,7 @@
             font-size: 1.4rem; text-align: center; font-weight: 600; letter-spacing: 0.1em;
         }
         .answer-input:focus { border-color: var(--accent); }
-        .answer-input:focus:not(:focus-visible) { outline: none; }
+        .answer-input:focus:not(:focus-visible), .email-input:focus:not(:focus-visible) { outline: none; }
         .answer-input::placeholder { color: var(--text-muted); font-weight: 400; font-size: 1rem; letter-spacing: 0; }
         .shape-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         .shape-btn {
@@ -141,7 +141,6 @@
             color: var(--text); font-size: 1rem; min-height: 48px;
         }
         .email-input:focus { border-color: var(--accent); }
-        .email-input:focus:not(:focus-visible) { outline: none; }
         .email-input::placeholder { color: var(--text-muted); }
         .signup-fine-print { font-size: 0.78rem; color: var(--text-muted); }
         .signup-success { display: none; padding: 16px; }
