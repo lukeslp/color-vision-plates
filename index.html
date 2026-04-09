@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Vision Test — What Color Is This?</title>
+    <meta name="description" content="Take a 30-second color vision test. If you're colorblind, this app was built for you. Join the beta.">
+    <meta property="og:title" content="What Color Is This? — Free Color Vision Test">
+    <meta property="og:description" content="Take a 30-second color vision test. If you're colorblind, this app was built for you.">
+    <meta property="og:url" content="https://whatcoloristhis.one/beta/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="icon" type="image/x-icon" href="https://whatcoloristhis.one/favicon.ico">
+    <link rel="apple-touch-icon" href="https://whatcoloristhis.one/apple-touch-icon.png">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #1a1a1a;
+            --surface: #242424;
+            --surface-raised: #2e2e2e;
+            --text: #f0f0f0;
+            --text-muted: #999;
+            --accent: #6c8cff;
+            --accent-dim: #4a64c0;
+            --border: #3a3a3a;
+            --danger: #e05555;
+            --success: #55b87a;
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -100px;
+            left: 16px;
+            background: var(--accent);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            z-index: 100;
+            font-weight: 600;
+        }
+        .skip-link:focus { top: 16px; }
+
+        /* ── Layout ── */
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        section {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 0;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            text-align: center;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        .hero-plate {
+            margin: 0 auto 32px;
+            width: min(320px, 85vw);
+            height: min(320px, 85vw);
+        }
+
+        .hero h1 {
+            font-size: clamp(1.8rem, 6vw, 2.4rem);
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 32px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 32px;
+            border-radius: var(--radius);
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            min-height: 48px;
+            min-width: 48px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover { background: var(--accent-dim); }
+        .btn-primary:active { transform: scale(0.97); }
+
+        .btn-secondary {
+            background: var(--surface-raised);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background: var(--border); }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+            padding: 14px 20px;
+        }
+        .btn-ghost:hover { color: var(--text); }
+
+        /* ── Test Section ── */
+        #test-section {
+            display: none;
+            text-align: center;
+        }
+
+        .progress-bar {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: background 0.3s;
+        }
+        .progress-dot.active { background: var(--accent); }
+        .progress-dot.done { background: var(--success); }
+
+        .plate-container {
+            margin: 0 auto 24px;
+            position: relative;
+        }
+
+        .plate-canvas {
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .plate-question {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .answer-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .answer-input {
+            width: 120px;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            border: 2px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 1.4rem;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+        }
+        .answer-input:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+        .answer-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+            font-size: 1rem;
+            letter-spacing: 0;
+        }
+
+        .test-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ── Results Section ── */
+        #results-section {
+            display: none;
+            text-align: center;
+        }
+
+        .result-type {
+            font-size: clamp(1.4rem, 5vw, 1.8rem);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .result-description {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            margin-bottom: 32px;
+            max-width: 360px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .result-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+        .badge-normal { background: rgba(85, 184, 122, 0.15); color: var(--success); }
+        .badge-cvd { background: rgba(108, 140, 255, 0.15); color: var(--accent); }
+        .badge-inconclusive { background: rgba(153, 153, 153, 0.15); color: var(--text-muted); }
+
+        .result-plates {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        .result-plate-mini {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+        }
+
+        .cta-divider {
+            width: 48px;
+            height: 2px;
+            background: var(--border);
+            margin: 40px auto;
+        }
+
+        /* ── Signup Section ── */
+        .signup-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .signup-card h2 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+
+        .signup-card .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .feature {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .feature-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            line-height: 1.4;
+        }
+
+        .signup-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .email-input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            border: 2px solid var(--border);
+            background: var(--surface-raised);
+            color: var(--text);
+            font-size: 1rem;
+            min-height: 48px;
+        }
+        .email-input:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+        .email-input::placeholder { color: var(--text-muted); }
+
+        .signup-fine-print {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .signup-success {
+            display: none;
+            padding: 20px;
+        }
+        .signup-success .checkmark {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+        .signup-success p {
+            color: var(--success);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .signup-error {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .signup-count {
+            margin-top: 16px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+        }
+        footer a { color: var(--text-muted); }
+        footer a:hover { color: var(--text); }
+        .footer-links {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .share-btn {
+            margin-top: 16px;
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes checkPop {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .check-pop { animation: checkPop 0.4s ease forwards; }
+
+        .plate-transition {
+            animation: fadeInUp 0.4s ease forwards;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+            html { scroll-behavior: auto; }
+        }
+
+        /* ── Responsive ── */
+        @media (min-width: 600px) {
+            .container { max-width: 520px; }
+            .features { grid-template-columns: 1fr 1fr; gap: 16px; }
+        }
+
+        /* Loading state for button */
+        .btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .btn.loading::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-left: 8px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to content</a>
+
+    <main id="main">
+        <!-- ── Hero ── -->
+        <section class="hero container" id="hero-section" aria-label="Color vision test introduction">
+            <div>
+                <div class="hero-plate">
+                    <canvas id="hero-canvas" class="plate-canvas" aria-label="Ishihara color vision test plate showing a hidden number"></canvas>
+                </div>
+                <h1>Can you see the number?</h1>
+                <p>Take a 30-second color vision test.<br>Find out how you see the world.</p>
+                <button class="btn btn-primary" id="start-btn" aria-label="Start the color vision test">
+                    Start Test
+                </button>
+            </div>
+        </section>
+
+        <!-- ── Interactive Test ── -->
+        <section id="test-section" class="container" aria-label="Color vision test" role="region" aria-live="polite">
+            <div>
+                <div class="progress-bar" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1" id="progress">
+                    <div class="progress-dot active" data-plate="0"></div>
+                    <div class="progress-dot" data-plate="1"></div>
+                    <div class="progress-dot" data-plate="2"></div>
+                    <div class="progress-dot" data-plate="3"></div>
+                </div>
+
+                <div class="plate-container" id="plate-area">
+                    <canvas id="test-canvas" class="plate-canvas" aria-label="Color vision test plate"></canvas>
+                </div>
+
+                <p class="plate-question" id="plate-question">What number do you see?</p>
+
+                <div class="answer-group">
+                    <input type="text" id="answer-input" class="answer-input"
+                           inputmode="numeric" pattern="[0-9]*" maxlength="3"
+                           placeholder="?"
+                           aria-label="Enter the number you see in the plate">
+                </div>
+
+                <div class="test-actions">
+                    <button class="btn btn-ghost" id="cant-see-btn" aria-label="I cannot see a number in this plate">
+                        I can't see a number
+                    </button>
+                    <button class="btn btn-primary" id="next-btn" aria-label="Submit answer and go to next plate">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Results ── -->
+        <section id="results-section" class="container" aria-label="Test results" role="region" aria-live="polite">
+            <div class="fade-in">
+                <div id="result-badge" class="result-badge"></div>
+                <h2 class="result-type" id="result-type"></h2>
+                <p class="result-description" id="result-description"></p>
+
+                <div class="result-plates" id="result-plates" aria-hidden="true"></div>
+
+                <div class="cta-divider"></div>
+
+                <!-- Signup Card -->
+                <div class="signup-card">
+                    <h2>What Color Is This?</h2>
+                    <p class="subtitle">A color identification app built for how you actually see.</p>
+
+                    <div class="features">
+                        <div class="feature">
+                            <span class="feature-icon" aria-hidden="true">&#x1F4F7;</span>
+                            <span>Camera color identification from 30,000 named colors</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon" aria-hidden="true">&#x1F3A8;</span>
+                            <span>Colorblind-safe palettes based on research</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon" aria-hidden="true">&#x1F441;</span>
+                            <span>Color vision simulation so others can see what you see</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon" aria-hidden="true">&#x1F512;</span>
+                            <span>Privacy-first: no accounts, no tracking, no cloud</span>
+                        </div>
+                    </div>
+
+                    <div id="signup-form-container">
+                        <form class="signup-form" id="signup-form" aria-label="Beta signup form">
+                            <input type="email" class="email-input" id="email-input"
+                                   placeholder="your@email.com" required
+                                   aria-label="Email address for beta testing">
+                            <button type="submit" class="btn btn-primary" id="signup-btn">
+                                Join the Beta
+                            </button>
+                        </form>
+                        <p class="signup-fine-print">I'll only email you about the beta. No spam. <a href="https://whatcoloristhis.one/privacy.html">Privacy policy</a></p>
+                        <p class="signup-error" id="signup-error" role="alert"></p>
+                    </div>
+
+                    <div class="signup-success" id="signup-success">
+                        <div class="checkmark check-pop" aria-hidden="true">&#x2705;</div>
+                        <p>You're in! I'll email you when the beta is ready.</p>
+                    </div>
+
+                    <p class="signup-count" id="signup-count" aria-live="polite"></p>
+                </div>
+
+                <div style="margin-top:24px; text-align:center;">
+                    <button class="btn btn-secondary share-btn" id="share-btn" aria-label="Share this color vision test">
+                        Share this test
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Built by <a href="https://lukesteuber.com">Luke Steuber</a></p>
+        <div class="footer-links">
+            <a href="https://whatcoloristhis.one">The App</a>
+            <a href="https://whatcoloristhis.one/privacy.html">Privacy</a>
+            <a href="https://bsky.app/profile/lukesteuber.com">Bluesky</a>
+        </div>
+    </footer>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // ── Ishihara Engine ──────────────────────────────────────────
+
+        // Plate configurations with luminance-matched palettes
+        const PLATES = [
+            {
+                number: '12',
+                label: 'Control',
+                // Orange-red number on green background — everyone should see this
+                numberColors: ['#E25822','#D94E1F','#C74518','#F06830','#E8602A','#D35520','#BF4015'],
+                bgColors: ['#3B7A4A','#4A8C5C','#2E6B3E','#5A9E6A','#448B55','#367042','#509860'],
+                correct: '12'
+            },
+            {
+                number: '7',
+                label: 'Red-Green',
+                // Red number on green — invisible to protanopia/deuteranopia
+                numberColors: ['#CC4125','#B5382E','#D94E38','#C23B20','#BE3A28','#D1442E','#B83525'],
+                bgColors: ['#6B8E4E','#5C8244','#7D9B5A','#4E7A3A','#8CAA65','#5A7E40','#6E9050'],
+                correct: '7'
+            },
+            {
+                number: '5',
+                label: 'Blue-Yellow',
+                // Blue number on yellow-green — invisible to tritanopia
+                numberColors: ['#3366AA','#2B5C9E','#4070B0','#2A5490','#3E6DB5','#305FA0','#3868A8'],
+                bgColors: ['#A0A040','#8E9038','#B0B048','#7E8230','#9A9C42','#889035','#A5A545'],
+                correct: '5'
+            },
+            {
+                number: '42',
+                label: 'Subtle',
+                // Muted orange-brown on yellow-green — even mild CVD may miss this
+                numberColors: ['#9E7050','#A07858','#8C6648','#B08060','#947055','#A67B5A','#96704D'],
+                bgColors: ['#8A9E50','#7C9048','#98AC58','#708238','#88A055','#7E9445','#92A550'],
+                correct: '42'
+            }
+        ];
+
+        // ── Poisson Disk Sampling ────────────────────────────────────
+
+        function poissonDiskSample(cx, cy, plateRadius, minR, maxR, k) {
+            k = k || 30;
+            const cellSize = minR * 2 / Math.SQRT2;
+            const gridW = Math.ceil(plateRadius * 2 / cellSize);
+            const grid = new Array(gridW * gridW).fill(-1);
+            const dots = [];
+            const active = [];
+
+            function gridIndex(x, y) {
+                const gx = Math.floor((x - cx + plateRadius) / cellSize);
+                const gy = Math.floor((y - cy + plateRadius) / cellSize);
+                if (gx < 0 || gx >= gridW || gy < 0 || gy >= gridW) return -1;
+                return gy * gridW + gx;
+            }
+
+            function canPlace(x, y, r) {
+                if (Math.hypot(x - cx, y - cy) + r > plateRadius - 2) return false;
+                const gi = gridIndex(x, y);
+                if (gi < 0) return false;
+                const gx = Math.floor((x - cx + plateRadius) / cellSize);
+                const gy = Math.floor((y - cy + plateRadius) / cellSize);
+                const searchRadius = 3;
+                for (let dy = -searchRadius; dy <= searchRadius; dy++) {
+                    for (let dx = -searchRadius; dx <= searchRadius; dx++) {
+                        const nx = gx + dx, ny = gy + dy;
+                        if (nx < 0 || nx >= gridW || ny < 0 || ny >= gridW) continue;
+                        const ni = ny * gridW + nx;
+                        if (grid[ni] >= 0) {
+                            const other = dots[grid[ni]];
+                            const dist = Math.hypot(x - other.x, y - other.y);
+                            if (dist < r + other.r + 1.5) return false;
+                        }
+                    }
+                }
+                return true;
+            }
+
+            function addDot(x, y) {
+                const r = minR + Math.random() * (maxR - minR);
+                if (!canPlace(x, y, r)) return false;
+                const idx = dots.length;
+                dots.push({ x, y, r });
+                active.push(idx);
+                const gi = gridIndex(x, y);
+                if (gi >= 0) grid[gi] = idx;
+                return true;
+            }
+
+            // Seed from center
+            addDot(cx, cy);
+
+            while (active.length > 0) {
+                const ai = Math.floor(Math.random() * active.length);
+                const src = dots[active[ai]];
+                let found = false;
+                for (let i = 0; i < k; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = (minR * 2) + Math.random() * (minR * 3);
+                    const nx = src.x + Math.cos(angle) * dist;
+                    const ny = src.y + Math.sin(angle) * dist;
+                    if (addDot(nx, ny)) { found = true; break; }
+                }
+                if (!found) active.splice(ai, 1);
+            }
+
+            return dots;
+        }
+
+        // ── Plate Rendering ──────────────────────────────────────────
+
+        function renderPlate(canvas, plate, size) {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = size * dpr;
+            canvas.height = size * dpr;
+            canvas.style.width = size + 'px';
+            canvas.style.height = size + 'px';
+
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            const cx = size / 2, cy = size / 2;
+            const plateRadius = size / 2 - 4;
+
+            // Dark background circle
+            ctx.beginPath();
+            ctx.arc(cx, cy, plateRadius + 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#111';
+            ctx.fill();
+
+            // Create number mask on offscreen canvas
+            const mask = document.createElement('canvas');
+            mask.width = size;
+            mask.height = size;
+            const mctx = mask.getContext('2d');
+
+            // Adjust font size based on number of digits
+            const numDigits = plate.number.length;
+            const fontSize = numDigits > 1 ? size * 0.38 : size * 0.5;
+            mctx.font = `bold ${fontSize}px Arial, sans-serif`;
+            mctx.textAlign = 'center';
+            mctx.textBaseline = 'middle';
+            mctx.fillStyle = '#000';
+            mctx.fillText(plate.number, cx, cy);
+            const maskData = mctx.getImageData(0, 0, size, size).data;
+
+            // Generate dots
+            const minR = size > 200 ? 4.5 : 3;
+            const maxR = size > 200 ? 11 : 7;
+            const dots = poissonDiskSample(cx, cy, plateRadius, minR, maxR, 30);
+
+            // Render dots with color assignment
+            dots.forEach(function(dot) {
+                const px = Math.floor(dot.x);
+                const py = Math.floor(dot.y);
+                if (px < 0 || px >= size || py < 0 || py >= size) return;
+
+                const mi = (py * size + px) * 4;
+                const isNumber = maskData[mi + 3] > 128;
+                const palette = isNumber ? plate.numberColors : plate.bgColors;
+                const color = palette[Math.floor(Math.random() * palette.length)];
+
+                // Subtle luminance variation
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+            });
+
+            return dots.length;
+        }
+
+        // ── Test State Machine ───────────────────────────────────────
+
+        let currentPlate = 0;
+        const answers = [];
+        const plateCanvases = []; // mini canvases for results
+
+        const heroSection = document.getElementById('hero-section');
+        const testSection = document.getElementById('test-section');
+        const resultsSection = document.getElementById('results-section');
+        const testCanvas = document.getElementById('test-canvas');
+        const heroCanvas = document.getElementById('hero-canvas');
+        const answerInput = document.getElementById('answer-input');
+        const progressBar = document.getElementById('progress');
+
+        // Render hero plate
+        function initHero() {
+            const size = Math.min(320, window.innerWidth * 0.85);
+            renderPlate(heroCanvas, PLATES[0], size);
+        }
+
+        // Start test
+        document.getElementById('start-btn').addEventListener('click', function() {
+            heroSection.style.display = 'none';
+            testSection.style.display = 'flex';
+            currentPlate = 0;
+            answers.length = 0;
+            showPlate(0);
+            testSection.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        function showPlate(index) {
+            currentPlate = index;
+            const plate = PLATES[index];
+            const size = Math.min(320, window.innerWidth * 0.85);
+
+            // Render plate
+            const area = document.getElementById('plate-area');
+            area.classList.remove('plate-transition');
+            void area.offsetWidth; // force reflow
+            area.classList.add('plate-transition');
+
+            renderPlate(testCanvas, plate, size);
+
+            // Also render a mini version for results
+            const mini = document.createElement('canvas');
+            renderPlate(mini, plate, 64);
+            plateCanvases[index] = mini;
+
+            // Update progress
+            const dots = progressBar.querySelectorAll('.progress-dot');
+            dots.forEach(function(d, i) {
+                d.className = 'progress-dot' + (i < index ? ' done' : i === index ? ' active' : '');
+            });
+            progressBar.setAttribute('aria-valuenow', index + 1);
+
+            // Update question
+            document.getElementById('plate-question').textContent =
+                index === 0 ? 'What number do you see?' : 'And this one?';
+
+            // Clear input
+            answerInput.value = '';
+            answerInput.focus();
+        }
+
+        function submitAnswer(cantSee) {
+            const plate = PLATES[currentPlate];
+            const userAnswer = cantSee ? '' : answerInput.value.trim();
+            answers.push({
+                plate: currentPlate,
+                plateLabel: plate.label,
+                correct: plate.correct,
+                userAnswer: userAnswer,
+                cantSee: cantSee,
+                isCorrect: userAnswer === plate.correct
+            });
+
+            if (currentPlate < PLATES.length - 1) {
+                showPlate(currentPlate + 1);
+            } else {
+                showResults();
+            }
+        }
+
+        document.getElementById('next-btn').addEventListener('click', function() {
+            submitAnswer(false);
+        });
+
+        document.getElementById('cant-see-btn').addEventListener('click', function() {
+            submitAnswer(true);
+        });
+
+        // Enter key submits
+        answerInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitAnswer(false);
+            }
+        });
+
+        // ── Scoring & Results ────────────────────────────────────────
+
+        function scoreResults() {
+            const control = answers[0];
+            if (!control.isCorrect && control.cantSee) {
+                return {
+                    type: 'inconclusive',
+                    label: 'Inconclusive',
+                    badgeClass: 'badge-inconclusive',
+                    description: "The control plate wasn't identified correctly. This could be a screen calibration issue, or the test conditions weren't ideal. Try again in better lighting."
+                };
+            }
+
+            const redGreen1 = !answers[1].isCorrect;
+            const tritan = !answers[2].isCorrect;
+            const redGreen2 = !answers[3].isCorrect;
+
+            if (redGreen1 && redGreen2 && !tritan) {
+                return {
+                    type: 'red-green',
+                    label: 'Red-Green Color Vision Deficiency',
+                    badgeClass: 'badge-cvd',
+                    description: "You may have protanopia or deuteranopia — difficulty distinguishing reds and greens. About 8% of men and 0.5% of women share this. This app was built for you."
+                };
+            }
+            if (tritan && !redGreen1) {
+                return {
+                    type: 'blue-yellow',
+                    label: 'Blue-Yellow Color Vision Deficiency',
+                    badgeClass: 'badge-cvd',
+                    description: "You may have tritanopia — difficulty distinguishing blues and yellows. This is rare but real. This app was built for you."
+                };
+            }
+            if ((redGreen1 || redGreen2) && tritan) {
+                return {
+                    type: 'multiple',
+                    label: 'Atypical Color Vision',
+                    badgeClass: 'badge-cvd',
+                    description: "Your results suggest atypical color perception across multiple ranges. This app was built to help you identify and name colors with confidence."
+                };
+            }
+            if (redGreen1 || redGreen2) {
+                return {
+                    type: 'mild-red-green',
+                    label: 'Possible Mild Color Vision Deficiency',
+                    badgeClass: 'badge-cvd',
+                    description: "You may have a mild red-green deficiency. The subtler plates were harder for you. This app can help you catch the colors you might miss."
+                };
+            }
+            return {
+                type: 'normal',
+                label: 'Normal Color Vision',
+                badgeClass: 'badge-normal',
+                description: "You have typical color vision — trichromacy. But 1 in 12 men and 1 in 200 women don't. Share this test with someone who might benefit."
+            };
+        }
+
+        function showResults() {
+            testSection.style.display = 'none';
+            resultsSection.style.display = 'flex';
+
+            const result = scoreResults();
+
+            document.getElementById('result-badge').textContent = result.type === 'normal' ? 'Trichromacy' : 'Color Vision Deficiency';
+            document.getElementById('result-badge').className = 'result-badge ' + result.badgeClass;
+            document.getElementById('result-type').textContent = result.label;
+            document.getElementById('result-description').textContent = result.description;
+
+            // Show mini plates
+            const container = document.getElementById('result-plates');
+            container.innerHTML = '';
+            plateCanvases.forEach(function(mini) {
+                if (mini) {
+                    mini.className = 'result-plate-mini';
+                    container.appendChild(mini);
+                }
+            });
+
+            // Store result for signup
+            resultsSection.dataset.visionType = result.type;
+
+            // Load signup count
+            loadSignupCount();
+
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ── Signup ───────────────────────────────────────────────────
+
+        function loadSignupCount() {
+            fetch('/api/signup/count')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.count > 0) {
+                        document.getElementById('signup-count').textContent =
+                            data.count + (data.count === 1 ? ' person has' : ' people have') + ' joined the beta';
+                    }
+                })
+                .catch(function() {});
+        }
+
+        document.getElementById('signup-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email-input').value.trim();
+            if (!email) return;
+
+            const btn = document.getElementById('signup-btn');
+            const errorEl = document.getElementById('signup-error');
+            errorEl.style.display = 'none';
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            const visionType = resultsSection.dataset.visionType || 'skipped';
+
+            fetch('/api/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email,
+                    vision_type: visionType,
+                    test_results: answers
+                })
+            })
+            .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+            .then(function(res) {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+
+                if (res.ok) {
+                    document.getElementById('signup-form-container').style.display = 'none';
+                    document.getElementById('signup-success').style.display = 'block';
+                    loadSignupCount();
+                } else {
+                    if (res.data.error === 'already_signed_up') {
+                        document.getElementById('signup-form-container').style.display = 'none';
+                        document.getElementById('signup-success').style.display = 'block';
+                        document.querySelector('#signup-success p').textContent = "You're already signed up! I'll be in touch.";
+                    } else {
+                        errorEl.textContent = res.data.message || res.data.error || 'Something went wrong.';
+                        errorEl.style.display = 'block';
+                    }
+                }
+            })
+            .catch(function() {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                errorEl.textContent = 'Network error. Please try again.';
+                errorEl.style.display = 'block';
+            });
+        });
+
+        // ── Share ────────────────────────────────────────────────────
+
+        document.getElementById('share-btn').addEventListener('click', function() {
+            const url = 'https://whatcoloristhis.one/beta/';
+            const text = 'Take a 30-second color vision test — find out how you see the world.';
+
+            if (navigator.share) {
+                navigator.share({ title: 'Color Vision Test', text: text, url: url }).catch(function() {});
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(function() {
+                    var btn = document.getElementById('share-btn');
+                    var orig = btn.textContent;
+                    btn.textContent = 'Link copied!';
+                    setTimeout(function() { btn.textContent = orig; }, 2000);
+                });
+            }
+        });
+
+        // ── Init ─────────────────────────────────────────────────────
+
+        initHero();
+        window.addEventListener('resize', function() {
+            if (heroSection.style.display !== 'none') initHero();
+        });
+
+    })();
+    </script>
+</body>
+</html>
