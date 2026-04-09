@@ -102,7 +102,8 @@
         .badge-normal { background: rgba(85,184,122,0.15); color: var(--success); }
         .badge-cvd { background: rgba(108,140,255,0.15); color: var(--accent); }
         .badge-inconclusive { background: rgba(153,153,153,0.15); color: var(--text-muted); }
-        .result-detail { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; text-align: left; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px; }
+        .result-detail { padding: 20px; text-align: left; }
         .result-detail h3 { font-size: 0.95rem; margin-bottom: 12px; }
         .plate-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .plate-result-item { display: flex; align-items: center; gap: 10px; background: var(--surface-raised); border-radius: var(--radius-sm); padding: 10px; }
@@ -610,7 +611,7 @@
         function showPlate(index) {
             currentPlate = index;
             var plate = PLATES[index];
-            var size = Math.min(320, window.innerWidth * 0.85);
+            var size = plateSize();
 
             var area = document.getElementById('plate-area');
             area.classList.remove('plate-transition');
