@@ -400,6 +400,7 @@
 
             // 2. Red-green: number 74 — a* separation 54
             { type: 'number', value: '74', correct: '74', tests: 'red-green', seed: 137,
+              nearMisses: ['71', '21', '7', '4'],
               fg: { L: 50, LR: 14, a: 30, aR: 12, b: 5, bR: 14 },
               bg: { L: 50, LR: 14, a: -24, aR: 12, b: 5, bR: 14 } },
 
@@ -410,11 +411,13 @@
 
             // 4. Blue-yellow: number 2 — b* separation 58
             { type: 'number', value: '2', correct: '2', tests: 'blue-yellow', seed: 389,
+              nearMisses: ['7'],
               fg: { L: 50, LR: 14, a: 2, aR: 12, b: -30, bR: 10 },
               bg: { L: 50, LR: 14, a: 2, aR: 12, b: 28, bR: 10 } },
 
             // 5. Red-green: number 8 — a* separation 58
             { type: 'number', value: '8', correct: '8', tests: 'red-green', seed: 512,
+              nearMisses: ['0', '3', '6'],
               fg: { L: 50, LR: 14, a: 32, aR: 12, b: 4, bR: 14 },
               bg: { L: 50, LR: 14, a: -26, aR: 12, b: 4, bR: 14 } },
 
@@ -425,11 +428,16 @@
 
             // 7. Subtle blue-yellow: number 5 — b* separation 42
             { type: 'number', value: '5', correct: '5', tests: 'blue-yellow', seed: 700,
+              nearMisses: ['6', '3'],
               fg: { L: 50, LR: 14, a: 1, aR: 12, b: -22, bR: 10 },
               bg: { L: 50, LR: 14, a: 1, aR: 12, b: 20, bR: 10 } },
 
             // 8. Subtle red-green: number 6 — a* separation 36
+            //    Near-miss note: at 36* separation, the smaller top loop of "6"
+            //    degrades first under reduced chromatic contrast, yielding "0".
+            //    "8" is less likely (both loops degrade simultaneously) but possible.
             { type: 'number', value: '6', correct: '6', tests: 'red-green', seed: 777,
+              nearMisses: ['0', '8'],
               fg: { L: 50, LR: 14, a: 20, aR: 10, b: 4, bR: 12 },
               bg: { L: 50, LR: 14, a: -16, aR: 10, b: 4, bR: 12 } },
 
