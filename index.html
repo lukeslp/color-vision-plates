@@ -819,13 +819,16 @@
                 if (a.isCorrect) {
                     answer.className = 'plate-result-answer pass';
                     answer.textContent = userText;
+                } else if (a.isNearMiss) {
+                    answer.className = 'plate-result-answer partial';
+                    answer.textContent = userText + ' (close)';
                 } else {
                     answer.className = 'plate-result-answer fail';
                     answer.textContent = userText;
                 }
                 info.appendChild(answer);
 
-                // Correct answer (show when wrong)
+                // Correct answer (show when wrong or near-miss)
                 if (!a.isCorrect) {
                     var correct = document.createElement('div');
                     correct.className = 'plate-result-correct';
