@@ -111,6 +111,7 @@
         .plate-result-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
         .plate-result-answer { font-size: 0.85rem; font-weight: 600; }
         .plate-result-answer.pass { color: var(--success); }
+        .plate-result-answer.partial { color: #d4a54a; }
         .plate-result-answer.fail { color: var(--danger); }
         .plate-result-correct { font-size: 0.75rem; color: var(--text-muted); }
         @media (max-width: 420px) { .plate-results-grid { grid-template-columns: 1fr; } }
@@ -200,7 +201,7 @@
                     <div class="progress-dot"></div>
                     <div class="progress-dot"></div>
                 </div>
-                <p class="plate-label" id="plate-label">Plate 1 of 8</p>
+                <p class="plate-label" id="plate-label">Plate 1 of 9</p>
                 <div class="plate-container" id="plate-area">
                     <canvas id="test-canvas" class="plate-canvas" aria-label="Color vision test plate"></canvas>
                 </div>
