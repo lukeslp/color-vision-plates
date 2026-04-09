@@ -118,7 +118,7 @@
         @media (max-width: 420px) { .plate-results-grid { grid-template-columns: 1fr; } }
         .cta-divider { width: 48px; height: 2px; background: var(--border); margin: 32px auto; }
         /* About / Citations */
-        .about-test { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; text-align: left; margin-bottom: 24px; }
+        .about-test { padding: 20px 22px; text-align: left; }
         .about-test h3 { font-size: 0.95rem; margin-bottom: 10px; }
         .about-test p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 10px; }
         .about-test p:last-child { margin-bottom: 0; }
@@ -128,7 +128,7 @@
         .hero-method a { color: var(--text-muted); text-decoration: underline; text-underline-offset: 2px; }
         .hero-method a:hover { color: var(--text); }
         /* Signup */
-        .signup-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-align: center; }
+        .signup-card { padding: 28px 24px; text-align: center; }
         .signup-card h2 { font-size: 1.3rem; margin-bottom: 6px; }
         .signup-card .subtitle { color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem; }
         .features { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; text-align: left; }
@@ -236,7 +236,7 @@
                 <h2 class="result-type" id="result-type"></h2>
                 <p class="result-description" id="result-description"></p>
 
-                <div class="result-detail" id="result-detail">
+                <div class="card result-detail" id="result-detail">
                     <h3>Your results plate by plate</h3>
                     <div class="plate-results-grid" id="plate-results-grid"></div>
                 </div>
@@ -247,7 +247,7 @@
 
                 <div class="cta-divider"></div>
 
-                <div class="signup-card">
+                <div class="card signup-card">
                     <h2>What Color Is This?</h2>
                     <p class="subtitle">A color identification app built for how you actually see.</p>
                     <p class="signup-fine-print" style="margin-bottom:16px;">This is free and there's no marketing list. Signing up is actually a favor to me — Google Play requires 12 testers. <a href="https://whatcoloristhis.one/privacy.html">Privacy</a></p>
@@ -272,7 +272,7 @@
                     <a href="https://whatcoloristhis.one" class="btn btn-secondary" style="margin-top:16px;">Try it on the web</a>
                 </div>
 
-                <div class="about-test" id="about-screening">
+                <div class="card about-test" id="about-screening">
                     <h3>About this screening</h3>
                     <p>This is a 9-plate pseudoisochromatic screening that tests for red-green and blue-yellow color vision deficiency. It uses two established clinical methodologies:</p>
                     <p><strong>Ishihara-style plates</strong> (6 plates) present numbers hidden in fields of colored dots. The foreground and background colors sit on opposite sides of the red-green or blue-yellow confusion axis, with matched luminance so hue is the only available cue. Individuals with color vision deficiency cannot distinguish the figure from the background.</p>
