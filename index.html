@@ -593,9 +593,10 @@
         var progressBar = document.getElementById('progress');
         var nextBtn = document.getElementById('next-btn');
 
+        function plateSize() { return Math.min(320, window.innerWidth * 0.85); }
+
         function initHero() {
-            var size = Math.min(320, window.innerWidth * 0.85);
-            renderPlate(heroCanvas, PLATES[0], size);
+            renderPlate(heroCanvas, PLATES[0], plateSize());
         }
 
         document.getElementById('start-btn').addEventListener('click', function() {
@@ -724,9 +725,8 @@
             // Control failed — cannot trust test results (screen/lighting issue)
             // Must be checked FIRST: a failed control invalidates the session
             if (!controlOk) {
-                return { type: 'inconclusive', label: 'Inconclusive', badgeClass: 'badge-inconclusive',
-                    description: 'The control plate was not identified correctly. This usually indicates a display brightness or lighting issue rather than a color vision deficiency. Try again with screen brightness at maximum in a well-lit room.',
-                    rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
+                return result('inconclusive', 'Inconclusive', 'badge-inconclusive',
+                    'The control plate was not identified correctly. This usually indicates a display brightness or lighting issue rather than a color vision deficiency. Try again with screen brightness at maximum in a well-lit room.');
             }
             // Near-miss only — every "failure" was partial visibility (close
             // but wrong). This indicates anomalous trichromacy: reduced but not
@@ -735,51 +735,45 @@
             if (hasNearMisses && rgFailed === rgNearMiss && byFailed === byNearMiss) {
                 var axis = rgNearMiss > 0 && byNearMiss > 0 ? 'both red-green and blue-yellow'
                     : rgNearMiss > 0 ? 'red-green' : 'blue-yellow';
-                return { type: 'anomalous', label: 'Anomalous Trichromacy', badgeClass: 'badge-cvd',
-                    description: 'Your answers were close but not exact on ' + (rgFailed + byFailed) + ' plate' + (rgFailed + byFailed > 1 ? 's' : '') + ' (' + axis + '). This pattern suggests reduced but not absent color discrimination — consistent with anomalous trichromacy (e.g., deuteranomaly or protanomaly). You likely see most colors, but subtle differences may be harder to catch.',
-                    rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
+                return result('anomalous', 'Anomalous Trichromacy', 'badge-cvd',
+                    'Your answers were close but not exact on ' + (rgFailed + byFailed) + ' plate' + (rgFailed + byFailed > 1 ? 's' : '') + ' (' + axis + '). This pattern suggests reduced but not absent color discrimination — consistent with anomalous trichromacy (e.g., deuteranomaly or protanomaly). You likely see most colors, but subtle differences may be harder to catch.');
             }
             // Strong red-green CVD (failed most red-green plates, at least
             // some total misses since all-near-miss was caught above)
             if (rgFailed >= 3 && byFailed <= 1) {
-                return { type: 'red-green', label: rgNearMiss > 0 ? 'Red-Green Color Vision Deficiency (Mixed)' : 'Red-Green Color Vision Deficiency', badgeClass: 'badge-cvd',
-                    description: 'Your results are consistent with ' + (rgNearMiss > 0 ? 'a mix of reduced and absent color discrimination on the red-green axis' : 'protanopia or deuteranopia') + '. You had difficulty with ' + rgFailed + ' of ' + rgTotal + ' red-green plates. About 8% of men and 0.5% of women share this type of color vision.' + nearMissNote,
-                    rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
+                return result('red-green',
+                    rgNearMiss > 0 ? 'Red-Green Color Vision Deficiency (Mixed)' : 'Red-Green Color Vision Deficiency',
+                    'badge-cvd',
+                    'Your results are consistent with ' + (rgNearMiss > 0 ? 'a mix of reduced and absent color discrimination on the red-green axis' : 'protanopia or deuteranopia') + '. You had difficulty with ' + rgFailed + ' of ' + rgTotal + ' red-green plates. About 8% of men and 0.5% of women share this type of color vision.', true);
             }
             // Blue-yellow CVD
             if (byFailed >= 2 && rgFailed <= 1) {
-                return { type: 'blue-yellow', label: 'Blue-Yellow Color Vision Deficiency', badgeClass: 'badge-cvd',
-                    description: 'Your results suggest tritanopia or tritanomaly — difficulty distinguishing blues and yellows. You had difficulty with ' + byFailed + ' of ' + byTotal + ' blue-yellow plates. This is rare but real, and this app was built for you.' + nearMissNote,
-                    rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
+                return result('blue-yellow', 'Blue-Yellow Color Vision Deficiency', 'badge-cvd',
+                    'Your results suggest tritanopia or tritanomaly — difficulty distinguishing blues and yellows. You had difficulty with ' + byFailed + ' of ' + byTotal + ' blue-yellow plates. This is rare but real, and this app was built for you.', true);
             }
             // Combined
             if (rgFailed >= 2 && byFailed >= 1) {
-                return { type: 'multiple', label: 'Atypical Color Vision', badgeClass: 'badge-cvd',
-                    description: 'Your results suggest atypical color perception across multiple ranges (' + rgFailed + '/' + rgTotal + ' red-green, ' + byFailed + '/' + byTotal + ' blue-yellow).' + nearMissNote,
-                    rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
+                return result('multiple', 'Atypical Color Vision', 'badge-cvd',
+                    'Your results suggest atypical color perception across multiple ranges (' + rgFailed + '/' + rgTotal + ' red-green, ' + byFailed + '/' + byTotal + ' blue-yellow).', true);
             }
             // Mild combined (both axes affected)
             if (rgFailed >= 1 && byFailed >= 1) {
-                return { type: 'mild-combined', label: 'Possible Mild Color Vision Deficiency', badgeClass: 'badge-cvd',
-                    description: 'You missed ' + rgFailed + ' red-green and ' + byFailed + ' blue-yellow plate' + (byFailed > 1 ? 's' : '') + '. This may indicate a mild color vision deficiency across both axes.' + nearMissNote,
-                    rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
+                return result('mild-combined', 'Possible Mild Color Vision Deficiency', 'badge-cvd',
+                    'You missed ' + rgFailed + ' red-green and ' + byFailed + ' blue-yellow plate' + (byFailed > 1 ? 's' : '') + '. This may indicate a mild color vision deficiency across both axes.', true);
             }
             // Mild red-green only
             if (rgFailed >= 1) {
-                return { type: 'mild-red-green', label: 'Possible Mild Red-Green Deficiency', badgeClass: 'badge-cvd',
-                    description: 'You missed ' + rgFailed + ' of ' + rgTotal + ' red-green plates, including the more subtle ones. This may indicate a mild color vision deficiency.' + nearMissNote,
-                    rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
+                return result('mild-red-green', 'Possible Mild Red-Green Deficiency', 'badge-cvd',
+                    'You missed ' + rgFailed + ' of ' + rgTotal + ' red-green plates, including the more subtle ones. This may indicate a mild color vision deficiency.', true);
             }
             // Mild blue-yellow only
             if (byFailed >= 1) {
-                return { type: 'mild-blue-yellow', label: 'Possible Mild Blue-Yellow Deficiency', badgeClass: 'badge-cvd',
-                    description: 'You missed ' + byFailed + ' of ' + byTotal + ' blue-yellow plates. This may indicate a mild tritanomaly.' + nearMissNote,
-                    rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
+                return result('mild-blue-yellow', 'Possible Mild Blue-Yellow Deficiency', 'badge-cvd',
+                    'You missed ' + byFailed + ' of ' + byTotal + ' blue-yellow plates. This may indicate a mild tritanomaly.', true);
             }
             // All pass
-            return { type: 'normal', label: 'Normal Color Vision', badgeClass: 'badge-normal',
-                description: 'You identified all 9 plates correctly — consistent with typical trichromatic vision. However, 1 in 12 men and 1 in 200 women have some form of color vision deficiency. Share this test with someone who might benefit.',
-                rgFailed: 0, rgTotal: rgTotal, byFailed: 0, byTotal: byTotal };
+            return result('normal', 'Normal Color Vision', 'badge-normal',
+                'You identified all 9 plates correctly — consistent with typical trichromatic vision. However, 1 in 12 men and 1 in 200 women have some form of color vision deficiency. Share this test with someone who might benefit.');
         }
 
         function showResults() {
