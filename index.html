@@ -333,7 +333,6 @@
         function labToHex(L, a, b) {
             // CIELAB → XYZ via inverse f function
             var delta = 6 / 29;
-            var delta3 = delta * delta * delta;
             var k = 3 * delta * delta;
 
             function fInv(t) { return t > delta ? t * t * t : k * (t - 4 / 29); }
