@@ -648,7 +648,10 @@
             }
         }
 
+        var submitting = false;
         function submitAnswer(value, cantSee) {
+            if (submitting) return;
+            submitting = true;
             var plate = PLATES[currentPlate];
             var val = cantSee ? '' : value.toLowerCase();
             var correct = plate.correct.toLowerCase();
@@ -667,6 +670,7 @@
             });
             if (currentPlate < PLATES.length - 1) {
                 showPlate(currentPlate + 1);
+                submitting = false;
             } else {
                 showResults();
             }
