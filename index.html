@@ -529,6 +529,7 @@
         // ── Plate Rendering ──────────────────────────────────────────
 
         function createMask(size, plate) {
+            size = Math.round(size);
             var mask = document.createElement('canvas');
             mask.width = size; mask.height = size;
             var ctx = mask.getContext('2d');
@@ -563,6 +564,7 @@
             ctx.fillStyle = '#111'; ctx.fill();
 
             // Mask
+            var maskW = Math.round(size);
             var maskData = createMask(size, plate);
 
             // Dots — small for density
@@ -571,8 +573,8 @@
 
             dots.forEach(function(dot) {
                 var px = Math.floor(dot.x), py = Math.floor(dot.y);
-                if (px < 0 || px >= size || py < 0 || py >= size) return;
-                var isShape = maskData[(py * size + px) * 4] > 40;
+                if (px < 0 || px >= maskW || py < 0 || py >= maskW) return;
+                var isShape = maskData[(py * maskW + px) * 4] > 40;
                 ctx.beginPath(); ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
                 ctx.fillStyle = rndColor(isShape ? plate.fg : plate.bg, rng);
                 ctx.fill();
@@ -593,7 +595,7 @@
         var progressBar = document.getElementById('progress');
         var nextBtn = document.getElementById('next-btn');
 
-        function plateSize() { return Math.min(320, window.innerWidth * 0.85); }
+        function plateSize() { return Math.min(320, Math.floor(window.innerWidth * 0.85)); }
 
         function initHero() {
             renderPlate(heroCanvas, PLATES[0], plateSize());
