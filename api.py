@@ -16,7 +16,9 @@ app = Flask(__name__, static_folder='.')
 CORS(app, origins=[
     'https://whatcoloristhis.one',
     'https://whatcoloristhat.one',
+    'https://whatcolouristhat.com',
     'https://dr.eamer.dev',
+    'https://lukesteuber.com',
     'http://localhost:5012',
 ])
 
