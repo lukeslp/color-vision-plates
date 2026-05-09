@@ -170,6 +170,7 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
+    <script src="color-math.js"></script>
 </head>
 <body>
     <a href="#main" class="skip-link">Skip to content</a>
@@ -329,6 +330,12 @@
         // b* encodes the yellow(+)/blue(-) opponent channel.
         //
         // Pipeline: CIELAB → XYZ (D65) → linear sRGB → gamma sRGB → hex
+        //
+        // Reuse split: this file owns the LAB→hex direction (only beta needs
+        // to *generate* colors from LAB specs). Everything else — hex→LAB,
+        // ΔE2000, Brettel CVD simulation — comes from ColorMath in
+        // /home/coolhand/html/beta/color-math.js (a duplicate of whatcolor's,
+        // protected against drift by whatcolor/tests/parity_test.py).
 
         function labToHex(L, a, b) {
             // CIELAB → XYZ via inverse f function
@@ -391,42 +398,46 @@
         //
         // Refs: Ishihara (1917), Hardy-Rand-Rittler (1954)
 
+        // tests: array of CVD types this plate screens for. The verifier
+        // checks that each listed type sees the plate as low-dE (target
+        // dichromat finds figure invisible). Empty array = no CVD screening
+        // (control plates).
         var PLATES = [
             // 1. Control — L* contrast (65 vs 38), everyone sees it
-            { type: 'number', value: '12', correct: '12', tests: 'control', seed: 42,
+            { type: 'number', value: '12', correct: '12', tests: [], seed: 42,
               fg: { L: 65, LR: 12, a: 10, aR: 16, b: 15, bR: 16 },
               bg: { L: 38, LR: 12, a: -6, aR: 16, b: -10, bR: 16 } },
 
             // 2. Red-green: number 74 — a* separation 54
-            { type: 'number', value: '74', correct: '74', tests: 'red-green', seed: 137,
+            { type: 'number', value: '74', correct: '74', tests: ['protan','deutan'], seed: 137,
               nearMisses: ['71', '21', '7', '4'],
               fg: { L: 50, LR: 14, a: 30, aR: 12, b: 5, bR: 14 },
               bg: { L: 50, LR: 14, a: -24, aR: 12, b: 5, bR: 14 } },
 
             // 3. Red-green: circle (HRR) — a* separation 50
-            { type: 'shape', value: 'circle', correct: 'circle', tests: 'red-green', seed: 256,
+            { type: 'shape', value: 'circle', correct: 'circle', tests: ['protan','deutan'], seed: 256,
               fg: { L: 50, LR: 14, a: 28, aR: 10, b: 3, bR: 12 },
               bg: { L: 50, LR: 14, a: -22, aR: 10, b: 3, bR: 12 } },
 
             // 4. Blue-yellow: number 2 — b* separation 58
-            { type: 'number', value: '2', correct: '2', tests: 'blue-yellow', seed: 389,
+            { type: 'number', value: '2', correct: '2', tests: ['tritan'], seed: 389,
               nearMisses: ['7'],
               fg: { L: 50, LR: 14, a: 2, aR: 12, b: -30, bR: 10 },
               bg: { L: 50, LR: 14, a: 2, aR: 12, b: 28, bR: 10 } },
 
             // 5. Red-green: number 8 — a* separation 58
-            { type: 'number', value: '8', correct: '8', tests: 'red-green', seed: 512,
+            { type: 'number', value: '8', correct: '8', tests: ['protan','deutan'], seed: 512,
               nearMisses: ['0', '3', '6'],
               fg: { L: 50, LR: 14, a: 32, aR: 12, b: 4, bR: 14 },
               bg: { L: 50, LR: 14, a: -26, aR: 12, b: 4, bR: 14 } },
 
             // 6. Blue-yellow: triangle (HRR) — b* separation 54
-            { type: 'shape', value: 'triangle', correct: 'triangle', tests: 'blue-yellow', seed: 634,
+            { type: 'shape', value: 'triangle', correct: 'triangle', tests: ['tritan'], seed: 634,
               fg: { L: 50, LR: 14, a: 0, aR: 12, b: -28, bR: 10 },
               bg: { L: 50, LR: 14, a: 0, aR: 12, b: 26, bR: 10 } },
 
             // 7. Subtle blue-yellow: number 5 — b* separation 42
-            { type: 'number', value: '5', correct: '5', tests: 'blue-yellow', seed: 700,
+            { type: 'number', value: '5', correct: '5', tests: ['tritan'], seed: 700,
               nearMisses: ['6', '3'],
               fg: { L: 50, LR: 14, a: 1, aR: 12, b: -22, bR: 10 },
               bg: { L: 50, LR: 14, a: 1, aR: 12, b: 20, bR: 10 } },
@@ -435,16 +446,102 @@
             //    Near-miss note: at 36* separation, the smaller top loop of "6"
             //    degrades first under reduced chromatic contrast, yielding "0".
             //    "8" is less likely (both loops degrade simultaneously) but possible.
-            { type: 'number', value: '6', correct: '6', tests: 'red-green', seed: 777,
+            { type: 'number', value: '6', correct: '6', tests: ['protan','deutan'], seed: 777,
               nearMisses: ['0', '8'],
               fg: { L: 50, LR: 14, a: 20, aR: 10, b: 4, bR: 12 },
               bg: { L: 50, LR: 14, a: -16, aR: 10, b: 4, bR: 12 } },
 
             // 9. Subtle red-green: star (HRR) — a* separation 32
-            { type: 'shape', value: 'star', correct: 'star', tests: 'red-green', seed: 901,
+            { type: 'shape', value: 'star', correct: 'star', tests: ['protan','deutan'], seed: 901,
               fg: { L: 50, LR: 14, a: 18, aR: 10, b: 3, bR: 12 },
               bg: { L: 50, LR: 14, a: -14, aR: 10, b: 3, bR: 12 } },
         ];
+
+        // ── Plate Verifier (Brettel 1997 simulation) ─────────────────
+        //
+        // For each plate, simulate fg/bg under protan, deutan, and tritan
+        // dichromacy and compute CIEDE2000 distance. A plate that *claims*
+        // to screen for (say) protan should produce a low dE in protan-
+        // simulated space — i.e. the figure becomes invisible to a protan.
+        //
+        // V1 is in WARN MODE: results are exposed on window.__PLATE_VERIFICATION
+        // and warnings printed for any plate with dE > threshold for a type
+        // it claims to test. Step 4 of the upgrade plan redesigns plates on
+        // actual confusion-line geometry; once that lands the verifier will
+        // tighten thresholds and switch to throwing on violations.
+
+        function verifyPlates(plates) {
+            if (typeof ColorMath === 'undefined' || !ColorMath._internal) {
+                console.error('[verifier] ColorMath not available; skipping plate verification');
+                return null;
+            }
+            var I = ColorMath._internal;
+            var MATRICES = {
+                protan: I.PROTAN_SIM,
+                deutan: I.DEUTAN_SIM,
+                tritan: I.TRITAN_SIM,
+            };
+            var NORMAL_DE_MIN = 12;          // plates must be visible to normal vision
+            var CVD_DE_MAX_INVISIBLE = 10;   // v1 threshold; tighten to 3-5 after plate redesign
+
+            function clamp(v) { return Math.max(0, Math.min(255, Math.round(v))); }
+
+            var report = [];
+            for (var i = 0; i < plates.length; i++) {
+                var p = plates[i];
+                var fgHex = labToHex(p.fg.L, p.fg.a, p.fg.b);
+                var bgHex = labToHex(p.bg.L, p.bg.a, p.bg.b);
+                var fgLab = I.hexToLab(fgHex);
+                var bgLab = I.hexToLab(bgHex);
+                var dE_norm = I.deltaECiede2000(fgLab, bgLab);
+
+                var cvdResults = {};
+                var fgRgb = I.hexToRgb(fgHex);
+                var bgRgb = I.hexToRgb(bgHex);
+                ['protan', 'deutan', 'tritan'].forEach(function(cvd) {
+                    var fgSim = I.simulateCvd(fgRgb, MATRICES[cvd]);
+                    var bgSim = I.simulateCvd(bgRgb, MATRICES[cvd]);
+                    var fgSimHex = I.rgbToHex(clamp(fgSim[0]), clamp(fgSim[1]), clamp(fgSim[2]));
+                    var bgSimHex = I.rgbToHex(clamp(bgSim[0]), clamp(bgSim[1]), clamp(bgSim[2]));
+                    cvdResults[cvd] = I.deltaECiede2000(I.hexToLab(fgSimHex), I.hexToLab(bgSimHex));
+                });
+
+                var issues = [];
+                if (dE_norm < NORMAL_DE_MIN) {
+                    issues.push('not visible to normal vision (dE=' + dE_norm.toFixed(1) + ')');
+                }
+                var tests = Array.isArray(p.tests) ? p.tests : [];
+                for (var t = 0; t < tests.length; t++) {
+                    var cvdType = tests[t];
+                    if (cvdResults[cvdType] > CVD_DE_MAX_INVISIBLE) {
+                        issues.push(cvdType + ' can still see it (dE=' + cvdResults[cvdType].toFixed(1) +
+                            ', threshold ' + CVD_DE_MAX_INVISIBLE + ')');
+                    }
+                }
+
+                report.push({
+                    plate: i + 1,
+                    value: p.value,
+                    tests: tests,
+                    dE_normal: +dE_norm.toFixed(2),
+                    dE_protan: +cvdResults.protan.toFixed(2),
+                    dE_deutan: +cvdResults.deutan.toFixed(2),
+                    dE_tritan: +cvdResults.tritan.toFixed(2),
+                    issues: issues,
+                });
+                if (issues.length > 0) {
+                    console.warn('[verifier] plate ' + (i + 1) + ' (' + p.value + '): ' + issues.join('; '));
+                }
+            }
+
+            window.__PLATE_VERIFICATION = report;
+            var failing = report.filter(function(r) { return r.issues.length > 0; }).length;
+            console.info('[verifier] checked ' + report.length + ' plates; ' + failing + ' have issues. ' +
+                'window.__PLATE_VERIFICATION has full report.');
+            return report;
+        }
+
+        verifyPlates(PLATES);
 
         // ── Poisson Disk Sampling ────────────────────────────────────
 
@@ -908,5 +1005,8 @@
         window.addEventListener('resize', function() { if (heroSection.style.display !== 'none') initHero(); });
     })();
     </script>
+    <!-- GoatCounter Analytics -->
+    <script data-goatcounter="https://stats.dr.eamer.dev/count"
+            async src="https://stats.dr.eamer.dev/count.js"></script>
 </body>
 </html>

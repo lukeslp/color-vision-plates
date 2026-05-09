@@ -67,6 +67,11 @@ def og_image():
     return send_from_directory('.', 'og-beta-v2.png', mimetype='image/png')
 
 
+@app.route('/color-math.js')
+def color_math_js():
+    return send_from_directory('.', 'color-math.js', mimetype='application/javascript')
+
+
 @app.route('/health')
 def health():
     return jsonify({'status': 'healthy', 'service': 'beta-signup', 'timestamp': time.time()})
