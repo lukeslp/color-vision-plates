@@ -207,7 +207,7 @@
                     <div class="progress-dot"></div>
                     <div class="progress-dot"></div>
                 </div>
-                <p class="plate-label" id="plate-label">Plate 1 of 9</p>
+                <p class="plate-label" id="plate-label">Plate 1 of 14</p>
                 <div class="plate-container" id="plate-area">
                     <canvas id="test-canvas" class="plate-canvas" aria-label="Color vision test plate"></canvas>
                 </div>
@@ -779,6 +779,17 @@
 
         var currentPlate = 0, answers = [];
         var plateStartMs = 0;
+        var inDemo = false;
+
+        // Demo plate — achromatic black-on-white, high contrast.
+        // Shown once before scoring starts to teach the input mechanic
+        // and surface the on-screen keyboard. Not part of PLATES so the
+        // verifier and scorer never see it.
+        var DEMO_PLATE = {
+            type: 'number', value: '8', correct: '8', tests: [], seed: 1,
+            fg: { L: 12, LR: 4, a: 0, aR: 4, b: 0, bR: 4 },
+            bg: { L: 86, LR: 4, a: 0, aR: 4, b: 0, bR: 4 },
+        };
         var heroSection = document.getElementById('hero-section');
         var testSection = document.getElementById('test-section');
         var resultsSection = document.getElementById('results-section');
@@ -801,11 +812,30 @@
             testSection.style.display = 'flex';
             currentPlate = 0; answers.length = 0;
             rerollSessionSalt();
-            showPlate(0);
+            showDemo();
             testSection.scrollIntoView({ behavior: 'smooth' });
         });
 
+        function showDemo() {
+            inDemo = true;
+            var size = plateSize();
+            renderPlate(testCanvas, DEMO_PLATE, size);
+            plateStartMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+            testCanvas.setAttribute('aria-label', 'Practice plate: a number rendered in dark dots on a light background. Type the number you see, then click Next.');
+            testCanvas.setAttribute('role', 'img');
+            // Hide progress dots during demo (not scored)
+            progressBar.style.visibility = 'hidden';
+            document.getElementById('plate-label').textContent = 'Practice plate (not scored)';
+            document.getElementById('plate-question').textContent = 'What number do you see? Type it, then click Next.';
+            numberAnswer.style.display = ''; shapeAnswer.style.display = 'none';
+            nextBtn.style.display = '';
+            answerInput.value = ''; answerInput.focus();
+        }
+
         function showPlate(index) {
+            // Returning to plate display after the demo or between plates —
+            // make sure the progress bar is shown again.
+            progressBar.style.visibility = '';
             currentPlate = index;
             var plate = PLATES[index];
             var size = plateSize();
@@ -854,6 +884,13 @@
         function submitAnswer(value, cantSee) {
             if (submitting) return;
             submitting = true;
+            // Demo plate: not scored. Just transition to plate 0.
+            if (inDemo) {
+                inDemo = false;
+                showPlate(0);
+                submitting = false;
+                return;
+            }
             var nowMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
             var responseMs = plateStartMs > 0 ? Math.round(nowMs - plateStartMs) : null;
             var plate = PLATES[currentPlate];
@@ -873,6 +910,24 @@
                 isNearMiss: isNearMiss,
                 response_ms: responseMs
             });
+
+            // Adaptive length: after 9 plates (default early-exit point),
+            // if every answer was correct with no near-misses, end the
+            // test now and report Typical Color Vision. Median typical
+            // user finishes in ~60s; ambiguous results take the full ~90s.
+            // Threshold of 9 covers: control + 4 RG screen + 2 tritan +
+            // 1 protan-only + 1 deutan-only — every category seen at
+            // least once.
+            var EARLY_EXIT_AT = 9;
+            if (answers.length === EARLY_EXIT_AT) {
+                var allClean = answers.every(function(a) { return a.isCorrect && !a.isNearMiss; });
+                if (allClean) {
+                    answers.early_exit_at = EARLY_EXIT_AT;
+                    showResults();
+                    return;
+                }
+            }
+
             if (currentPlate < PLATES.length - 1) {
                 showPlate(currentPlate + 1);
                 submitting = false;
@@ -913,6 +968,7 @@
                 testSection.style.display = 'flex';
                 currentPlate = 0; answers.length = 0;
                 rerollSessionSalt();
+                // Skip the demo on retake — user has already done it.
                 showPlate(0);
                 testSection.scrollIntoView({ behavior: 'smooth' });
             });
@@ -1074,8 +1130,11 @@
             }
 
             // 12. All pass — typical color vision
+            var earlyExitNote = answers.early_exit_at
+                ? ' (Test ended early after ' + answers.early_exit_at + ' clean plates — extending to all ' + PLATES.length + ' would not change the result.)'
+                : '';
             return result('normal', 'Typical Color Vision', 'badge-normal',
-                'You identified every test plate correctly, which is consistent with typical trichromatic vision. About 1 in 12 men and 1 in 200 women have some form of color vision deficiency, so this matters for design and accessibility work even when your own vision is typical.');
+                'You identified every test plate correctly, which is consistent with typical trichromatic vision.' + earlyExitNote + ' About 1 in 12 men and 1 in 200 women have some form of color vision deficiency, so this matters for design and accessibility work even when your own vision is typical.');
         }
 
         function showResults() {
