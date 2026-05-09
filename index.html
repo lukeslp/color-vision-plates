@@ -1136,8 +1136,16 @@
             var tritanFailed = c.tritan.fail;
             var totalRGFails = rgFailed + protanOnlyFailed + deutanOnlyFailed;
             var totalRGNearMiss = c.rgScreen.nearMiss + c.protanOnly.nearMiss + c.deutanOnly.nearMiss;
-            var hasAnyNearMiss = totalRGNearMiss + c.tritan.nearMiss > 0;
-            var allFailsAreNearMisses = totalRGFails + tritanFailed > 0
+            var totalNearMiss = totalRGNearMiss + c.tritan.nearMiss;
+            var hasAnyNearMiss = totalNearMiss > 0;
+            var totalFails = totalRGFails + tritanFailed;
+            // Anomalous-trichromacy signal requires at least 2 near-misses
+            // (a single near-miss on a 14-plate test is input noise — font
+            // confusion 3/8/0/6, mobile fat-finger, glance distraction —
+            // not a chromatic discrimination signal). Real anomalous
+            // trichromacy produces a pattern across multiple near-miss
+            // responses on the affected axis.
+            var allFailsAreNearMisses = totalFails >= 2
                 && totalRGFails === totalRGNearMiss
                 && tritanFailed === c.tritan.nearMiss;
 
@@ -1233,24 +1241,32 @@
                     'You missed ' + totalRGFails + ' red-green and ' + tritanFailed + ' blue-yellow plate' + (tritanFailed > 1 ? 's' : '') + '. This may indicate a mild color vision difference across both axes, or could be display/attention noise.', true);
             }
 
-            // 10. Mild red-green only (low count of failures, no classifier signal)
-            if (totalRGFails >= 1) {
+            // 10. Mild red-green only — requires 2+ misses to clear the noise
+            //     floor for a 14-plate self-administered web test (a single
+            //     missed plate is well within typical normal-vision noise:
+            //     glance distraction, font confusion 3/8/0/6, mobile fat-
+            //     finger, or input typo). Real Ishihara screening tolerates
+            //     up to 7 of 24 misses (~29%) before classifying as CVD.
+            if (totalRGFails >= 2) {
                 return result('mild-red-green', 'Possible Mild Red-Green Color Vision Difference', 'badge-cvd',
-                    'You missed ' + totalRGFails + ' red-green plate' + (totalRGFails > 1 ? 's' : '') + '. This may indicate a mild color vision difference, or could reflect display or attention factors.', true);
+                    'You missed ' + totalRGFails + ' red-green plates. This may indicate a mild color vision difference, or could reflect display or attention factors.', true);
             }
 
-            // 11. Mild tritan only
-            if (tritanFailed >= 1) {
+            // 11. Mild tritan only — same noise-floor reasoning as branch 10.
+            if (tritanFailed >= 2) {
                 return result('mild-tritan', 'Possible Mild Blue-Yellow Color Vision Difference', 'badge-cvd',
-                    'You missed ' + tritanFailed + ' tritan-line plate' + (tritanFailed > 1 ? 's' : '') + '. This may indicate a mild tritanomaly, or could reflect display calibration.', true);
+                    'You missed ' + tritanFailed + ' tritan-line plates. This may indicate a mild tritanomaly, or could reflect display calibration.', true);
             }
 
-            // 12. All pass — typical color vision
+            // 12. Typical color vision (with note if any noise misses)
             var earlyExitNote = answers.early_exit_at
                 ? ' (Test ended early after ' + answers.early_exit_at + ' clean plates — extending to all ' + PLATES.length + ' would not change the result.)'
                 : '';
+            var noiseNote = totalFails === 1
+                ? ' One plate was missed, which is within the typical noise floor for a self-administered test of this length.'
+                : '';
             return result('normal', 'Typical Color Vision', 'badge-normal',
-                'You identified every test plate correctly, which is consistent with typical trichromatic vision.' + earlyExitNote + ' About 1 in 12 men and 1 in 200 women have some form of color vision deficiency, so this matters for design and accessibility work even when your own vision is typical.');
+                'Your responses are consistent with typical trichromatic vision.' + noiseNote + earlyExitNote + ' About 1 in 12 men and 1 in 200 women have some form of color vision deficiency, so this matters for design and accessibility work even when your own vision is typical.');
         }
 
         // Day-to-day implications per result type, surfaced on the
