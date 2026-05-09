@@ -87,6 +87,12 @@ def signup():
     if not EMAIL_RE.match(email):
         return jsonify({'error': 'Invalid email address'}), 400
 
+    # vision_type values produced by the client scorer (index.html
+    # scoreResults). Stored as TEXT so new categories can ship without
+    # a schema change. Current vocabulary:
+    #   normal, anomalous, protan, deutan, red-green, red-green-mixed,
+    #   tritan, mild-red-green, mild-tritan, mild-combined, multiple,
+    #   inconclusive, skipped
     vision_type = data.get('vision_type', 'skipped')
     test_results = json.dumps(data.get('test_results', []))
     ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)

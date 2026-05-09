@@ -879,88 +879,161 @@
         // ── Scoring ──────────────────────────────────────────────────
 
         function scoreResults() {
-            // Count failures by axis. Near-misses (partial visibility) are
-            // diagnostically distinct from total misses — they indicate
-            // anomalous trichromacy (reduced discrimination) rather than
-            // dichromacy (absent discrimination).
-            var rgFailed = 0, rgTotal = 0, rgNearMiss = 0;
-            var byFailed = 0, byTotal = 0, byNearMiss = 0;
+            // Plate categories:
+            //   rgScreen   = lump red-green screening plates (tests has both
+            //                protan AND deutan) — diagnostic for "any RG CVD"
+            //                but cannot separate protan from deutan
+            //   protanOnly = invisible to protans, visible to deutans —
+            //                a failure here is a positive protan signal
+            //   deutanOnly = invisible to deutans, visible to protans —
+            //                a failure here is a positive deutan signal
+            //   tritan     = invisible to tritans (Brettel-line aware)
+            //
+            // Near-misses (partial visibility) are diagnostically distinct
+            // from total misses: they indicate anomalous trichromacy
+            // (reduced discrimination) rather than dichromacy (absent).
+            var c = {
+                rgScreen:   { fail: 0, total: 0, nearMiss: 0 },
+                protanOnly: { fail: 0, total: 0, nearMiss: 0 },
+                deutanOnly: { fail: 0, total: 0, nearMiss: 0 },
+                tritan:     { fail: 0, total: 0, nearMiss: 0 },
+            };
             answers.forEach(function(a) {
                 var tests = Array.isArray(a.tests) ? a.tests : (a.tests ? [a.tests] : []);
-                var isRG = tests.indexOf('protan') >= 0 || tests.indexOf('deutan') >= 0;
-                var isBY = tests.indexOf('tritan') >= 0;
-                if (isRG) {
-                    rgTotal++;
-                    if (!a.isCorrect) { rgFailed++; if (a.isNearMiss) rgNearMiss++; }
-                }
-                if (isBY) {
-                    byTotal++;
-                    if (!a.isCorrect) { byFailed++; if (a.isNearMiss) byNearMiss++; }
+                var hasP = tests.indexOf('protan') >= 0;
+                var hasD = tests.indexOf('deutan') >= 0;
+                var hasT = tests.indexOf('tritan') >= 0;
+                var bucket = null;
+                if (hasP && hasD)      bucket = 'rgScreen';
+                else if (hasP)         bucket = 'protanOnly';
+                else if (hasD)         bucket = 'deutanOnly';
+                else if (hasT)         bucket = 'tritan';
+                if (!bucket) return;  // control plate
+                c[bucket].total++;
+                if (!a.isCorrect) {
+                    c[bucket].fail++;
+                    if (a.isNearMiss) c[bucket].nearMiss++;
                 }
             });
 
+            var rgFailed = c.rgScreen.fail;
+            var protanOnlyFailed = c.protanOnly.fail;
+            var deutanOnlyFailed = c.deutanOnly.fail;
+            var tritanFailed = c.tritan.fail;
+            var totalRGFails = rgFailed + protanOnlyFailed + deutanOnlyFailed;
+            var totalRGNearMiss = c.rgScreen.nearMiss + c.protanOnly.nearMiss + c.deutanOnly.nearMiss;
+            var hasAnyNearMiss = totalRGNearMiss + c.tritan.nearMiss > 0;
+            var allFailsAreNearMisses = totalRGFails + tritanFailed > 0
+                && totalRGFails === totalRGNearMiss
+                && tritanFailed === c.tritan.nearMiss;
+
             var controlOk = answers[0].isCorrect;
-            var hasNearMisses = rgNearMiss + byNearMiss > 0;
-            var nearMissNote = hasNearMisses ? ' Some of your answers were close — indicating partial color discrimination rather than absent.' : '';
+            var nearMissNote = hasAnyNearMiss
+                ? ' Some answers were close but not exact, suggesting reduced rather than absent color discrimination.'
+                : '';
 
             function result(type, label, badgeClass, desc, addNote) {
-                return { type: type, label: label, badgeClass: badgeClass,
+                return {
+                    type: type,
+                    label: label,
+                    badgeClass: badgeClass,
                     description: desc + (addNote ? nearMissNote : ''),
-                    rgFailed: rgFailed, rgTotal: rgTotal, byFailed: byFailed, byTotal: byTotal };
+                    rgFailed: totalRGFails,
+                    rgTotal: c.rgScreen.total + c.protanOnly.total + c.deutanOnly.total,
+                    byFailed: tritanFailed,
+                    byTotal: c.tritan.total,
+                    breakdown: {
+                        rgScreen:   c.rgScreen,
+                        protanOnly: c.protanOnly,
+                        deutanOnly: c.deutanOnly,
+                        tritan:     c.tritan,
+                    },
+                };
             }
 
-            // Control failed — cannot trust test results (screen/lighting issue)
-            // Must be checked FIRST: a failed control invalidates the session
+            // 1. Control fail — display/lighting suspect, cannot trust the test
             if (!controlOk) {
                 return result('inconclusive', 'Inconclusive', 'badge-inconclusive',
                     'The control plate was not identified correctly. This usually indicates a display brightness or lighting issue rather than a color vision deficiency. Try again with screen brightness at maximum in a well-lit room.');
             }
-            // Near-miss only — every "failure" was partial visibility (close
-            // but wrong). This indicates anomalous trichromacy: reduced but not
-            // absent cone response. Must check BEFORE severity branches,
-            // otherwise 3+ near-misses gets misclassified as dichromacy.
-            if (hasNearMisses && rgFailed === rgNearMiss && byFailed === byNearMiss) {
-                var axis = rgNearMiss > 0 && byNearMiss > 0 ? 'both red-green and blue-yellow'
-                    : rgNearMiss > 0 ? 'red-green' : 'blue-yellow';
-                return result('anomalous', 'Anomalous Trichromacy', 'badge-cvd',
-                    'Your answers were close but not exact on ' + (rgFailed + byFailed) + ' plate' + (rgFailed + byFailed > 1 ? 's' : '') + ' (' + axis + '). This pattern suggests reduced but not absent color discrimination — consistent with anomalous trichromacy (e.g., deuteranomaly or protanomaly). You likely see most colors, but subtle differences may be harder to catch.');
+
+            // 2. All-near-miss — anomalous trichromacy across the failed axis
+            if (allFailsAreNearMisses) {
+                var axes = [];
+                if (totalRGNearMiss > 0) axes.push('red-green');
+                if (c.tritan.nearMiss > 0) axes.push('blue-yellow');
+                return result('anomalous', 'Likely Anomalous Trichromacy', 'badge-cvd',
+                    'Your answers were close but not exact on ' + (totalRGFails + tritanFailed) +
+                    ' plate' + (totalRGFails + tritanFailed > 1 ? 's' : '') +
+                    ' (' + axes.join(' and ') + '). This pattern suggests reduced but not absent color discrimination, consistent with anomalous trichromacy (such as deuteranomaly or protanomaly). You likely see most colors, but subtle differences may be harder to catch.');
             }
-            // Strong red-green CVD (failed most red-green plates, at least
-            // some total misses since all-near-miss was caught above)
-            if (rgFailed >= 3 && byFailed <= 1) {
+
+            // 3. Protan-type signal — fails protan-only plates, passes deutan-only
+            //    (paired with at least one rgScreen failure for confidence).
+            if (protanOnlyFailed >= 1 && deutanOnlyFailed === 0 && (rgFailed >= 1 || protanOnlyFailed >= 2)) {
+                var sev = (protanOnlyFailed >= 2 && rgFailed >= 2) ? 'Likely Protanopia' : 'Likely Protan-type Color Vision Difference';
+                return result('protan', sev, 'badge-cvd',
+                    'Your pattern of failures matches the protan confusion line — plates designed to vanish for protans (' + protanOnlyFailed + ' of ' + c.protanOnly.total + ' missed) while plates designed to vanish for deutans were identified correctly. About 1% of men have protan-type color vision.', true);
+            }
+
+            // 4. Deutan-type signal — fails deutan-only plates, passes protan-only
+            if (deutanOnlyFailed >= 1 && protanOnlyFailed === 0 && (rgFailed >= 1 || deutanOnlyFailed >= 2)) {
+                var sevD = (deutanOnlyFailed >= 2 && rgFailed >= 2) ? 'Likely Deuteranopia' : 'Likely Deutan-type Color Vision Difference';
+                return result('deutan', sevD, 'badge-cvd',
+                    'Your pattern of failures matches the deutan confusion line — plates designed to vanish for deutans (' + deutanOnlyFailed + ' of ' + c.deutanOnly.total + ' missed) while plates designed to vanish for protans were identified correctly. About 5% of men have deutan-type color vision (deuteranomaly or deuteranopia).', true);
+            }
+
+            // 5. Mixed classifier — fails both protan-only AND deutan-only
+            //    plates. This is unusual for true CVD (each type sees one set
+            //    fine) and may indicate strong CVD with reduced contrast
+            //    sensitivity, or a display issue. Report as unspecified RG.
+            if (protanOnlyFailed >= 1 && deutanOnlyFailed >= 1) {
+                return result('red-green-mixed', 'Strong Red-Green Color Vision Difference', 'badge-cvd',
+                    'You missed plates from both protan-only and deutan-only sets, which is unusual — each pure dichromat type passes one set and fails the other. Your pattern is consistent with strong red-green deficiency where contrast cues are also reduced, or with a non-typical color vision pattern. ' + totalRGFails + ' of ' + (c.rgScreen.total + c.protanOnly.total + c.deutanOnly.total) + ' red-green plates were missed.', true);
+            }
+
+            // 6. Generic red-green CVD — many lump-screen failures but
+            //    classifier plates inconclusive.
+            if (rgFailed >= 3 && tritanFailed <= 1) {
                 return result('red-green',
-                    rgNearMiss > 0 ? 'Red-Green Color Vision Deficiency (Mixed)' : 'Red-Green Color Vision Deficiency',
+                    'Likely Red-Green Color Vision Difference',
                     'badge-cvd',
-                    'Your results are consistent with ' + (rgNearMiss > 0 ? 'a mix of reduced and absent color discrimination on the red-green axis' : 'protanopia or deuteranopia') + '. You had difficulty with ' + rgFailed + ' of ' + rgTotal + ' red-green plates. About 8% of men and 0.5% of women share this type of color vision.', true);
+                    'You missed ' + rgFailed + ' of ' + c.rgScreen.total + ' general red-green plates. The protan/deutan classifier plates did not give a clear type signal, so the specific subtype is uncertain. About 8% of men and 0.5% of women have some form of red-green color vision difference.', true);
             }
-            // Blue-yellow CVD
-            if (byFailed >= 2 && rgFailed <= 1) {
-                return result('blue-yellow', 'Blue-Yellow Color Vision Deficiency', 'badge-cvd',
-                    'Your results suggest tritanopia or tritanomaly — difficulty distinguishing blues and yellows. You had difficulty with ' + byFailed + ' of ' + byTotal + ' blue-yellow plates. This is rare but real, and this app was built for you.', true);
+
+            // 7. Tritan/blue-yellow
+            if (tritanFailed >= 2 && totalRGFails <= 1) {
+                return result('tritan', 'Likely Blue-Yellow Color Vision Difference', 'badge-cvd',
+                    'You missed ' + tritanFailed + ' of ' + c.tritan.total + ' tritan-line plates. This is consistent with tritanopia or tritanomaly — difficulty distinguishing certain blues from yellows. Tritan-type CVD is rare (about 1 in 10,000) but real, and this app was built for you.', true);
             }
-            // Combined
-            if (rgFailed >= 2 && byFailed >= 1) {
-                return result('multiple', 'Atypical Color Vision', 'badge-cvd',
-                    'Your results suggest atypical color perception across multiple ranges (' + rgFailed + '/' + rgTotal + ' red-green, ' + byFailed + '/' + byTotal + ' blue-yellow).', true);
+
+            // 8. Combined RG + tritan — atypical
+            if (totalRGFails >= 2 && tritanFailed >= 1) {
+                return result('multiple', 'Atypical Color Vision Pattern', 'badge-cvd',
+                    'Your responses suggest atypical color perception across multiple axes (' + totalRGFails + ' red-green, ' + tritanFailed + ' blue-yellow). This pattern is uncommon and may benefit from clinical evaluation.', true);
             }
-            // Mild combined (both axes affected)
-            if (rgFailed >= 1 && byFailed >= 1) {
-                return result('mild-combined', 'Possible Mild Color Vision Deficiency', 'badge-cvd',
-                    'You missed ' + rgFailed + ' red-green and ' + byFailed + ' blue-yellow plate' + (byFailed > 1 ? 's' : '') + '. This may indicate a mild color vision deficiency across both axes.', true);
+
+            // 9. Mild combined (both axes affected, low counts)
+            if (totalRGFails >= 1 && tritanFailed >= 1) {
+                return result('mild-combined', 'Possible Mild Color Vision Difference', 'badge-cvd',
+                    'You missed ' + totalRGFails + ' red-green and ' + tritanFailed + ' blue-yellow plate' + (tritanFailed > 1 ? 's' : '') + '. This may indicate a mild color vision difference across both axes, or could be display/attention noise.', true);
             }
-            // Mild red-green only
-            if (rgFailed >= 1) {
-                return result('mild-red-green', 'Possible Mild Red-Green Deficiency', 'badge-cvd',
-                    'You missed ' + rgFailed + ' of ' + rgTotal + ' red-green plates, including the more subtle ones. This may indicate a mild color vision deficiency.', true);
+
+            // 10. Mild red-green only (low count of failures, no classifier signal)
+            if (totalRGFails >= 1) {
+                return result('mild-red-green', 'Possible Mild Red-Green Color Vision Difference', 'badge-cvd',
+                    'You missed ' + totalRGFails + ' red-green plate' + (totalRGFails > 1 ? 's' : '') + '. This may indicate a mild color vision difference, or could reflect display or attention factors.', true);
             }
-            // Mild blue-yellow only
-            if (byFailed >= 1) {
-                return result('mild-blue-yellow', 'Possible Mild Blue-Yellow Deficiency', 'badge-cvd',
-                    'You missed ' + byFailed + ' of ' + byTotal + ' blue-yellow plates. This may indicate a mild tritanomaly.', true);
+
+            // 11. Mild tritan only
+            if (tritanFailed >= 1) {
+                return result('mild-tritan', 'Possible Mild Blue-Yellow Color Vision Difference', 'badge-cvd',
+                    'You missed ' + tritanFailed + ' tritan-line plate' + (tritanFailed > 1 ? 's' : '') + '. This may indicate a mild tritanomaly, or could reflect display calibration.', true);
             }
-            // All pass
-            return result('normal', 'Normal Color Vision', 'badge-normal',
-                'You identified every test plate correctly — consistent with typical trichromatic vision. About 1 in 12 men and 1 in 200 women have some form of color vision deficiency, so this matters for design and accessibility work even when your own vision is typical.');
+
+            // 12. All pass — typical color vision
+            return result('normal', 'Typical Color Vision', 'badge-normal',
+                'You identified every test plate correctly, which is consistent with typical trichromatic vision. About 1 in 12 men and 1 in 200 women have some form of color vision deficiency, so this matters for design and accessibility work even when your own vision is typical.');
         }
 
         function showResults() {
