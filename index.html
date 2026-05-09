@@ -208,6 +208,7 @@
                     <div class="progress-dot"></div>
                 </div>
                 <p class="plate-label" id="plate-label">Plate 1 of 14</p>
+                <p style="font-size:0.72rem; color:var(--text-muted); text-align:center; margin-top:-12px; margin-bottom:18px;">Screening tool, not a clinical diagnosis</p>
                 <div class="plate-container" id="plate-area">
                     <canvas id="test-canvas" class="plate-canvas" aria-label="Color vision test plate"></canvas>
                 </div>
@@ -241,13 +242,31 @@
                 <h2 class="result-type" id="result-type"></h2>
                 <p class="result-description" id="result-description"></p>
 
+                <!-- What this might mean day-to-day (populated by JS based on result type) -->
+                <div class="card" id="result-meaning" style="display:none;">
+                    <h3 id="result-meaning-title">What this might mean day-to-day</h3>
+                    <ul id="result-meaning-bullets" style="padding-left:20px; line-height:1.6; color:var(--text);"></ul>
+                </div>
+
+                <details class="card" style="margin-bottom:24px;">
+                    <summary style="cursor:pointer; font-weight:600;">Why might I see a deficit even with normal vision?</summary>
+                    <ul style="padding-left:20px; margin-top:12px; line-height:1.6; color:var(--text-muted); font-size:0.92rem;">
+                        <li><strong>Display calibration.</strong> Phone screens vary 5-15 ΔE between manufacturers. Older or budget panels may compress the color gamut enough to mask plate boundaries.</li>
+                        <li><strong>Night Shift / True Tone / blue-light filters.</strong> These warm the white point and shift hues, especially affecting blue-yellow plates. Turn them off and retake.</li>
+                        <li><strong>Ambient lighting.</strong> Bright sunlight or warm/yellow indoor lighting can wash out the chromatic contrast the test relies on.</li>
+                        <li><strong>Screen brightness.</strong> Below ~50% brightness the dark dots blend together, especially on the subtle red-green plates.</li>
+                        <li><strong>Fatigue or fast clicking.</strong> Color discrimination is harder when you're tired or rushing. Slow down on retake.</li>
+                        <li><strong>Mild anomalous trichromacy you didn't know you had.</strong> About 5-8% of men have a mild form, often undiagnosed.</li>
+                    </ul>
+                </details>
+
                 <div class="card result-detail" id="result-detail">
                     <h3>Your results plate by plate</h3>
                     <div class="plate-results-grid" id="plate-results-grid"></div>
                 </div>
 
                 <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:16px; text-align:center;">
-                    This screening is not a medical diagnosis. See an eye care professional for a clinical evaluation.
+                    This is a screening, not a medical diagnosis. See an eye care professional for a clinical evaluation.
                 </p>
                 <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:24px;">
                     <button type="button" class="btn btn-secondary" id="retake-btn">Try with different plates</button>
@@ -1137,17 +1156,71 @@
                 'You identified every test plate correctly, which is consistent with typical trichromatic vision.' + earlyExitNote + ' About 1 in 12 men and 1 in 200 women have some form of color vision deficiency, so this matters for design and accessibility work even when your own vision is typical.');
         }
 
+        // Day-to-day implications per result type, surfaced on the
+        // results page so users get specific framing not just a label.
+        // Phrasing is descriptive, not prescriptive — these are
+        // possibilities, not predictions.
+        var DAY_TO_DAY = {
+            'protan':    ['Red lights and red signage may look dimmer or browner than they do for trichromats — a known concern when judging brake lights at night.',
+                          'Ripe vs unripe red fruit (cherries, strawberries) and red-vs-green traffic signals can be harder to distinguish at a glance.',
+                          'Red ink or red text on a green or brown background may be effectively invisible — a common accessibility issue in product UIs.'],
+            'deutan':    ['Red and green of similar brightness can blur together, especially in dim light or on small screens.',
+                          'Status indicators (green = ok, red = error) collapse to a single visual cue when only color separates them — surface text labels matter.',
+                          'Charts using red/green to encode categories often fall apart for you. Look for shape or pattern fallbacks.'],
+            'red-green': ['Reds, greens, browns, and oranges may share a perceptual neighborhood that trichromats see as distinct.',
+                          'Color-coded charts and maps can be hard to read when only hue distinguishes categories — color-blind-safe palettes (Wong 2011) work much better.',
+                          'Some shades of pink may look gray or beige.'],
+            'red-green-mixed': ['You see strong overlap in the red-green range, more than typical protan-only or deutan-only patterns.',
+                          'Color-coded UIs that rely on red vs green will be especially difficult — text or icon labels are essential.',
+                          'A clinical exam can characterize this more precisely than a screen-based test.'],
+            'tritan':    ['Blues and purples may look similar; greens and yellows may also blur. The classic "is this teal or blue-gray" disagreement.',
+                          'Sky and water in photos can lose their gradient; some artwork loses depth.',
+                          'Tritan-type CVD is the rarest form (~1 in 10,000) and can sometimes be acquired (rather than congenital) — worth mentioning to an eye doctor.'],
+            'multiple':  ['Your responses don\'t fit a single common pattern, which can happen with strong CVD, with some acquired vision conditions, or with display issues.',
+                          'A clinical evaluation will give you a much clearer picture than this screen-based test can.',
+                          'In the meantime, prefer interfaces that label colors with text or symbols.'],
+            'anomalous': ['Your color discrimination is reduced but not absent — many people with this pattern function normally with mild caveats.',
+                          'Subtle hue distinctions (deep red vs maroon, teal vs blue) may take longer than they would for a typical trichromat.',
+                          'Most color-blind-safe palettes are designed for stronger CVD and will work fine for you too.'],
+            'mild-red-green': ['You showed mild difficulty with red-green discrimination on the more subtle plates.',
+                          'This may be true mild anomaly, or display/attention noise. A retake in better lighting will clarify.',
+                          'About 5-8% of men have some form of mild red-green difference, often without realizing it.'],
+            'mild-tritan': ['You showed mild difficulty with blue-yellow discrimination.',
+                          'True tritan-type difference is rare; this could also reflect screen calibration. Retake with a recalibrated display if possible.'],
+            'mild-combined': ['Mild differences across both red-green and blue-yellow axes — this combination is unusual.',
+                          'Worth a clinical evaluation to confirm the pattern, especially if you also notice difficulty in real life.'],
+            'inconclusive': ['The control plate was not identified, which usually points to display/lighting rather than vision.',
+                          'Try maximum brightness, no Night Shift / blue-light filters, and a moderately lit room.',
+                          'If the control still fails on retake, the device or browser may not render the test plates faithfully.'],
+        };
+
         function showResults() {
             testSection.style.display = 'none';
             resultsSection.style.display = 'flex';
             var result = scoreResults();
 
             document.getElementById('result-badge').textContent =
-                result.type === 'normal' ? 'Trichromacy' :
-                result.type === 'inconclusive' ? 'Inconclusive' : 'Color Vision Deficiency';
+                result.type === 'normal' ? 'Typical color vision' :
+                result.type === 'inconclusive' ? 'Inconclusive' : 'Color vision difference';
             document.getElementById('result-badge').className = 'result-badge ' + result.badgeClass;
             document.getElementById('result-type').textContent = result.label;
             document.getElementById('result-description').textContent = result.description;
+
+            // What this might mean day-to-day — populated only for non-normal results
+            var meaningCard = document.getElementById('result-meaning');
+            var bullets = DAY_TO_DAY[result.type];
+            if (bullets && bullets.length > 0 && result.type !== 'normal') {
+                var ul = document.getElementById('result-meaning-bullets');
+                ul.innerHTML = '';
+                bullets.forEach(function(b) {
+                    var li = document.createElement('li');
+                    li.textContent = b;
+                    ul.appendChild(li);
+                });
+                meaningCard.style.display = '';
+            } else {
+                meaningCard.style.display = 'none';
+            }
 
             // Plate-by-plate grid
             var grid = document.getElementById('plate-results-grid');
@@ -1169,7 +1242,15 @@
                 // Label: plate number + what it tests
                 var label = document.createElement('div');
                 label.className = 'plate-result-label';
-                var testName = plate.tests === 'control' ? 'Control' : plate.tests === 'red-green' ? 'Red-green' : 'Blue-yellow';
+                var testsArr = Array.isArray(plate.tests) ? plate.tests : (plate.tests ? [plate.tests] : []);
+                var testName;
+                if (testsArr.length === 0)                                          testName = 'Control';
+                else if (testsArr.length === 2 && testsArr.indexOf('protan') >= 0
+                         && testsArr.indexOf('deutan') >= 0)                        testName = 'Red-green';
+                else if (testsArr.length === 1 && testsArr[0] === 'protan')         testName = 'Protan classifier';
+                else if (testsArr.length === 1 && testsArr[0] === 'deutan')         testName = 'Deutan classifier';
+                else if (testsArr.length === 1 && testsArr[0] === 'tritan')         testName = 'Blue-yellow';
+                else                                                                testName = testsArr.join('+');
                 label.textContent = 'Plate ' + (i + 1) + ' \u00b7 ' + testName;
                 info.appendChild(label);
 
