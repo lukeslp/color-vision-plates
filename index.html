@@ -246,9 +246,13 @@
                     <div class="plate-results-grid" id="plate-results-grid"></div>
                 </div>
 
-                <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:24px; text-align:center;">
+                <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:16px; text-align:center;">
                     This screening is not a medical diagnosis. See an eye care professional for a clinical evaluation.
                 </p>
+                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:24px;">
+                    <button type="button" class="btn btn-secondary" id="retake-btn">Try with different plates</button>
+                    <a class="btn btn-secondary" href="https://www.aao.org/find-an-ophthalmologist" target="_blank" rel="noopener">Find an eye doctor</a>
+                </div>
 
                 <div class="cta-divider"></div>
 
@@ -727,6 +731,14 @@
             return ctx.getImageData(0, 0, size, size).data;
         }
 
+        // Session salt — rerolled when the user starts a fresh test (or
+        // hits "retake with different plates"). Mixed into each plate's
+        // seed so dot positions shift across visits, defeating answer-key
+        // memorization. The plate's correct answer (the digit "74") is
+        // unchanged because the answer comes from plate.value, not the seed.
+        var sessionSalt = (Math.random() * 0xffff) | 0;
+        function rerollSessionSalt() { sessionSalt = (Math.random() * 0xffff) | 0; }
+
         function renderPlate(canvas, plate, size) {
             var dpr = window.devicePixelRatio || 1;
             canvas.width = size * dpr; canvas.height = size * dpr;
@@ -735,7 +747,11 @@
             ctx.scale(dpr, dpr);
 
             var cx = size/2, cy = size/2, plateR = size/2 - 4;
-            var rng = mulberry32(plate.seed);
+            // Mix sessionSalt into the seed. Hero canvas uses raw plate.seed
+            // (so the static hero plate is identical for all visitors) by
+            // passing a reserved hero plate with seed unaffected.
+            var seed = (plate.seed ^ sessionSalt) | 0;
+            var rng = mulberry32(seed);
 
             // Background
             ctx.beginPath(); ctx.arc(cx, cy, plateR + 2, 0, Math.PI * 2);
@@ -762,6 +778,7 @@
         // ── Test State Machine ───────────────────────────────────────
 
         var currentPlate = 0, answers = [];
+        var plateStartMs = 0;
         var heroSection = document.getElementById('hero-section');
         var testSection = document.getElementById('test-section');
         var resultsSection = document.getElementById('results-section');
@@ -783,6 +800,7 @@
             heroSection.style.display = 'none';
             testSection.style.display = 'flex';
             currentPlate = 0; answers.length = 0;
+            rerollSessionSalt();
             showPlate(0);
             testSection.scrollIntoView({ behavior: 'smooth' });
         });
@@ -798,6 +816,10 @@
             area.classList.add('plate-transition');
 
             renderPlate(testCanvas, plate, size);
+            // Record render-completion timestamp for response-time telemetry.
+            // Using performance.now() gives a high-resolution monotonic clock
+            // that's not affected by system clock changes.
+            plateStartMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
 
             // Accessible label for screen readers
             var testName = plate.tests === 'control' ? 'control' : plate.tests;
@@ -832,6 +854,8 @@
         function submitAnswer(value, cantSee) {
             if (submitting) return;
             submitting = true;
+            var nowMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+            var responseMs = plateStartMs > 0 ? Math.round(nowMs - plateStartMs) : null;
             var plate = PLATES[currentPlate];
             var val = cantSee ? '' : value.toLowerCase();
             var correct = plate.correct.toLowerCase();
@@ -846,7 +870,8 @@
                 userAnswer: cantSee ? '' : value,
                 cantSee: cantSee,
                 isCorrect: isCorrect,
-                isNearMiss: isNearMiss
+                isNearMiss: isNearMiss,
+                response_ms: responseMs
             });
             if (currentPlate < PLATES.length - 1) {
                 showPlate(currentPlate + 1);
@@ -875,6 +900,23 @@
         document.getElementById('cant-see-btn').addEventListener('click', function() {
             submitAnswer('', true);
         });
+
+        // Retake — reroll the session salt so dot patterns shift, then
+        // run the test from plate 1. The plate *answers* are unchanged
+        // (still "74", "8", etc.) but the constellation of dots looks
+        // different, so a user who memorized the answer key from a
+        // previous run can't game the result.
+        var retakeBtn = document.getElementById('retake-btn');
+        if (retakeBtn) {
+            retakeBtn.addEventListener('click', function() {
+                resultsSection.style.display = 'none';
+                testSection.style.display = 'flex';
+                currentPlate = 0; answers.length = 0;
+                rerollSessionSalt();
+                showPlate(0);
+                testSection.scrollIntoView({ behavior: 'smooth' });
+            });
+        }
 
         // ── Scoring ──────────────────────────────────────────────────
 
