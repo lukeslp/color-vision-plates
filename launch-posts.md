@@ -28,7 +28,7 @@ Citations are inline — Ishihara 1917, Hardy/Rand/Rittler 1954, Brettel/Vienot/
 
 It's a screening, not a diagnosis. There's a "see an eye care professional" line both inline and at the result. No signup. No email collected. No tracking. No ads. MIT licensed. Single static HTML + Flask backend that just serves the file.
 
-Companion to a colorblindness-focused color identification PWA at whatcoloristhis.one — that's the "What Color Is This?" project, this is "What KIND of color vision do you have?". Both are free and stay free.
+Companion to a colorblindness-focused color identification PWA at whatcoloristhis.one — that's the "What Color Is This?" project, this is "What KIND of color vision do you have?". The companion app's iOS public TestFlight beta is at https://testflight.apple.com/join/5y2mqQcH if you want to try it. Both are free and stay free.
 
 Source: https://github.com/lukeslp/colorblindness-test
 ```
@@ -82,7 +82,7 @@ A few things I'd love to hear about:
 
 **What it isn't:** a clinical diagnosis. The only way to actually diagnose CVD is anomaloscopy + clinical Ishihara/HRR plate book under standard illumination. This is a screening for "should I see someone about this" or "I want to confirm what I already suspect".
 
-**The privacy stance:** no signup, no email, no tracking, no ads. There's an optional email signup at the END of the test for the iOS beta of the companion app — that's the only thing collected, and only if you opt in.
+**The privacy stance:** no signup, no email, no tracking, no ads. The end of the test links to the iOS public TestFlight for the companion color-identification app, which is also free.
 
 Source code: https://github.com/lukeslp/colorblindness-test (MIT)
 
@@ -133,7 +133,7 @@ It's not a clinical diagnosis. But you'll know which kind.
 ### Post 4 (the soft CTA + companion app)
 
 ```
-Companion to a color identification PWA I'm shipping (also free, also colorblindness-focused). iOS beta is in the works — there's an email opt-in at the end of the test if you want to know when it lands.
+Companion to a color identification PWA I'm shipping (also free, also colorblindness-focused). iOS public TestFlight beta: testflight.apple.com/join/5y2mqQcH (link is also at the end of the test).
 
 Open source: github.com/lukeslp/colorblindness-test
 ```
@@ -273,4 +273,4 @@ The og-beta.png is the visual hero. If you want to replace it later, the spec is
 - **Don't add UTM tags** to the URL on first post — looks like growth-hacking, the audience that matters here notices
 - **Don't say "we"** — it's a solo dev project, "we" reads as agency-like and untrustworthy
 - **Don't drop the personal angle** — "I'm a colorblind developer" is the differentiator vs all the other "free CVD tests" online
-- **Don't link to the iOS beta signup** until the iOS public TestFlight URL exists — currently the signup is email-collection, which most channels mistake for marketing
+- **TestFlight URL is the canonical beta link**: `https://testflight.apple.com/join/5y2mqQcH`. The end of the test now CTAs straight to it, no email collection step.

@@ -87,7 +87,7 @@
             font-size: 1.4rem; text-align: center; font-weight: 600; letter-spacing: 0.1em;
         }
         .answer-input:focus { border-color: var(--accent); }
-        .answer-input:focus:not(:focus-visible), .email-input:focus:not(:focus-visible) { outline: none; }
+        .answer-input:focus:not(:focus-visible) { outline: none; }
         .answer-input::placeholder { color: var(--text-muted); font-weight: 400; font-size: 1rem; letter-spacing: 0; }
         .shape-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         .shape-btn {
@@ -136,26 +136,47 @@
         .methodology-link { color: var(--text-muted); font-size: 0.9rem; text-decoration: underline; text-underline-offset: 3px; }
         .methodology-link:hover { color: var(--text); }
         html { scroll-behavior: smooth; }
-        /* Signup */
-        .signup-card { padding: 28px 24px; text-align: center; }
-        .signup-card h2 { font-size: 1.3rem; margin-bottom: 6px; }
-        .signup-card .subtitle { color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem; }
-        .features { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; text-align: left; }
-        .feature { display: flex; gap: 8px; align-items: flex-start; font-size: 0.82rem; color: var(--text-muted); }
-        .feature-icon { font-size: 1rem; flex-shrink: 0; line-height: 1.4; }
-        .signup-form { display: flex; gap: 8px; margin-bottom: 10px; }
-        .email-input {
-            flex: 1; padding: 12px 16px; border-radius: var(--radius);
-            border: 2px solid var(--border); background: var(--surface-raised);
-            color: var(--text); font-size: 1rem; min-height: 48px;
+
+        /* Results-page lists. Default browser bullets render as
+           hard-to-see specks against the dark theme; replace with
+           accent-colored marker via ::before so they actually read. */
+        .result-card-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
-        .email-input:focus { border-color: var(--accent); }
-        .email-input::placeholder { color: var(--text-muted); }
-        .signup-fine-print { font-size: 0.78rem; color: var(--text-muted); }
-        .signup-success { display: none; padding: 16px; }
-        .signup-success p { color: var(--success); font-weight: 600; font-size: 1.05rem; }
-        .signup-error { color: var(--danger); font-size: 0.85rem; margin-top: 6px; display: none; }
-        .signup-count { margin-top: 12px; font-size: 0.82rem; color: var(--text-muted); }
+        .result-card-list li {
+            position: relative;
+            padding-left: 22px;
+            margin-bottom: 10px;
+            line-height: 1.55;
+        }
+        .result-card-list li:last-child { margin-bottom: 0; }
+        .result-card-list li::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 0.55em;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.85;
+        }
+
+        /* TestFlight CTA card — replaces the old email signup since the
+           iOS public beta is open. Tighter, single primary action. */
+        .testflight-card { padding: 24px 20px; text-align: center; }
+        .testflight-card h2 { font-size: 1.2rem; margin-bottom: 6px; }
+        .testflight-card .subtitle { color: var(--text-muted); margin-bottom: 18px; font-size: 0.92rem; line-height: 1.5; }
+        .testflight-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+        .testflight-actions .btn { width: 100%; }
+        .testflight-fineprint { font-size: 0.78rem; color: var(--text-muted); margin-top: 14px; line-height: 1.5; }
+        @media (min-width: 480px) {
+            .testflight-actions { flex-direction: row; justify-content: center; }
+            .testflight-actions .btn { width: auto; min-width: 160px; }
+        }
+
         /* Footer */
         footer { text-align: center; padding: 36px 20px; color: var(--text-muted); font-size: 0.82rem; border-top: 1px solid var(--border); }
         footer a { color: var(--text-muted); }
@@ -164,8 +185,6 @@
         /* Animations */
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         .fade-in { animation: fadeInUp 0.4s ease forwards; }
-        @keyframes checkPop { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
-        .check-pop { animation: checkPop 0.4s ease forwards; }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
             html { scroll-behavior: auto; }
@@ -271,29 +290,30 @@
                 <!-- What this might mean day-to-day (populated by JS based on result type) -->
                 <div class="card" id="result-meaning" style="display:none;">
                     <h3 id="result-meaning-title">What this might mean day-to-day</h3>
-                    <ul id="result-meaning-bullets" style="padding-left:20px; line-height:1.6; color:var(--text);"></ul>
+                    <ul class="result-card-list" id="result-meaning-bullets"></ul>
                 </div>
 
-                <details class="card" style="margin-bottom:24px;">
+                <p style="font-size:0.95rem; color:var(--text); margin-bottom:18px; text-align:center; padding:14px 18px; background:rgba(255,255,255,0.04); border-radius:var(--radius-sm); line-height:1.5;">
+                    <strong>This is a screening, not a medical diagnosis.</strong> See an eye care professional for a clinical evaluation.
+                </p>
+
+                <details class="card" style="margin-bottom:18px;">
                     <summary style="cursor:pointer; font-weight:600;">Why might I see a deficit even with normal vision?</summary>
-                    <ul style="padding-left:20px; margin-top:12px; line-height:1.6; color:var(--text-muted); font-size:0.92rem;">
+                    <ul class="result-card-list" style="margin-top:14px; color:var(--text-muted); font-size:0.92rem;">
                         <li><strong>Display calibration.</strong> Phone screens vary 5-15 ΔE between manufacturers. Older or budget panels may compress the color gamut enough to mask plate boundaries.</li>
                         <li><strong>Night Shift / True Tone / blue-light filters.</strong> These warm the white point and shift hues, especially affecting blue-yellow plates. Turn them off and retake.</li>
-                        <li><strong>Ambient lighting.</strong> Bright sunlight or warm/yellow indoor lighting can wash out the chromatic contrast the test relies on.</li>
+                        <li><strong>Ambient lighting.</strong> Bright sunlight or warm indoor lighting can wash out the chromatic contrast the test relies on.</li>
                         <li><strong>Screen brightness.</strong> Below ~50% brightness the dark dots blend together, especially on the subtle red-green plates.</li>
                         <li><strong>Fatigue or fast clicking.</strong> Color discrimination is harder when you're tired or rushing. Slow down on retake.</li>
                         <li><strong>Mild anomalous trichromacy you didn't know you had.</strong> About 5-8% of men have a mild form, often undiagnosed.</li>
                     </ul>
                 </details>
 
-                <details class="card result-detail" id="result-detail">
+                <details class="card result-detail" id="result-detail" style="margin-bottom:24px;">
                     <summary style="cursor:pointer; font-weight:600;">Your results plate by plate</summary>
-                    <div class="plate-results-grid" id="plate-results-grid" style="margin-top:12px;"></div>
+                    <div class="plate-results-grid" id="plate-results-grid" style="margin-top:14px;"></div>
                 </details>
 
-                <p style="font-size:0.95rem; color:var(--text); margin-bottom:18px; text-align:center; padding:12px 16px; background:rgba(255,255,255,0.04); border-radius:var(--radius-sm);">
-                    <strong>This is a screening, not a medical diagnosis.</strong> See an eye care professional for a clinical evaluation.
-                </p>
                 <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:24px;">
                     <button type="button" class="btn btn-secondary" id="retake-btn">Try with different plates</button>
                     <a class="btn btn-secondary" href="https://www.aao.org/find-an-ophthalmologist" target="_blank" rel="noopener">Find an eye doctor</a>
@@ -301,33 +321,16 @@
 
                 <div class="cta-divider"></div>
 
-                <!-- Beta signup card. TODO(testflight-launch): when the
-                     iOS public TestFlight is live, replace this entire
-                     card with a single CTA pointing at the TestFlight
-                     URL. Marker: REPLACE_WITH_TESTFLIGHT. -->
-                <div class="card signup-card">
+                <!-- TestFlight CTA. The public iOS beta is live; this
+                     replaced the old email signup card. -->
+                <div class="card testflight-card">
                     <h2>What Color Is This?</h2>
-                    <p class="subtitle">A color identification app built for how you actually see.</p>
-                    <p class="signup-fine-print" style="margin-bottom:16px;">Drop your email to hear when the iOS beta opens. No marketing list. <a href="https://whatcoloristhis.one/privacy.html">Privacy</a></p>
-                    <div id="signup-form-container">
-                        <form class="signup-form" id="signup-form">
-                            <input type="email" class="email-input" id="email-input" placeholder="your@email.com" required aria-label="Email for beta testing">
-                            <button type="submit" class="btn btn-primary" id="signup-btn">Notify me</button>
-                        </form>
-                        <p class="signup-error" id="signup-error" role="alert"></p>
+                    <p class="subtitle">A color identification app built for how you actually see &mdash; the iOS beta is open.</p>
+                    <div class="testflight-actions">
+                        <a class="btn btn-primary" href="https://testflight.apple.com/join/5y2mqQcH" target="_blank" rel="noopener">Open in TestFlight</a>
+                        <a class="btn btn-secondary" href="https://whatcoloristhis.one" target="_blank" rel="noopener">Try the web app</a>
                     </div>
-                    <div class="signup-success" id="signup-success">
-                        <div class="check-pop" aria-hidden="true" style="font-size:2rem; margin-bottom:6px;">&#x2705;</div>
-                        <p>You're in! I'll email you when the beta is ready.</p>
-                    </div>
-                    <p class="signup-count" id="signup-count" aria-live="polite"></p>
-                    <div class="features" style="margin-top:16px;">
-                        <div class="feature"><span class="feature-icon" aria-hidden="true">&#x1F4F7;</span><span>Camera identification from 30,000 named colors</span></div>
-                        <div class="feature"><span class="feature-icon" aria-hidden="true">&#x1F3A8;</span><span>Colorblind-safe palettes based on research</span></div>
-                        <div class="feature"><span class="feature-icon" aria-hidden="true">&#x1F441;</span><span>CVD simulation so others see what you see</span></div>
-                        <div class="feature"><span class="feature-icon" aria-hidden="true">&#x1F512;</span><span>Privacy-first: no accounts, no tracking</span></div>
-                    </div>
-                    <a href="https://whatcoloristhis.one" class="btn btn-secondary" style="margin-top:16px;">Try it on the web</a>
+                    <p class="testflight-fineprint">Free. No accounts, no tracking, no ads. Camera identification, ~32,000 named colors, colorblind-safe palettes, CVD simulation.</p>
                 </div>
 
                 <p style="text-align:center; margin-top:18px;">
@@ -1453,52 +1456,8 @@
             });
 
             resultsSection.dataset.visionType = result.type;
-            loadSignupCount();
             resultsSection.scrollIntoView({ behavior: 'smooth' });
         }
-
-        // ── Signup ───────────────────────────────────────────────────
-
-        function loadSignupCount() {
-            fetch('api/signup/count').then(function(r) { return r.json(); }).then(function(d) {
-                if (d.count > 0) document.getElementById('signup-count').textContent = d.count + (d.count === 1 ? ' person has' : ' people have') + ' joined the beta';
-            }).catch(function(){});
-        }
-
-        document.getElementById('signup-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var email = document.getElementById('email-input').value.trim();
-            if (!email) return;
-            var btn = document.getElementById('signup-btn');
-            var err = document.getElementById('signup-error');
-            err.style.display = 'none'; btn.classList.add('loading'); btn.disabled = true;
-
-            fetch('api/signup', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: email,
-                    vision_type: resultsSection.dataset.visionType || 'skipped',
-                    test_results: answers,
-                    calibration_warning: calibrationWarning,
-                })
-            })
-            .then(function(r) { return r.json().then(function(d) { return {ok:r.ok, data:d}; }); })
-            .then(function(res) {
-                btn.classList.remove('loading'); btn.disabled = false;
-                if (res.ok || res.data.error === 'already_signed_up') {
-                    document.getElementById('signup-form-container').style.display = 'none';
-                    document.getElementById('signup-success').style.display = 'block';
-                    if (res.data.error === 'already_signed_up') {
-                        document.querySelector('#signup-success p').textContent = "You're already signed up! I'll be in touch.";
-                    }
-                    loadSignupCount();
-                } else {
-                    err.textContent = res.data.message || res.data.error || 'Something went wrong.';
-                    err.style.display = 'block';
-                }
-            })
-            .catch(function() { btn.classList.remove('loading'); btn.disabled = false; err.textContent = 'Network error.'; err.style.display = 'block'; });
-        });
 
         // ── Share ────────────────────────────────────────────────────
 
