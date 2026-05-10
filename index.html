@@ -25,7 +25,13 @@
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --bg: #1a1a1a; --surface: #242424; --surface-raised: #2e2e2e;
+            /* Near-pure black background to minimize chromatic
+               adaptation drift during the test. The eye adapts to the
+               surround; a slight color cast in the page background
+               shifts how the plates read. #0d0d0d is dark enough to
+               function as a neutral surround without making cards
+               look harsh against a hard #000. */
+            --bg: #0d0d0d; --surface: #1a1a1a; --surface-raised: #242424;
             --text: #f0f0f0; --text-muted: #999; --accent: #5070d9;
             --accent-dim: #3d569e; --border: #3a3a3a; --danger: #f07070;
             --success: #55b87a; --radius: 12px; --radius-sm: 8px;
@@ -57,6 +63,10 @@
         .hero h1 { font-size: clamp(1.8rem, 6vw, 2.4rem); font-weight: 700; margin-bottom: 12px; letter-spacing: -0.02em; }
         .hero p { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 8px; }
         .hero .note { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 28px; opacity: 0.7; }
+        /* Breathing room between the Start Screening button and the
+           methodology paragraph below. Was zero — now reads as a
+           clean visual pause. */
+        .hero #start-btn { margin-bottom: 36px; }
         .btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 8px;
             padding: 14px 32px; border-radius: var(--radius); border: none;
@@ -74,8 +84,27 @@
         #test-section { display: none; text-align: center; }
         .progress-bar { display: flex; gap: 6px; justify-content: center; margin-bottom: 28px; }
         .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
-        .progress-dot.active { background: var(--accent); }
+        /* Active dot is white-text-color, NOT accent-blue, while the
+           test is running. Saturated accent colors adjacent to the
+           plate cause simultaneous chromatic contrast — the user's
+           reds look greener next to a blue dot. Same logic for the
+           Next button override below. */
+        .progress-dot.active { background: var(--text); }
         .progress-dot.done { background: var(--success); }
+
+        /* Test + calibration screens neutralize the primary button so
+           there's no large saturated-blue element adjacent to the
+           plate. Other screens keep the normal accent treatment. */
+        #test-section .btn-primary,
+        #calibration-section .btn-primary {
+            background: var(--surface-raised);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        #test-section .btn-primary:hover,
+        #calibration-section .btn-primary:hover {
+            background: var(--border);
+        }
         .plate-container { margin: 0 auto 20px; }
         .plate-canvas { border-radius: 50%; display: block; margin: 0 auto; }
         .plate-question { font-size: 1.15rem; font-weight: 600; margin-bottom: 16px; }
