@@ -52,12 +52,12 @@
             color: #fff; padding: 8px 16px; border-radius: var(--radius-sm); z-index: 100;
         }
         .skip-link:focus { top: 16px; }
-        /* Top padding on every container = content starts a comfortable
-           distance below the notch / browser-chrome / "loading viewport"
-           area instead of at the absolute top edge. Visual pause before
-           the first element of every panel page (hero, calibration,
-           test, results, methodology). */
-        .container { max-width: 480px; margin: 0 auto; padding: 36px 20px 0; }
+        /* Container fills the viewport. Phone-narrow centering was
+           wrong on desktop — left a small column floating in a sea of
+           dark space. Text-heavy elements still cap themselves at
+           reading width (.hero-method, .result-description, etc) so
+           paragraphs don't run 1400px line widths. */
+        .container { max-width: 100%; margin: 0 auto; padding: 36px 20px 0; }
         section {
             min-height: 80vh; display: flex; flex-direction: column;
             justify-content: center; padding: 60px 0;
@@ -241,7 +241,15 @@
             *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
             html { scroll-behavior: auto; }
         }
-        @media (min-width: 600px) { .container { max-width: 520px; } }
+        /* Cap reading width on text-heavy result elements so they don't
+           run absurd line widths on desktop. Plate / canvas / buttons
+           are already self-sized and stay centered via parent flex. */
+        @media (min-width: 768px) {
+            .result-type, .result-description, .testflight-card,
+            #result-meaning, .about-test, .result-detail,
+            details.card, .testflight-card { max-width: 640px; margin-left: auto; margin-right: auto; }
+            .hero-method { max-width: 480px; }
+        }
         .btn.loading { pointer-events: none; opacity: 0.7; }
         .btn.loading::after {
             content: ''; width: 16px; height: 16px;
