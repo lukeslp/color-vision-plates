@@ -52,7 +52,12 @@
             color: #fff; padding: 8px 16px; border-radius: var(--radius-sm); z-index: 100;
         }
         .skip-link:focus { top: 16px; }
-        .container { max-width: 480px; margin: 0 auto; padding: 0 20px; }
+        /* Top padding on every container = content starts a comfortable
+           distance below the notch / browser-chrome / "loading viewport"
+           area instead of at the absolute top edge. Visual pause before
+           the first element of every panel page (hero, calibration,
+           test, results, methodology). */
+        .container { max-width: 480px; margin: 0 auto; padding: 36px 20px 0; }
         section {
             min-height: 80vh; display: flex; flex-direction: column;
             justify-content: center; padding: 60px 0;
@@ -192,6 +197,11 @@
             padding-left: 22px;
             margin-bottom: 10px;
             line-height: 1.55;
+            /* Override the inherited text-align: center from the parent
+               results section. Without this, text is centered but the
+               bullet ::before stays anchored at left: 6px, leaving the
+               two visually disconnected. */
+            text-align: left;
         }
         .result-card-list li:last-child { margin-bottom: 0; }
         .result-card-list li::before {
