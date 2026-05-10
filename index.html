@@ -129,10 +129,23 @@
         .about-test p:last-child { margin-bottom: 0; }
         .about-test .citation { font-size: 0.78rem; color: var(--text-muted); padding-left: 16px; border-left: 2px solid var(--border); margin-bottom: 8px; }
         .about-test .citation:last-child { margin-bottom: 0; }
-        .hero-method { color: var(--text-muted); font-size: 0.82rem; max-width: 380px; margin: 0 auto 28px; line-height: 1.5; opacity: 0.85; }
+        .hero-method { color: var(--text-muted); font-size: 0.82rem; max-width: 380px; margin: 0 auto 12px; line-height: 1.45; opacity: 0.85; }
         .hero-method a { color: var(--text-muted); text-decoration: underline; text-underline-offset: 2px; }
         .hero-method a:hover { color: var(--text); }
-        .hero-method-link { display: inline-block; margin-top: 6px; font-weight: 600; }
+        /* Separate block, not inline-block inside the paragraph (which
+           was creating uneven line spacing when the text wrapped to
+           include it). */
+        .hero-method-link {
+            display: block;
+            text-align: center;
+            margin: 0 auto 28px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+        .hero-method-link:hover { color: var(--text); }
         .methodology-link { color: var(--text-muted); font-size: 0.9rem; text-decoration: underline; text-underline-offset: 3px; }
         .methodology-link:hover { color: var(--text); }
         html { scroll-behavior: smooth; }
@@ -212,7 +225,8 @@
                 <h1>Can you see the number?</h1>
                 <p class="note">Full brightness, no night mode. About 60 seconds.</p>
                 <button class="btn btn-primary" id="start-btn">Start Screening</button>
-                <p class="hero-method">Uses pseudoisochromatic plates based on the Ishihara (1917) and HRR (1954) clinical tests. Not a medical diagnosis. <a href="#methodology-section" class="hero-method-link">How this works &amp; sources &darr;</a></p>
+                <p class="hero-method">Uses pseudoisochromatic plates based on the Ishihara (1917) and HRR (1954) clinical tests. Not a medical diagnosis.</p>
+                <a href="#methodology-section" class="hero-method-link">How this works &amp; sources &darr;</a>
             </div>
         </section>
 
