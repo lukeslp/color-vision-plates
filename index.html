@@ -797,6 +797,22 @@
         var sessionSalt = (Math.random() * 0xffff) | 0;
         function rerollSessionSalt() { sessionSalt = (Math.random() * 0xffff) | 0; }
 
+        // Display order — index 0 (control) is always first, indices 1..13
+        // get shuffled so users can't memorize "the third plate is 5".
+        // The canonical plate identity (PLATES[i]) stays fixed — only the
+        // ORDER in which plates are presented changes. Scoring uses the
+        // canonical index stored on each answer, so randomization doesn't
+        // affect the algorithm.
+        var displayOrder = PLATES.map(function(_, i) { return i; });
+        function reshufflePlateOrder() {
+            // Fisher-Yates on indices 1..N-1, leaving index 0 (control) fixed.
+            displayOrder = PLATES.map(function(_, i) { return i; });
+            for (var i = displayOrder.length - 1; i > 1; i--) {
+                var j = 1 + Math.floor(Math.random() * i);
+                var tmp = displayOrder[i]; displayOrder[i] = displayOrder[j]; displayOrder[j] = tmp;
+            }
+        }
+
         function renderPlate(canvas, plate, size) {
             var dpr = window.devicePixelRatio || 1;
             canvas.width = size * dpr; canvas.height = size * dpr;
@@ -823,10 +839,17 @@
             var minR = size > 200 ? 2.5 : 2, maxR = size > 200 ? 6.5 : 4.5;
             var dots = poissonDiskSample(cx, cy, plateR, minR, maxR, rng);
 
+            // Threshold 128 (50% of 255) for "is this dot inside the
+            // figure?" — was 40 (~16%), which counted anti-aliased edge
+            // pixels as shape and produced fuzzy digit boundaries.
+            // Sighted-user feedback flagged 5/6 and 8/0 confusion on
+            // higher-contrast plates; 128 sharpens the figure shape so
+            // the 5's flat top and 6's closed loop are visually distinct
+            // in the dot pattern.
             dots.forEach(function(dot) {
                 var px = Math.floor(dot.x), py = Math.floor(dot.y);
                 if (px < 0 || px >= maskW || py < 0 || py >= maskW) return;
-                var isShape = maskData[(py * maskW + px) * 4] > 40;
+                var isShape = maskData[(py * maskW + px) * 4] > 128;
                 ctx.beginPath(); ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
                 ctx.fillStyle = rndColor(isShape ? plate.fg : plate.bg, rng);
                 ctx.fill();
@@ -869,6 +892,7 @@
             heroSection.style.display = 'none';
             currentPlate = 0; answers.length = 0;
             rerollSessionSalt();
+            reshufflePlateOrder();
             showCalibration();
         });
 
@@ -975,7 +999,10 @@
             // make sure the progress bar is shown again.
             progressBar.style.visibility = '';
             currentPlate = index;
-            var plate = PLATES[index];
+            // Fetch via displayOrder so shuffled tests still pull the
+            // correct canonical plate. displayOrder[0] === 0 always so
+            // the control plate stays first.
+            var plate = PLATES[displayOrder[index]];
             var size = plateSize();
 
             var area = document.getElementById('plate-area');
@@ -1031,14 +1058,20 @@
             }
             var nowMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
             var responseMs = plateStartMs > 0 ? Math.round(nowMs - plateStartMs) : null;
-            var plate = PLATES[currentPlate];
+            // Critical: pull the plate via displayOrder so the user's
+            // answer is graded against the plate they actually saw,
+            // not the one in the canonical position.
+            var plate = PLATES[displayOrder[currentPlate]];
             var val = cantSee ? '' : value.toLowerCase();
             var correct = plate.correct.toLowerCase();
             var isCorrect = !cantSee && val === correct;
             var isNearMiss = !isCorrect && !cantSee && val !== '' &&
                 plate.nearMisses && plate.nearMisses.indexOf(val) !== -1;
             answers.push({
-                plate: currentPlate,
+                // Store the CANONICAL plate index (PLATES[plate]) not the
+                // display position, so scoring + result grid work
+                // regardless of plate-order shuffling.
+                plate: displayOrder[currentPlate],
                 correct: plate.correct,
                 tests: plate.tests,
                 type: plate.type,
@@ -1049,22 +1082,15 @@
                 response_ms: responseMs
             });
 
-            // Adaptive length: after 9 plates (default early-exit point),
-            // if every answer was correct with no near-misses, end the
-            // test now and report Typical Color Vision. Median typical
-            // user finishes in ~60s; ambiguous results take the full ~90s.
-            // Threshold of 9 covers: control + 4 RG screen + 2 tritan +
-            // 1 protan-only + 1 deutan-only — every category seen at
-            // least once.
-            var EARLY_EXIT_AT = 9;
-            if (answers.length === EARLY_EXIT_AT) {
-                var allClean = answers.every(function(a) { return a.isCorrect && !a.isNearMiss; });
-                if (allClean) {
-                    answers.early_exit_at = EARLY_EXIT_AT;
-                    showResults();
-                    return;
-                }
-            }
+            // Adaptive early-exit was retired when plate order became
+            // randomized: with shuffling, the first 9 plates aren't
+            // guaranteed to cover all four test categories
+            // (control + RG + tritan + protan-only + deutan-only), so
+            // a clean run on a non-representative subset would falsely
+            // report Typical Color Vision. ~30s saved isn't worth that
+            // risk; always run all 14 plates now. If we ever want
+            // early-exit back, do a stratified shuffle that guarantees
+            // category coverage in the first N plates.
 
             if (currentPlate < PLATES.length - 1) {
                 showPlate(currentPlate + 1);
@@ -1106,6 +1132,7 @@
                 testSection.style.display = 'flex';
                 currentPlate = 0; answers.length = 0;
                 rerollSessionSalt();
+                reshufflePlateOrder();
                 // Skip the demo on retake — user has already done it.
                 showPlate(0);
                 testSection.scrollIntoView({ behavior: 'smooth' });
@@ -1361,7 +1388,11 @@
             var grid = document.getElementById('plate-results-grid');
             grid.innerHTML = '';
             answers.forEach(function(a, i) {
-                var plate = PLATES[i];
+                // Use canonical PLATES index from the answer (a.plate),
+                // not the display position (i), so the rendered mini
+                // plate matches what the user actually saw under
+                // randomized order.
+                var plate = PLATES[a.plate];
                 var item = document.createElement('div');
                 item.className = 'plate-result-item';
 
