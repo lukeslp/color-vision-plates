@@ -282,8 +282,8 @@
             <div style="text-align:center; max-width:520px; margin:0 auto;">
                 <h2 style="font-size:1.4rem; margin-bottom:8px;">Quick screen check</h2>
                 <p style="color:var(--text-muted); margin-bottom:24px; font-size:0.95rem;">One of these gray squares is slightly brighter than the others. Tap it. This confirms your screen can render the test plates faithfully.</p>
-                <div id="calibration-warning-darkmode" style="display:none; margin-bottom:18px; padding:12px 16px; background:rgba(240,112,112,0.08); border:1px solid rgba(240,112,112,0.3); border-radius:var(--radius-sm); font-size:0.85rem; color:var(--text);">
-                    Your device is in dark mode. The test plates render on a white background — that's expected. <strong>Please confirm Night Shift, True Tone, and any blue-light filters are off</strong> before continuing.
+                <div id="calibration-warning-filters" style="margin-bottom:18px; padding:12px 16px; background:rgba(240,200,80,0.08); border:1px solid rgba(240,200,80,0.3); border-radius:var(--radius-sm); font-size:0.85rem; color:var(--text); text-align:left;">
+                    <strong>Before you start:</strong> turn off Night Shift, True Tone, and any blue-light filters. They warm the white point and shift hues, especially affecting the blue-yellow plates. Set screen brightness to maximum.
                 </div>
                 <div id="calibration-patches" style="display:flex; gap:14px; justify-content:center; margin-bottom:24px;" role="group" aria-label="Click the patch that looks different"></div>
                 <div id="calibration-feedback" style="min-height:36px; margin-bottom:16px;"></div>
@@ -377,19 +377,20 @@
 
                 <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:24px;">
                     <button type="button" class="btn btn-secondary" id="retake-btn">Try with different plates</button>
-                    <a class="btn btn-secondary" href="https://www.aao.org/find-an-ophthalmologist" target="_blank" rel="noopener">Find an eye doctor</a>
                 </div>
 
                 <div class="cta-divider"></div>
 
-                <!-- TestFlight CTA. The public iOS beta is live; this
-                     replaced the old email signup card. -->
+                <!-- Companion app CTA. iOS public TestFlight is open;
+                     Android is live on Google Play (TWA wrapper); web
+                     works in any browser. Three install paths, one card. -->
                 <div class="card testflight-card">
                     <h2>What Color Is This?</h2>
-                    <p class="subtitle">A color identification app built for how you actually see &mdash; the iOS beta is open.</p>
+                    <p class="subtitle">A color identification app built for how you actually see.</p>
                     <div class="testflight-actions">
-                        <a class="btn btn-primary" href="https://testflight.apple.com/join/5y2mqQcH" target="_blank" rel="noopener">Open in TestFlight</a>
-                        <a class="btn btn-secondary" href="https://whatcoloristhis.one" target="_blank" rel="noopener">Try the web app</a>
+                        <a class="btn btn-primary" href="https://testflight.apple.com/join/5y2mqQcH" target="_blank" rel="noopener">iOS beta (TestFlight)</a>
+                        <a class="btn btn-secondary" href="https://play.google.com/store/apps/details?id=one.whatcoloristhis.twa" target="_blank" rel="noopener">Android (Play Store)</a>
+                        <a class="btn btn-secondary" href="https://whatcoloristhis.one" target="_blank" rel="noopener">Web</a>
                     </div>
                     <p class="testflight-fineprint">Free. No accounts, no tracking, no ads. Camera identification, ~32,000 named colors, colorblind-safe palettes, CVD simulation.</p>
                 </div>
@@ -987,13 +988,52 @@
         function showCalibration() {
             calibrationSection.style.display = 'block';
             calibrationSection.scrollIntoView({ behavior: 'smooth' });
-            // Dark-mode advisory (informational, not gating)
+            renderCalibrationPatches();
+            // Wake lock + light-mode hint kick off here, before the
+            // first plate. Both are best-effort — fall through silently
+            // on browsers / devices that don't support them.
+            requestWakeLock();
+            warnIfLightMode();
+        }
+
+        // Keep the screen awake during the test so a 90-second pause
+        // (reading the methodology between plates, hunting for the
+        // shape) doesn't trigger sleep. Released on results show.
+        var wakeLockSentinel = null;
+        async function requestWakeLock() {
+            if (!('wakeLock' in navigator)) return;
             try {
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    document.getElementById('calibration-warning-darkmode').style.display = '';
+                wakeLockSentinel = await navigator.wakeLock.request('screen');
+                document.addEventListener('visibilitychange', reacquireWakeLock);
+            } catch (e) { /* user gesture required, or denied — fine */ }
+        }
+        async function reacquireWakeLock() {
+            if (document.visibilityState === 'visible' && wakeLockSentinel === null) {
+                requestWakeLock();
+            }
+        }
+        function releaseWakeLock() {
+            if (wakeLockSentinel) {
+                wakeLockSentinel.release().catch(function(){});
+                wakeLockSentinel = null;
+            }
+        }
+
+        // Light mode = the system is rendering UI in light theme. Our
+        // CSS forces dark, so the page itself looks fine, but the
+        // surrounding OS chrome (status bar on iOS, address bar on
+        // some browsers) leaks white into peripheral vision and biases
+        // chromatic adaptation. Surface a one-time inline hint.
+        function warnIfLightMode() {
+            try {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                    var hint = document.createElement('div');
+                    hint.style.cssText = 'margin-bottom:14px; padding:10px 14px; background:rgba(80,112,217,0.08); border:1px solid rgba(80,112,217,0.3); border-radius:var(--radius-sm); font-size:0.82rem; color:var(--text-muted); text-align:left;';
+                    hint.innerHTML = 'Your system is in light mode. Browser chrome around the page may leak white into your peripheral vision and slightly bias the result. Switching the OS to dark mode is more accurate.';
+                    var anchor = document.getElementById('calibration-warning-filters');
+                    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(hint, anchor.nextSibling);
                 }
             } catch (e) {}
-            renderCalibrationPatches();
         }
 
         function renderCalibrationPatches() {
@@ -1428,6 +1468,7 @@
         function showResults() {
             testSection.style.display = 'none';
             resultsSection.style.display = 'flex';
+            releaseWakeLock();
             var result = scoreResults();
 
             document.getElementById('result-badge').textContent =
