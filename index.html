@@ -146,8 +146,23 @@
         .badge-normal { background: rgba(85,184,122,0.15); color: var(--success); }
         .badge-cvd { background: rgba(108,140,255,0.15); color: var(--accent); }
         .badge-inconclusive { background: rgba(153,153,153,0.15); color: var(--text-muted); }
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px; }
-        .result-detail { padding: 20px; text-align: left; }
+        /* ──────────────────────────────────────────────────────────
+           Results-page card system: ONE consistent shape.
+           Every card on the results page (meaning, disclaimer, the
+           two <details>, TestFlight CTA) shares the same padding,
+           border-radius, border, and bottom margin. The previous
+           setup had 4 different paddings (.card no padding,
+           .result-detail 20px, .about-test 20/22px, .testflight-card
+           24/20px) plus an inline-styled disclaimer pill with its own
+           border-radius — looked chaotic stacked. */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 14px;
+            padding: 20px 22px;
+            text-align: left;
+        }
         .result-detail h3 { font-size: 0.95rem; margin-bottom: 12px; }
         .plate-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .plate-result-item { display: flex; align-items: center; gap: 10px; background: var(--surface-raised); border-radius: var(--radius-sm); padding: 10px; }
@@ -160,12 +175,37 @@
         .plate-result-answer.fail { color: var(--danger); }
         .plate-result-correct { font-size: 0.75rem; color: var(--text-muted); }
         @media (max-width: 420px) { .plate-results-grid { grid-template-columns: 1fr; } }
-        .cta-divider { width: 48px; height: 2px; background: var(--border); margin: 32px auto; }
+        /* Disclaimer card variant — subtle accent tint to mark it as
+           "important note" without breaking the unified card shape. */
+        .result-disclaimer {
+            text-align: center;
+            background: rgba(80, 112, 217, 0.06);
+            border-color: rgba(80, 112, 217, 0.25);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        /* Action row inside the results column. Buttons stretch to
+           full column width to match the card rhythm — was a small
+           pill floating in the middle which broke the visual column. */
+        .result-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .result-actions .btn { width: 100%; }
+        /* Spacing pause between the action area and the CTA card.
+           Replaces the old .cta-divider (decorative line that read as
+           "page is ending; stop scrolling"). */
+        .result-section-break { height: 24px; }
 
         /* Custom <details> styling — replace the default browser ▶
            marker with an integrated chevron that rotates on open.
            The default markers were the "unstyled" look on the
            results page. */
+        /* details.card overrides the unified padding because the
+           summary handles its own. Content inside gets uniform 20/22
+           padding via the rule below. */
         details.card { padding: 0; overflow: hidden; }
         details.card > summary {
             list-style: none;
@@ -195,17 +235,15 @@
         details.card > summary:hover { background: rgba(255, 255, 255, 0.02); }
         details.card > summary:hover::after { border-color: var(--text); }
         details.card > *:not(summary) {
-            padding: 0 20px 18px;
+            padding: 0 22px 20px;
             margin: 0;
         }
-        /* When result-detail or other content has its own grid/list,
-           keep the inline padding; reset margins. */
         details.card > .plate-results-grid,
         details.card > ul.result-card-list {
-            padding: 0 20px 18px;
+            padding: 0 22px 20px;
         }
-        /* About / Citations */
-        .about-test { padding: 20px 22px; text-align: left; }
+        /* About / Citations — inherits .card padding/margin/etc now,
+           only typography overrides remain. */
         .about-test h3 { font-size: 0.95rem; margin-bottom: 10px; }
         .about-test p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 10px; }
         .about-test p:last-child { margin-bottom: 0; }
@@ -266,7 +304,10 @@
 
         /* TestFlight CTA card — replaces the old email signup since the
            iOS public beta is open. Tighter, single primary action. */
-        .testflight-card { padding: 24px 20px; text-align: center; }
+        /* TestFlight CTA — inherits .card system (padding 20/22,
+           radius, margin). Only the centered text alignment + larger
+           heading + button row differ from the meaning/details cards. */
+        .testflight-card { text-align: center; }
         .testflight-card h2 { font-size: 1.2rem; margin-bottom: 6px; }
         .testflight-card .subtitle { color: var(--text-muted); margin-bottom: 18px; font-size: 0.92rem; line-height: 1.5; }
         .testflight-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
@@ -405,11 +446,11 @@
                     <ul class="result-card-list" id="result-meaning-bullets"></ul>
                 </div>
 
-                <p style="font-size:0.95rem; color:var(--text); margin-bottom:18px; text-align:center; padding:14px 18px; background:rgba(255,255,255,0.04); border-radius:var(--radius-sm); line-height:1.5;">
+                <div class="card result-disclaimer">
                     <strong>This is a screening, not a medical diagnosis.</strong> See an eye care professional for a clinical evaluation.
-                </p>
+                </div>
 
-                <details class="card" style="margin-bottom:18px;">
+                <details class="card">
                     <summary>Why might I see a deficit even with normal vision?</summary>
                     <ul class="result-card-list" style="color:var(--text-muted); font-size:0.92rem;">
                         <li><strong>Display calibration.</strong> Phone screens vary 5-15 ΔE between manufacturers. Older or budget panels may compress the color gamut enough to mask plate boundaries.</li>
@@ -421,20 +462,18 @@
                     </ul>
                 </details>
 
-                <details class="card result-detail" id="result-detail" style="margin-bottom:24px;">
+                <details class="card result-detail" id="result-detail">
                     <summary>Your results plate by plate</summary>
                     <div class="plate-results-grid" id="plate-results-grid"></div>
                 </details>
 
-                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:24px;">
+                <div class="result-actions">
                     <button type="button" class="btn btn-secondary" id="retake-btn">Try with different plates</button>
                 </div>
 
-                <div class="cta-divider"></div>
+                <div class="result-section-break"></div>
 
-                <!-- Companion app CTA. iOS public TestFlight is open;
-                     Android is live on Google Play (TWA wrapper); web
-                     works in any browser. Three install paths, one card. -->
+                <!-- Companion app CTA — three install paths in one card. -->
                 <div class="card testflight-card">
                     <h2>What Color Is This?</h2>
                     <p class="subtitle">A color identification app built for how you actually see.</p>
@@ -446,13 +485,13 @@
                     <p class="testflight-fineprint">Free. No accounts, no tracking, no ads. Camera identification, ~32,000 named colors, colorblind-safe palettes, CVD simulation.</p>
                 </div>
 
-                <p style="text-align:center; margin-top:18px;">
-                    <a href="#methodology-section" class="methodology-link">Read methodology and sources &darr;</a>
-                </p>
-
-                <div style="margin-top:20px; text-align:center;">
+                <div class="result-actions" style="margin-top:14px;">
                     <button class="btn btn-secondary" id="share-btn">Share this test</button>
                 </div>
+
+                <p style="text-align:center; margin-top:8px;">
+                    <a href="#methodology-section" class="methodology-link">Read methodology and sources &darr;</a>
+                </p>
             </div>
         </section>
 
