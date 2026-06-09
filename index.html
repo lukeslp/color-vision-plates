@@ -313,6 +313,23 @@
         .testflight-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
         .testflight-actions .btn { width: 100%; }
         .testflight-fineprint { font-size: 0.78rem; color: var(--text-muted); margin-top: 14px; line-height: 1.5; }
+        /* Settings gear — only exists in the native iOS shell (created
+           by the CVT_NATIVE block in the init script). Fixed top-right,
+           clear of the notch via safe-area inset. */
+        #native-settings-btn {
+            position: fixed;
+            top: calc(env(safe-area-inset-top, 0px) + 10px);
+            right: 14px;
+            z-index: 50;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--surface-raised);
+            background: var(--surface);
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            line-height: 1;
+            cursor: pointer;
+        }
         @media (min-width: 480px) {
             .testflight-actions { flex-direction: row; justify-content: center; }
             .testflight-actions .btn { width: auto; min-width: 160px; }
@@ -1645,6 +1662,24 @@
 
             resultsSection.dataset.visionType = result.type;
             resultsSection.scrollIntoView({ behavior: 'smooth' });
+
+            // Native iOS shell (ios/): persist this screening to the
+            // on-device history (Settings → Screening History). The
+            // result object already carries everything the native
+            // store needs. No-op on the web.
+            if (window.CVT_NATIVE && window.webkit && window.webkit.messageHandlers
+                && window.webkit.messageHandlers.screeningResult) {
+                try {
+                    window.webkit.messageHandlers.screeningResult.postMessage({
+                        type: result.type,
+                        label: result.label,
+                        rgFailed: result.rgFailed,
+                        rgTotal: result.rgTotal,
+                        byFailed: result.byFailed,
+                        byTotal: result.byTotal
+                    });
+                } catch (e) { /* bridge unavailable — fine */ }
+            }
         }
 
         // ── Share ────────────────────────────────────────────────────
@@ -1652,6 +1687,14 @@
         document.getElementById('share-btn').addEventListener('click', function() {
             var url = 'https://whatcoloristhis.one/beta/';
             var text = 'Color vision deficiency test. A real one, not marketing. With sources.';
+            // Native iOS shell: navigator.share and navigator.clipboard
+            // don't exist in a file:// WKWebView (not a secure context),
+            // so route to the native share sheet instead.
+            if (window.CVT_NATIVE && window.webkit && window.webkit.messageHandlers
+                && window.webkit.messageHandlers.share) {
+                window.webkit.messageHandlers.share.postMessage({ text: text, url: url });
+                return;
+            }
             if (navigator.share) { navigator.share({title:'Color Vision Screening', text:text, url:url}).catch(function(){}); }
             else if (navigator.clipboard) {
                 navigator.clipboard.writeText(url).then(function() {
@@ -1661,14 +1704,52 @@
             }
         });
 
+        // ── Native iOS shell adjustments ─────────────────────────────
+        // The iOS app (ios/) injects window.CVT_NATIVE at document
+        // start. In native mode: collapse the companion-app card to a
+        // single link (TestFlight/APK links inside a shipping app read
+        // as a Guideline 2.2 beta-distribution problem to App Review),
+        // and add a settings gear that opens the native Settings screen.
+        if (window.CVT_NATIVE) {
+            var nativeActions = document.querySelector('.testflight-actions');
+            if (nativeActions) {
+                // TODO: swap href to the App Store URL once
+                // What Color Is This? is live there.
+                nativeActions.innerHTML =
+                    '<a class="btn btn-primary" href="https://whatcoloristhis.one" target="_blank" rel="noopener">Get What Color Is This?</a>';
+            }
+            var gear = document.createElement('button');
+            gear.id = 'native-settings-btn';
+            gear.type = 'button';
+            gear.setAttribute('aria-label', 'Settings');
+            gear.textContent = '⚙︎';
+            gear.addEventListener('click', function() {
+                if (window.webkit && window.webkit.messageHandlers
+                    && window.webkit.messageHandlers.settings) {
+                    window.webkit.messageHandlers.settings.postMessage('open');
+                }
+            });
+            document.body.appendChild(gear);
+        }
+
         // ── Init ─────────────────────────────────────────────────────
 
         initHero();
         window.addEventListener('resize', function() { if (heroSection.style.display !== 'none') initHero(); });
     })();
     </script>
-    <!-- GoatCounter Analytics -->
-    <script data-goatcounter="https://stats.dr.eamer.dev/count"
-            async src="https://stats.dr.eamer.dev/count.js"></script>
+    <!-- GoatCounter Analytics — web only. The iOS app sets
+         window.CVT_NATIVE and ships with no analytics at all; its
+         App Store privacy label says "no data collected" and the
+         privacy manifest must stay truthful. -->
+    <script>
+    if (!window.CVT_NATIVE) {
+        var gcScript = document.createElement('script');
+        gcScript.async = true;
+        gcScript.src = 'https://stats.dr.eamer.dev/count.js';
+        gcScript.setAttribute('data-goatcounter', 'https://stats.dr.eamer.dev/count');
+        document.body.appendChild(gcScript);
+    }
+    </script>
 </body>
 </html>

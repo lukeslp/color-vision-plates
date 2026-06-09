@@ -5,3 +5,7 @@ __pycache__/
 
 # Backup files
 *.bak
+
+# iOS build artifacts (matches whatcolor convention)
+ios/build/
+xcuserdata/
