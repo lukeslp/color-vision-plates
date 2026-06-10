@@ -2,8 +2,10 @@
 # Store Connect.
 #
 # Run from ios/:
-#   bundle install                       # once
-#   bundle exec fastlane upload_listing  # prompts for Apple ID 2FA on first run
+#   brew install fastlane          # once — self-contained, no sudo;
+#                                  # system-Ruby bundler wants sudo for
+#                                  # /Library/Ruby/Gems and 2.6 is EOL
+#   fastlane upload_listing        # prompts for Apple ID 2FA on first run
 #
 # Screenshots come from scripts/capture_screenshots.sh output in
 # ../screenshots/{iphone-6.9,ipad-13}/. The lane stages them into

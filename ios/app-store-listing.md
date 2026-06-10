@@ -208,9 +208,10 @@ No demo account needed — there are no accounts. To see a full flow quickly: St
 3. Distribute App → App Store Connect → Upload
 4. TestFlight processing (~10-30 min), then internal testing
 5. Push this listing + screenshots with fastlane (after the record
-   exists): `cd ios && bundle install && bundle exec fastlane
+   exists): `brew install fastlane` once, then `cd ios && fastlane
    upload_listing` — prompts for Apple ID 2FA on first run, caches the
-   session. The metadata files under `fastlane/metadata/` mirror this
-   document; edit both together.
+   session. (Don't use system-Ruby bundler: it wants sudo for
+   /Library/Ruby/Gems and Ruby 2.6 is EOL.) The metadata files under
+   `fastlane/metadata/` mirror this document; edit both together.
 6. Attach the build to the 1.0.0 version in ASC and submit.
 ```
