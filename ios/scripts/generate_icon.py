@@ -10,7 +10,11 @@ vanishing plate would be invisible to exactly the people this app is
 for.
 
 Deterministic: same seed as the plate (42), no session salt, like the
-hero canvas. Writes every size AppIcon.appiconset references.
+hero canvas. Writes the three single-size (1024 px) appearance
+variants the asset catalog references — light (dots on warm paper),
+dark (dots on transparency; the system supplies its dark backdrop),
+and tinted (grayscale + alpha; the system applies the user's tint).
+Xcode renders every device size from these.
 
 Usage: python3 ios/scripts/generate_icon.py
 """
@@ -42,22 +46,6 @@ BG = {"L": 66, "LR": 12, "a": -9, "aR": 12, "b": 38, "bR": 16}   # olive/khaki
 CANVAS = (247, 241, 229)    # warm paper, like a printed plate book
 
 OUT_DIR = Path(__file__).resolve().parent.parent / "ColorVisionTest" / "Assets.xcassets" / "AppIcon.appiconset"
-
-SIZES = {
-    "Icon-20.png": 20,
-    "Icon-29.png": 29,
-    "Icon-40.png": 40,
-    "Icon-58.png": 58,
-    "Icon-60.png": 60,
-    "Icon-76.png": 76,
-    "Icon-80.png": 80,
-    "Icon-87.png": 87,
-    "Icon-120.png": 120,
-    "Icon-152.png": 152,
-    "Icon-167.png": 167,
-    "Icon-180.png": 180,
-    "Icon-1024.png": 1024,
-}
 
 
 # ── mulberry32 (exact 32-bit JS semantics) ──────────────────────────
@@ -216,10 +204,13 @@ def main():
     dots = poisson_disk_sample(cx, cy, plate_r, MIN_R, MAX_R, rng)
     mask = triangle_mask(s, cx, cy, plate_r)
 
-    # Dots sit directly on the paper, like a printed plate — no
-    # backing circle; the gaps show paper.
-    img = Image.new("RGB", (s * SS, s * SS), CANVAS)
-    draw = ImageDraw.Draw(img)
+    # Dot layer on transparency — the dark and tinted variants ship
+    # the dots alone (the system supplies its own dark backdrop /
+    # tint); the light variant composites them onto paper.
+    dot_layer = Image.new("RGBA", (s * SS, s * SS), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(dot_layer)
+    tinted_layer = Image.new("RGBA", (s * SS, s * SS), (0, 0, 0, 0))
+    tinted_draw = ImageDraw.Draw(tinted_layer)
 
     # Same per-dot rng order as renderPlate's forEach: 3 calls per dot
     # inside rndColor, mask sampled at floor(x), floor(y).
@@ -228,13 +219,33 @@ def main():
         is_shape = 0 <= px < s and 0 <= py < s and mask[px, py] > 128
         color = rnd_color(FG if is_shape else BG, rng)
         x, y, r = dot["x"] * SS, dot["y"] * SS, dot["r"] * SS
-        draw.ellipse([x - r, y - r, x + r, y + r], fill=color)
+        draw.ellipse([x - r, y - r, x + r, y + r], fill=color + (255,))
+        # Tinted appearance: a naive grayscale of the plate makes the
+        # figure vanish (the dots are chroma-separated, not luminance-
+        # separated — that's the whole point of the test), so the
+        # tinted glyph separates on luminance instead.
+        g = 235 if is_shape else 130
+        tinted_draw.ellipse([x - r, y - r, x + r, y + r], fill=(g, g, g, 255))
 
-    base = img.resize((SIZE, SIZE), Image.LANCZOS)
+    dot_base = dot_layer.resize((SIZE, SIZE), Image.LANCZOS)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    for name, px in SIZES.items():
-        (base if px == SIZE else base.resize((px, px), Image.LANCZOS)).save(OUT_DIR / name)
-        print(f"wrote {name} ({px}px)")
+
+    # Light: dots on warm paper (fully opaque — required for the
+    # default appearance and the App Store marketing icon).
+    light = Image.new("RGB", (SIZE, SIZE), CANVAS)
+    light.paste(dot_base, (0, 0), dot_base)
+    light.save(OUT_DIR / "Icon-1024.png")
+    print("wrote Icon-1024.png (light)")
+
+    # Dark: same plate, transparent background. The system composites
+    # it over its dark gradient; the paper-colored gaps become dark.
+    dot_base.save(OUT_DIR / "Icon-1024-dark.png")
+    print("wrote Icon-1024-dark.png (dark)")
+
+    # Tinted: luminance-separated grayscale + alpha; the system
+    # applies the user's tint color.
+    tinted_layer.resize((SIZE, SIZE), Image.LANCZOS).save(OUT_DIR / "Icon-1024-tinted.png")
+    print("wrote Icon-1024-tinted.png (tinted)")
 
 
 if __name__ == "__main__":
