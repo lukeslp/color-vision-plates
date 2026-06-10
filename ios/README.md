@@ -19,7 +19,10 @@ The `.xcodeproj` is generated — edit `project.yml`, never the project
 file.
 
 ```bash
-brew install xcodegen        # once
+brew install xcodegen        # once — keep ≥ the version that generated
+                             # the committed project (regenerating with
+                             # an older xcodegen silently drops newer
+                             # build settings; diff before committing)
 cd ios
 xcodegen generate
 xcodebuild -project ColorVisionTest.xcodeproj -scheme ColorVisionTest \

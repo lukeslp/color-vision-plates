@@ -1620,6 +1620,10 @@
         };
 
         function showResults() {
+            // The final submitAnswer set submitting=true and lands here
+            // without the mid-plate reset — clear it or every answer on
+            // a retake hits the early return and the plates go dead.
+            submitting = false;
             testSection.style.display = 'none';
             resultsSection.style.display = 'flex';
             document.body.classList.remove('testing');
@@ -1737,7 +1741,7 @@
         // ── Share ────────────────────────────────────────────────────
 
         document.getElementById('share-btn').addEventListener('click', function() {
-            var url = 'https://whatcoloristhis.one/beta/';
+            var url = 'https://whatcoloristhis.one/test/';
             var text = 'Color vision deficiency test. A real one, not marketing. With sources.';
             // Native iOS shell: navigator.share and navigator.clipboard
             // don't exist in a file:// WKWebView (not a secure context),
@@ -1779,6 +1783,13 @@
         // as a Guideline 2.2 beta-distribution problem to App Review),
         // and add a settings gear that opens the native Settings screen.
         if (window.CVT_NATIVE) {
+            // Remote favicon/touch-icon links point at the live site;
+            // WKWebView doesn't fetch them in practice, but removing
+            // them makes the "zero network calls" review-note claim
+            // unfalsifiable.
+            document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]').forEach(function(l) {
+                l.parentNode.removeChild(l);
+            });
             var nativeActions = document.querySelector('.testflight-actions');
             if (nativeActions) {
                 // TODO: swap href to the App Store URL once

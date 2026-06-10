@@ -8,6 +8,7 @@ final class ContentViewController: UIViewController, WKUIDelegate, WKNavigationD
         let config = WKWebViewConfiguration()
         config.limitsNavigationsToAppBoundDomains = true
         config.websiteDataStore = .default()
+        config.applicationNameForUserAgent = "ColorVisionTestIOS/1.0"
 
         let userController = WKUserContentController()
         // The flag index.html checks to switch into native-shell mode:
@@ -47,7 +48,6 @@ final class ContentViewController: UIViewController, WKUIDelegate, WKNavigationD
         webView.isOpaque = false
         webView.backgroundColor = pageBackground
         webView.scrollView.backgroundColor = pageBackground
-        webView.customUserAgent = (webView.value(forKey: "userAgent") as? String).map { "\($0) ColorVisionTestIOS/1.0" }
 
         view = webView
     }
@@ -82,6 +82,12 @@ final class ContentViewController: UIViewController, WKUIDelegate, WKNavigationD
     }
 
     // MARK: - WKNavigationDelegate
+
+    // Memory pressure can evict the WebKit content process; without
+    // this the app stays a blank rectangle until force-quit.
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        loadIndex()
+    }
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         guard let url = navigationAction.request.url else {

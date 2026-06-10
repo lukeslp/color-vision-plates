@@ -68,5 +68,26 @@ final class SmokeTest: XCTestCase {
         let savedResult = app.tables.staticTexts["Inconclusive"]
         XCTAssertTrue(savedResult.waitForExistence(timeout: 10),
                       "screeningResult message never reached the native ResultStore")
+
+        // Regression: retake after a completed screening must accept
+        // input. The `submitting` flag used to stay latched through
+        // showResults, leaving every retake plate dead to taps.
+        app.navigationBars.firstMatch.buttons.firstMatch.tap() // back to Settings
+        let done = app.buttons["Done"]
+        XCTAssertTrue(done.waitForExistence(timeout: 5))
+        done.tap()
+
+        let retake = webView.buttons["Try with different plates"]
+        XCTAssertTrue(retake.waitForExistence(timeout: 5), "retake button missing on results page")
+        retake.tap()
+        XCTAssertTrue(cantSee.waitForExistence(timeout: 5), "retake never returned to the plates")
+        cantSee.tap()
+        // Case-insensitive: iOS 26.5 reflects the label's CSS
+        // text-transform into the accessibility label.
+        let plate2 = webView.staticTexts.matching(
+            NSPredicate(format: "label ==[c] %@", "Plate 2 of 14")
+        ).firstMatch
+        XCTAssertTrue(plate2.waitForExistence(timeout: 5),
+                      "retake plates ignore input — submitting flag latched after showResults")
     }
 }

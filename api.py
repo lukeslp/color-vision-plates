@@ -64,7 +64,17 @@ def index():
 @app.route('/og-beta.png')
 @app.route('/og-beta-v2.png')
 def og_image():
-    return send_from_directory('.', 'og-beta-v2.png', mimetype='image/png')
+    # og-beta-v2.png was removed (commit 103c0ac); both routes serve
+    # the canonical card so old shares keep resolving.
+    return send_from_directory('.', 'og-beta.png', mimetype='image/png')
+
+
+@app.route('/privacy.html')
+@app.route('/privacy')
+def privacy():
+    # App Store privacy-policy URL for the iOS app
+    # (https://whatcoloristhis.one/test/privacy.html via Caddy).
+    return send_from_directory('.', 'privacy.html')
 
 
 @app.route('/color-math.js')
