@@ -1,1 +1,1 @@
-public.app-category.utilities
+UTILITIES

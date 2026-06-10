@@ -1,1 +1,1 @@
-public.app-category.healthcare-fitness
+HEALTH_AND_FITNESS
