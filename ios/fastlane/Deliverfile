@@ -3,7 +3,11 @@
 # the files under fastlane/metadata/ mirror it in deliver's format.
 
 app_identifier("one.whatcoloristhis.visiontest")
-team_id("596T7J7FB6")
+# Deliverfile team_id is the App Store Connect team (numeric), NOT
+# the Developer Portal team id. 117870543 = Bridge City Lab LLC in
+# ASC; 596T7J7FB6 is the same org in the Developer Portal and lives
+# in project.yml / the Appfile.
+team_id("117870543")
 
 # Apple ID for App Store Connect. Override with FASTLANE_USER if the
 # developer account uses a different login.
