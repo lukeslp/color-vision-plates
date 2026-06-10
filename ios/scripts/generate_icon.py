@@ -3,12 +3,11 @@
 
 A faithful Python port of the plate-generation math in index.html —
 mulberry32 PRNG, Poisson-disk dot packing, CIELAB-with-noise colors via
-labToHex — rendering an HRR-style triangle (drawShapeMask geometry)
-with the control plate's palette (PLATES[0]: L* 65 warm figure vs
-L* 38 cool field). The control palette is the deliberate choice: a
-true vanishing plate would be invisible to exactly the people this
-app is for, while the control plate is visible to everyone — it is
-also what the in-app hero renders.
+labToHex — rendering an HRR-style triangle (drawShapeMask geometry) in
+the classic printed-Ishihara palette: vermilion figure, olive/khaki
+field, warm paper background. High-contrast on purpose: a true
+vanishing plate would be invisible to exactly the people this app is
+for.
 
 Deterministic: same seed as the plate (42), no session salt, like the
 hero canvas. Writes every size AppIcon.appiconset references.
@@ -31,13 +30,16 @@ MIN_R = 2.5 * SIZE / REF
 MAX_R = 6.5 * SIZE / REF
 PAD = 0.8 * SIZE / REF  # canPlace spacing padding, scaled
 
-# PLATES[0] — the control plate (index.html). FG/BG as {L, LR, a, aR, b, bR}.
+# Palette: classic printed-Ishihara look — warm paper, olive/khaki
+# field, vermilion figure. Specified in CIELAB with noise ranges and
+# rendered through the same rndColor/labToHex math as the in-app
+# plates (these are icon colors, not screening colors — legibility for
+# everyone is the point, like the in-app hero).
 PLATE_SEED = 42
-FG = {"L": 65, "LR": 12, "a": 10, "aR": 16, "b": 15, "bR": 16}
-BG = {"L": 38, "LR": 12, "a": -6, "aR": 16, "b": -10, "bR": 16}
+FG = {"L": 58, "LR": 12, "a": 44, "aR": 14, "b": 50, "bR": 16}   # vermilion/orange
+BG = {"L": 66, "LR": 12, "a": -9, "aR": 12, "b": 38, "bR": 16}   # olive/khaki
 
-CANVAS = (13, 13, 13)       # app background #0d0d0d
-PLATE_FILL = (17, 17, 17)   # renderPlate's '#111' plate circle
+CANVAS = (247, 241, 229)    # warm paper, like a printed plate book
 
 OUT_DIR = Path(__file__).resolve().parent.parent / "ColorVisionTest" / "Assets.xcassets" / "AppIcon.appiconset"
 
@@ -214,13 +216,10 @@ def main():
     dots = poisson_disk_sample(cx, cy, plate_r, MIN_R, MAX_R, rng)
     mask = triangle_mask(s, cx, cy, plate_r)
 
+    # Dots sit directly on the paper, like a printed plate — no
+    # backing circle; the gaps show paper.
     img = Image.new("RGB", (s * SS, s * SS), CANVAS)
     draw = ImageDraw.Draw(img)
-    draw.ellipse(
-        [(cx - plate_r - 2) * SS, (cy - plate_r - 2) * SS,
-         (cx + plate_r + 2) * SS, (cy + plate_r + 2) * SS],
-        fill=PLATE_FILL,
-    )
 
     # Same per-dot rng order as renderPlate's forEach: 3 calls per dot
     # inside rndColor, mask sampled at floor(x), floor(y).
