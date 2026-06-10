@@ -9,13 +9,35 @@
 # ios/screenshots/<label>/.
 set -euo pipefail
 
-DEVICE="${1:?simulator device name}"
+DEVICE="${1:?simulator device name or UDID}"
 LABEL="${2:?output folder label}"
+
+# A bare name can resolve to a different device per runtime — and the
+# newest runtime may be a beta that hangs on boot (an iOS 27.0 device
+# wedged for 18 minutes here). Resolve the name through xcodebuild's
+# own destination list (only devices it will actually accept) and pin
+# the lowest-OS match, i.e. the most stable released runtime.
 IOS_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 OUT_DIR="$IOS_DIR/screenshots/$LABEL"
 RESULT_BUNDLE="$(mktemp -d)/capture.xcresult"
 
 cd "$IOS_DIR"
+
+if [[ ! "$DEVICE" =~ ^[0-9A-Fa-f-]{36}$ ]]; then
+  # `|| true`: under set -e/pipefail a transient -showdestinations
+  # failure would otherwise kill the script before the error message.
+  RESOLVED=$( (xcodebuild -project ColorVisionTest.xcodeproj -scheme ColorVisionTest \
+      -showdestinations 2>/dev/null || true) \
+    | { grep -F "name:$DEVICE }" || true; } | { grep "platform:iOS Simulator" || true; } \
+    | sed -E 's/.*OS:([0-9.]+).*id:([0-9A-Fa-f-]{36}).*/\1 \2/;s/.*id:([0-9A-Fa-f-]{36}).*OS:([0-9.]+).*/\2 \1/' \
+    | sort -V | head -1 | awk '{print $2}')
+  if [ -z "$RESOLVED" ]; then
+    echo "no simulator destination named '$DEVICE'" >&2
+    exit 1
+  fi
+  echo "resolved '$DEVICE' -> $RESOLVED"
+  DEVICE="$RESOLVED"
+fi
 
 xcrun simctl boot "$DEVICE" 2>/dev/null || true
 xcrun simctl bootstatus "$DEVICE" >/dev/null
@@ -24,7 +46,7 @@ xcrun simctl status_bar "$DEVICE" override \
   --cellularMode active --cellularBars 4 --wifiBars 3 --operatorName ""
 
 xcodebuild -project ColorVisionTest.xcodeproj -scheme ColorVisionTest \
-  -destination "platform=iOS Simulator,name=$DEVICE" \
+  -destination "platform=iOS Simulator,id=$DEVICE" \
   -only-testing:ColorVisionTestUITests/ScreenshotTest \
   -resultBundlePath "$RESULT_BUNDLE" \
   -derivedDataPath build test

@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 """Generate the Color Vision Test app icon set.
 
-A faithful Python port of the plate-generation math in index.html —
-mulberry32 PRNG, Poisson-disk dot packing, CIELAB-with-noise colors via
-labToHex — rendering an HRR-style triangle (drawShapeMask geometry) in
-the classic printed-Ishihara palette: vermilion figure, olive/khaki
-field, warm paper background. High-contrast on purpose: a true
-vanishing plate would be invisible to exactly the people this app is
-for.
+Family sibling of the What Color Is This? icon (../../whatcolor):
+the same six-wedge color wheel on the same near-black field with the
+same white center disc — but where whatcolor's disc holds a "?"
+(identify a color), this one holds the HRR screening triangle (test
+your color vision). Geometry and palette were sampled from
+whatcolor's Icon-1024.png so the two read as siblings on a home
+screen.
 
-Deterministic: same seed as the plate (42), no session salt, like the
-hero canvas. Writes the three single-size (1024 px) appearance
-variants the asset catalog references — light (dots on warm paper),
-dark (dots on transparency; the system supplies its dark backdrop),
-and tinted (grayscale + alpha; the system applies the user's tint).
-Xcode renders every device size from these.
+Writes the three single-size (1024 px) appearance variants the asset
+catalog references — light (mark on the dark field), dark (mark on
+transparency; the system supplies its backdrop), and tinted
+(luminance-separated grayscale + alpha). Xcode renders every device
+size from these.
 
 Usage: python3 ios/scripts/generate_icon.py
 """
@@ -24,227 +23,87 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-SIZE = 1024  # logical render size (matches the coordinate space)
-SS = 4       # supersample factor for clean dot edges
+SIZE = 1024
+SS = 4  # supersample factor for clean edges
 
-# Equivalent hero-plate density: index.html uses minR 2.5 / maxR 6.5 on
-# a ~360 px plate; scale to the 1024 px icon to preserve the look.
-REF = 360.0
-MIN_R = 2.5 * SIZE / REF
-MAX_R = 6.5 * SIZE / REF
-PAD = 0.8 * SIZE / REF  # canPlace spacing padding, scaled
+# Sampled from whatcolor's Icon-1024.png.
+FIELD = (26, 26, 26)
+DISC = (242, 242, 242)
+GLYPH = (17, 17, 17)
+WHEEL_OUTER = 296 / 512  # of half-width
+WHEEL_INNER = 168 / 512  # = white disc radius
+# Clockwise from top, matching whatcolor's wedge order.
+WEDGES = [
+    (212, 64, 65),    # red
+    (205, 103, 23),   # orange
+    (205, 159, 10),   # gold
+    (34, 207, 98),    # green
+    (57, 122, 230),   # blue
+    (142, 75, 202),   # purple
+]
 
-# Palette: classic printed-Ishihara look — warm paper, olive/khaki
-# field, vermilion figure. Specified in CIELAB with noise ranges and
-# rendered through the same rndColor/labToHex math as the in-app
-# plates (these are icon colors, not screening colors — legibility for
-# everyone is the point, like the in-app hero).
-PLATE_SEED = 42
-FG = {"L": 58, "LR": 12, "a": 44, "aR": 14, "b": 50, "bR": 16}   # vermilion/orange
-BG = {"L": 66, "LR": 12, "a": -9, "aR": 12, "b": 38, "bR": 16}   # olive/khaki
-
-CANVAS = (247, 241, 229)    # warm paper, like a printed plate book
+# Triangle: circumradius as a fraction of the disc radius, with a
+# round-joined stroke so the corners aren't razor-sharp (the "?" has
+# rounded terminals; this keeps the same visual weight).
+TRI_R = 0.62
+TRI_STROKE = 0.16
 
 OUT_DIR = Path(__file__).resolve().parent.parent / "ColorVisionTest" / "Assets.xcassets" / "AppIcon.appiconset"
 
 
-# ── mulberry32 (exact 32-bit JS semantics) ──────────────────────────
+def draw_mark(disc_color, wedge_colors, glyph_color, background):
+    """Render the wheel + disc + triangle at SIZE*SS on `background`
+    (an RGBA tuple; use alpha 0 for the dark/tinted variants)."""
+    s = SIZE * SS
+    cx = cy = s / 2
+    outer = WHEEL_OUTER * s / 2
+    inner = WHEEL_INNER * s / 2
 
-def _i32(x):
-    x &= 0xFFFFFFFF
-    return x - 0x100000000 if x >= 0x80000000 else x
+    img = Image.new("RGBA", (s, s), background)
+    d = ImageDraw.Draw(img)
 
+    # Six 60-degree wedges, clockwise from 12 o'clock. PIL's pieslice
+    # measures degrees clockwise from 3 o'clock in y-down coordinates.
+    box = [cx - outer, cy - outer, cx + outer, cy + outer]
+    for i, color in enumerate(wedge_colors):
+        start = -90 + i * 60
+        d.pieslice(box, start, start + 60, fill=color + (255,))
 
-def _u32(x):
-    return x & 0xFFFFFFFF
+    d.ellipse([cx - inner, cy - inner, cx + inner, cy + inner], fill=disc_color + (255,))
 
-
-def mulberry32(seed):
-    state = {"s": _i32(seed)}
-
-    def rng():
-        state["s"] = _i32(state["s"] + 0x6D2B79F5)
-        s = state["s"]
-        t = _i32((_u32(s) ^ (_u32(s) >> 15)) * _i32(1 | s))
-        t = _i32(_i32(t + _i32((_u32(t) ^ (_u32(t) >> 7)) * _i32(61 | t))) ^ t)
-        return (_u32(t) ^ (_u32(t) >> 14)) / 4294967296
-
-    return rng
-
-
-# ── labToHex pipeline (CIELAB → XYZ D65 → linear sRGB → gamma) ──────
-
-def lab_to_rgb(L, a, b):
-    delta = 6 / 29
-    k = 3 * delta * delta
-
-    def f_inv(t):
-        return t * t * t if t > delta else k * (t - 4 / 29)
-
-    fy = (L + 16) / 116
-    X = 0.95047 * f_inv(fy + a / 500)
-    Y = 1.00000 * f_inv(fy)
-    Z = 1.08883 * f_inv(fy - b / 200)
-
-    rl = 3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z
-    gl = -0.9692660 * X + 1.8760108 * Y + 0.0415560 * Z
-    bl = 0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z
-
-    def gamma(c):
-        c = max(0.0, min(1.0, c))
-        return 12.92 * c if c <= 0.0031308 else 1.055 * (c ** (1 / 2.4)) - 0.055
-
-    def byte(v):
-        return round(max(0, min(255, v * 255)))
-
-    return (byte(gamma(rl)), byte(gamma(gl)), byte(gamma(bl)))
-
-
-def rnd_color(cfg, rng):
-    return lab_to_rgb(
-        cfg["L"] + (rng() - 0.5) * cfg["LR"],
-        cfg["a"] + (rng() - 0.5) * cfg["aR"],
-        cfg["b"] + (rng() - 0.5) * cfg["bR"],
-    )
-
-
-# ── poissonDiskSample (line-for-line port, same rng call order) ─────
-
-def poisson_disk_sample(cx, cy, plate_r, min_r, max_r, rng):
-    cell_size = min_r * 1.5 / math.sqrt(2)
-    grid_w = math.ceil(plate_r * 2 / cell_size)
-    grid = [-1] * (grid_w * grid_w)
-    dots = []
-    active = []
-
-    def gi(x, y):
-        gx = math.floor((x - cx + plate_r) / cell_size)
-        gy = math.floor((y - cy + plate_r) / cell_size)
-        if gx < 0 or gx >= grid_w or gy < 0 or gy >= grid_w:
-            return -1
-        return gy * grid_w + gx
-
-    def can_place(x, y, r):
-        if math.hypot(x - cx, y - cy) + r > plate_r - 1:
-            return False
-        if gi(x, y) < 0:
-            return False
-        gx = math.floor((x - cx + plate_r) / cell_size)
-        gy = math.floor((y - cy + plate_r) / cell_size)
-        for dy in range(-3, 4):
-            for dx in range(-3, 4):
-                nx, ny = gx + dx, gy + dy
-                if nx < 0 or nx >= grid_w or ny < 0 or ny >= grid_w:
-                    continue
-                ni = ny * grid_w + nx
-                if grid[ni] >= 0:
-                    o = dots[grid[ni]]
-                    if math.hypot(x - o["x"], y - o["y"]) < r + o["r"] + PAD:
-                        return False
-        return True
-
-    def add(x, y):
-        r = min_r + rng() * (max_r - min_r)
-        if not can_place(x, y, r):
-            return False
-        i = len(dots)
-        dots.append({"x": x, "y": y, "r": r})
-        active.append(i)
-        idx = gi(x, y)
-        if idx >= 0:
-            grid[idx] = i
-        return True
-
-    add(cx, cy)
-    while active:
-        ai = math.floor(rng() * len(active))
-        src = dots[active[ai]]
-        found = False
-        for _ in range(30):
-            a = rng() * math.pi * 2
-            d = min_r * 2 + rng() * min_r * 2.5
-            if add(src["x"] + math.cos(a) * d, src["y"] + math.sin(a) * d):
-                found = True
-                break
-        if not found:
-            active.pop(ai)
-    return dots
-
-
-# ── triangle mask (drawShapeMask geometry: fill + round stroke) ─────
-
-def triangle_mask(size, cx, cy, plate_r):
-    """Rasterize the HRR triangle as drawShapeMask does — apex up,
-    filled, plus a round-joined stroke of width plateR*0.06 centered
-    on the path. One icon-specific deviation: circumradius 0.52
-    instead of the in-app 0.38, because a 0.38 figure turns to mush
-    at the 29-58 px icon sizes."""
-    r = plate_r * 0.52
+    r = inner * TRI_R
     verts = [
         (cx, cy - r),
-        (cx + r * 0.866, cy + r * 0.5),
-        (cx - r * 0.866, cy + r * 0.5),
+        (cx + r * math.cos(math.radians(30)), cy + r * math.sin(math.radians(30))),
+        (cx - r * math.cos(math.radians(30)), cy + r * math.sin(math.radians(30))),
     ]
-    stroke = plate_r * 0.06
-    mask = Image.new("L", (size, size), 0)
-    d = ImageDraw.Draw(mask)
-    d.polygon(verts, fill=255)
-    d.line(verts + [verts[0]], fill=255, width=round(stroke), joint="curve")
-    for (vx, vy) in verts:  # round caps at the corners
-        d.ellipse([vx - stroke / 2, vy - stroke / 2, vx + stroke / 2, vy + stroke / 2], fill=255)
-    return mask.load()
+    stroke = r * TRI_STROKE
+    fill = glyph_color + (255,)
+    d.polygon(verts, fill=fill)
+    d.line(verts + [verts[0]], fill=fill, width=round(stroke), joint="curve")
+    for (vx, vy) in verts:  # round caps on the corners
+        d.ellipse([vx - stroke / 2, vy - stroke / 2, vx + stroke / 2, vy + stroke / 2], fill=fill)
+
+    return img.resize((SIZE, SIZE), Image.LANCZOS)
 
 
 def main():
-    s = SIZE
-    cx = cy = s / 2
-    plate_r = s / 2 - 4 * s / REF  # renderPlate's (size/2 - 4), scaled
-
-    rng = mulberry32(PLATE_SEED)  # hero behavior: raw plate seed, no salt
-    dots = poisson_disk_sample(cx, cy, plate_r, MIN_R, MAX_R, rng)
-    mask = triangle_mask(s, cx, cy, plate_r)
-
-    # Dot layer on transparency — the dark and tinted variants ship
-    # the dots alone (the system supplies its own dark backdrop /
-    # tint); the light variant composites them onto paper.
-    dot_layer = Image.new("RGBA", (s * SS, s * SS), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(dot_layer)
-    tinted_layer = Image.new("RGBA", (s * SS, s * SS), (0, 0, 0, 0))
-    tinted_draw = ImageDraw.Draw(tinted_layer)
-
-    # Same per-dot rng order as renderPlate's forEach: 3 calls per dot
-    # inside rndColor, mask sampled at floor(x), floor(y).
-    for dot in dots:
-        px, py = math.floor(dot["x"]), math.floor(dot["y"])
-        is_shape = 0 <= px < s and 0 <= py < s and mask[px, py] > 128
-        color = rnd_color(FG if is_shape else BG, rng)
-        x, y, r = dot["x"] * SS, dot["y"] * SS, dot["r"] * SS
-        draw.ellipse([x - r, y - r, x + r, y + r], fill=color + (255,))
-        # Tinted appearance: a naive grayscale of the plate makes the
-        # figure vanish (the dots are chroma-separated, not luminance-
-        # separated — that's the whole point of the test), so the
-        # tinted glyph separates on luminance instead.
-        g = 235 if is_shape else 130
-        tinted_draw.ellipse([x - r, y - r, x + r, y + r], fill=(g, g, g, 255))
-
-    dot_base = dot_layer.resize((SIZE, SIZE), Image.LANCZOS)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Light: dots on warm paper (fully opaque — required for the
-    # default appearance and the App Store marketing icon).
-    light = Image.new("RGB", (SIZE, SIZE), CANVAS)
-    light.paste(dot_base, (0, 0), dot_base)
+    # Light (default + App Store marketing): fully opaque.
+    light = draw_mark(DISC, WEDGES, GLYPH, FIELD + (255,)).convert("RGB")
     light.save(OUT_DIR / "Icon-1024.png")
     print("wrote Icon-1024.png (light)")
 
-    # Dark: same plate, transparent background. The system composites
-    # it over its dark gradient; the paper-colored gaps become dark.
-    dot_base.save(OUT_DIR / "Icon-1024-dark.png")
+    # Dark: same mark on transparency; the system supplies the backdrop.
+    dark = draw_mark(DISC, WEDGES, GLYPH, (0, 0, 0, 0))
+    dark.save(OUT_DIR / "Icon-1024-dark.png")
     print("wrote Icon-1024-dark.png (dark)")
 
-    # Tinted: luminance-separated grayscale + alpha; the system
-    # applies the user's tint color.
-    tinted_layer.resize((SIZE, SIZE), Image.LANCZOS).save(OUT_DIR / "Icon-1024-tinted.png")
+    # Tinted: grayscale + alpha, separated on luminance so the mark
+    # survives any tint color.
+    tinted = draw_mark((235, 235, 235), [(120, 120, 120)] * 6, (30, 30, 30), (0, 0, 0, 0))
+    tinted.save(OUT_DIR / "Icon-1024-tinted.png")
     print("wrote Icon-1024-tinted.png (tinted)")
 
 

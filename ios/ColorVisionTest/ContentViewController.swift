@@ -21,6 +21,20 @@ final class ContentViewController: UIViewController, WKUIDelegate, WKNavigationD
         userController.add(self, name: "settings")
         userController.add(self, name: "screeningResult")
         userController.add(self, name: "share")
+
+        // Screenshot-pipeline hook (ScreenshotTest sets this launch
+        // environment; nothing else can on a real device). XCUITest
+        // cannot reliably type into a WKWebView text field — the
+        // post-keyboard relayout breaks tap delivery — so index.html's
+        // showPlate answers the control plate itself when this flag is
+        // present (same injection mechanism as CVT_NATIVE).
+        if ProcessInfo.processInfo.environment["CVT_UITEST_AUTOANSWER"] != nil {
+            userController.addUserScript(WKUserScript(
+                source: "window.CVT_AUTOANSWER = true;",
+                injectionTime: .atDocumentStart,
+                forMainFrameOnly: true
+            ))
+        }
         config.userContentController = userController
 
         webView = WKWebView(frame: .zero, configuration: config)

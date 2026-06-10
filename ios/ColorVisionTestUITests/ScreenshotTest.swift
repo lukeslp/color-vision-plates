@@ -21,6 +21,10 @@ final class ScreenshotTest: XCTestCase {
 
     func testCaptureScreenshots() {
         let app = XCUIApplication()
+        // Arms the shell's screenshot hook: the control plate answers
+        // itself in-page (ContentViewController gates the injection on
+        // this variable; it cannot be set on a production device).
+        app.launchEnvironment["CVT_UITEST_AUTOANSWER"] = "1"
         app.launch()
         let webView = app.webViews.firstMatch
 
@@ -47,24 +51,39 @@ final class ScreenshotTest: XCTestCase {
         }
         XCTAssertTrue(cantSee.waitForExistence(timeout: 10))
 
-        // Demo plate (practice, unscored) — skip through.
+        // Demo plate (practice, unscored) — skip through. The control
+        // plate then answers itself through the CVT_AUTOANSWER hook
+        // (armed via launch environment above): XCUITest cannot type
+        // into this WKWebView, so the test never touches the text
+        // field or the keyboard. The control plate must score correct
+        // or the run ends Inconclusive — the results assertion below
+        // catches that.
         cantSee.tap()
         Thread.sleep(forTimeInterval: 0.6)
 
-        // 3. Plate 1 — always the control plate ("12"). Capture it,
-        // then answer correctly so the screening isn't inconclusive.
-        snap("03-plate")
-        let input = webView.textFields.firstMatch
-        if input.waitForExistence(timeout: 5) {
-            input.tap()
-            input.typeText("12")
-            webView.buttons["Next"].tap()
-        }
-        Thread.sleep(forTimeInterval: 0.6)
-
-        // Remaining plates: can't-see through to results.
-        for _ in 1...20 {
+        // Wait for the autoanswer (fires 2.5s after plate 1 shows)
+        // BEFORE the can't-see loop — otherwise the loop answers the
+        // control plate first and the hook's currentPlate guard makes
+        // it a no-op. Then can't-see through the rest. Number plates
+        // autofocus and raise the keyboard, so 03-plate is captured on
+        // the first shape plate instead — keyboard-free, and it shows
+        // the HRR shape buttons.
+        // Case-insensitive: .plate-label has text-transform:uppercase
+        // and the iOS 26.5 runtime reflects the transform into the
+        // accessibility label ('PLATE 2 OF 14'); 26.4 did not.
+        let plate2 = webView.staticTexts.matching(
+            NSPredicate(format: "label ==[c] %@", "Plate 2 of 14")
+        ).firstMatch
+        XCTAssertTrue(plate2.waitForExistence(timeout: 10), "autoanswer hook never advanced the control plate")
+        let circle = webView.buttons["Circle"]
+        var plateSnapped = false
+        for _ in 1...25 {
             guard cantSee.exists else { break }
+            if !plateSnapped && circle.exists {
+                Thread.sleep(forTimeInterval: 0.5)
+                snap("03-plate")
+                plateSnapped = true
+            }
             cantSee.tap()
             Thread.sleep(forTimeInterval: 0.4)
         }

@@ -1,0 +1,1 @@
+First release. 14 plates (Ishihara-style numbers + HRR-style shapes), protan/deutan/tritan classification, display calibration check, on-device screening history, full methodology with citations. Free, offline, no accounts, no tracking.

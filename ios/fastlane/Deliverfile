@@ -1,0 +1,28 @@
+# Deliverfile — what `fastlane upload_listing` pushes to App Store
+# Connect. Source of truth for the copy is ../app-store-listing.md;
+# the files under fastlane/metadata/ mirror it in deliver's format.
+
+app_identifier("one.whatcoloristhis.visiontest")
+team_id("596T7J7FB6")
+
+# The binary is uploaded via Xcode Organizer / Transporter, not here.
+skip_binary_upload(true)
+
+# CFBundleVersion lives in project.yml, bumped by hand per release.
+skip_app_version_update(true)
+
+# Phased release toggled in the ASC UI, not from here.
+automatic_release(false)
+
+# Don't auto-submit. TestFlight first, then the full submit dance.
+submit_for_review(false)
+
+# Skip the HTML preview prompt (CI-friendly).
+force(true)
+
+app_review_information(
+  first_name: "Luke",
+  last_name: "Steuber",
+  email_address: "luke@lukesteuber.com",
+  notes: File.read(File.join(File.dirname(__FILE__), "review_notes.txt"))
+)

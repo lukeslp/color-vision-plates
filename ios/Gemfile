@@ -1,0 +1,6 @@
+source "https://rubygems.org"
+
+# Fastlane drives the App Store Connect upload (deliver): all listing
+# text from fastlane/metadata/ and the screenshots captured by
+# scripts/capture_screenshots.sh. Setup once: `bundle install`.
+gem "fastlane"

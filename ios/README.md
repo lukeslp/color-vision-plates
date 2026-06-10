@@ -53,13 +53,12 @@ instead.
 
 ## App icon
 
-Generated, not drawn — `scripts/generate_icon.py` is a faithful
-Python port of the plate math in `index.html` (mulberry32 PRNG,
-Poisson-disk dot packing, CIELAB-with-noise via the labToHex
-pipeline), rendering the HRR triangle in the control plate's palette
-(PLATES[0], seed 42 — the same plate the in-app hero shows). The
-control palette is deliberate: a true vanishing plate would be
-invisible to exactly the users this app serves. Deterministic; rerun
+Generated, not drawn — `scripts/generate_icon.py` renders the family
+sibling of the What Color Is This? icon: the same six-wedge color
+wheel, dark field, and white center disc (geometry and palette
+sampled from whatcolor's Icon-1024), with the HRR screening triangle
+where whatcolor has its "?". Three appearance variants (light, dark,
+tinted) in the single-size 1024 catalog format. Deterministic; rerun
 after palette changes.
 
 ## App Store assets

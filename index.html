@@ -87,6 +87,41 @@
         .btn-ghost:hover { color: var(--text); }
         /* Test */
         #test-section { display: none; text-align: center; }
+        /* Focus mode — body.testing while calibration/plates are on
+           screen. The methodology card and footer are reference
+           material; mid-test they're scroll-reachable distraction, so
+           they leave the page entirely and the active section takes
+           the full viewport, centering the plate. Restored on the
+           results page (which links back down to methodology). */
+        body.testing #methodology-section, body.testing footer { display: none; }
+        body.testing #calibration-section, body.testing #test-section {
+            min-height: 100vh; min-height: 100dvh;
+            padding-top: 0; padding-bottom: 0;
+        }
+        /* Keyboard-up compaction. iOS never reflows the layout
+           viewport for the keyboard — WebKit pans to the focused
+           input, which shoves a centered plate offscreen. JS tracks
+           the visual viewport (body.kb-up + --vvh) and while typing
+           we anchor the controls to the bottom of the visible area —
+           the Next button is the bottom of the page — and shrink the
+           plate to fit above them. Centering returns the moment the
+           keyboard dismisses. */
+        body.testing.kb-up #test-section {
+            min-height: 0;
+            height: var(--vvh, 100dvh);
+            justify-content: flex-end;
+            overflow: hidden;
+            padding-bottom: 10px;
+        }
+        body.testing.kb-up #plate-area canvas {
+            width: calc(var(--vvh, 100vh) * 0.32) !important;
+            height: calc(var(--vvh, 100vh) * 0.32) !important;
+        }
+        body.testing.kb-up .progress-bar { margin-bottom: 4px; }
+        body.testing.kb-up .plate-label { margin-bottom: 2px; }
+        /* The inline-styled disclaimer line under the plate label. */
+        body.testing.kb-up #plate-label + p { margin-bottom: 6px !important; }
+        body.testing.kb-up .plate-question { margin: 6px 0; }
         .progress-bar { display: flex; gap: 6px; justify-content: center; margin-bottom: 28px; }
         .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
         /* Active dot is white-text-color, NOT accent-blue, while the
@@ -326,8 +361,7 @@
             border: 1px solid var(--surface-raised);
             background: var(--surface);
             color: var(--text-muted);
-            font-size: 1.25rem;
-            line-height: 1;
+            display: flex; align-items: center; justify-content: center;
             cursor: pointer;
         }
         @media (min-width: 480px) {
@@ -1068,6 +1102,7 @@
 
         document.getElementById('start-btn').addEventListener('click', function() {
             heroSection.style.display = 'none';
+            document.body.classList.add('testing');
             currentPlate = 0; answers.length = 0;
             rerollSessionSalt();
             reshufflePlateOrder();
@@ -1260,6 +1295,21 @@
                 numberAnswer.style.display = 'none'; shapeAnswer.style.display = '';
                 nextBtn.style.display = 'none'; // shape buttons auto-advance
             }
+
+            // Screenshot-pipeline hook. The iOS shell injects
+            // window.CVT_AUTOANSWER only when its ScreenshotTest
+            // launches the app (XCUITest cannot type into a WKWebView
+            // text field — the post-keyboard relayout breaks tap
+            // delivery), so the control plate answers itself through
+            // the normal submit path after a beat. Never set on the
+            // web or on production devices.
+            if (window.CVT_AUTOANSWER && index === 0) {
+                setTimeout(function() {
+                    if (currentPlate === 0 && testSection.style.display !== 'none') {
+                        submitAnswer(PLATES[displayOrder[0]].correct, false);
+                    }
+                }, 2500);
+            }
         }
 
         var submitting = false;
@@ -1347,6 +1397,7 @@
             retakeBtn.addEventListener('click', function() {
                 resultsSection.style.display = 'none';
                 testSection.style.display = 'flex';
+                document.body.classList.add('testing');
                 currentPlate = 0; answers.length = 0;
                 rerollSessionSalt();
                 reshufflePlateOrder();
@@ -1571,6 +1622,7 @@
         function showResults() {
             testSection.style.display = 'none';
             resultsSection.style.display = 'flex';
+            document.body.classList.remove('testing');
             releaseWakeLock();
             var result = scoreResults();
 
@@ -1704,6 +1756,22 @@
             }
         });
 
+        // ── Visual viewport tracking ─────────────────────────────────
+        // See the body.kb-up CSS: the system keyboard never resizes the
+        // layout viewport on iOS, so visualViewport is the only honest
+        // signal that it's covering the page. The 0.8 threshold keeps
+        // URL-bar collapses from registering as a keyboard.
+        if (window.visualViewport) {
+            var updateViewport = function() {
+                var kbUp = window.visualViewport.height < window.innerHeight * 0.8;
+                document.body.classList.toggle('kb-up', kbUp);
+                document.documentElement.style.setProperty('--vvh', window.visualViewport.height + 'px');
+                if (kbUp) window.scrollTo(0, 0);
+            };
+            window.visualViewport.addEventListener('resize', updateViewport);
+            updateViewport();
+        }
+
         // ── Native iOS shell adjustments ─────────────────────────────
         // The iOS app (ios/) injects window.CVT_NATIVE at document
         // start. In native mode: collapse the companion-app card to a
@@ -1722,7 +1790,8 @@
             gear.id = 'native-settings-btn';
             gear.type = 'button';
             gear.setAttribute('aria-label', 'Settings');
-            gear.textContent = '⚙︎';
+            // Gear icon from Feather Icons (MIT).
+            gear.innerHTML = '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>';
             gear.addEventListener('click', function() {
                 if (window.webkit && window.webkit.messageHandlers
                     && window.webkit.messageHandlers.settings) {
