@@ -118,7 +118,7 @@ final class SettingsViewController: UITableViewController {
     // MARK: - Static copy
 
     private static let aboutText = """
-    Color Vision Test
+    Color Vision Plates
 
     A 14-plate color vision screening that tests for red-green and \
     blue-yellow color vision deficiency and attempts to classify \
@@ -155,7 +155,7 @@ final class SettingsViewController: UITableViewController {
     """
 
     private static let licensesText = """
-    Color Vision Test: MIT License, © Luke Steuber
+    Color Vision Plates: MIT License, © Luke Steuber
 
     METHODOLOGY SOURCES
 

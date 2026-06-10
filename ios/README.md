@@ -1,4 +1,4 @@
-# Color Vision Test — iOS
+# Color Vision Plates — iOS
 
 Native iOS shell for the color vision screening at the repo root.
 Same shape as the [What Color Is This?](https://whatcoloristhis.one)
@@ -8,7 +8,7 @@ plus the native surface that makes it a real iOS app rather than a
 wrapped website — on-device screening history with retest comparison,
 a native Settings screen, and the native share sheet.
 
-- App name: **Color Vision Test**
+- App name: **Color Vision Plates** ("Color Vision Test" was taken on the App Store; bundle id unchanged)
 - Bundle id: `one.whatcoloristhis.visiontest`
 - Team: Bridge City Lab LLC (`596T7J7FB6`)
 - Min iOS: 16.0

@@ -1,4 +1,4 @@
-Color Vision Test is a color vision (colorblindness) screening utility built by a colorblind developer.
+Color Vision Plates is a color vision (colorblindness) screening utility built by a colorblind developer.
 
 The app ships fully bundled and operates entirely offline: the 14 screening plates are generated on-device in CIELAB color space; there are no network calls, no account system, no ads, and no tracking (privacy manifest declares UserDefaults only). The web view loads only bundled local assets and is locked to App-Bound Domains; external links open in Safari.
 

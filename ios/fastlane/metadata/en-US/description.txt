@@ -1,6 +1,6 @@
 I'm colorblind. Every "color blind test" app I tried was either a marketing funnel, an ad farm, or scientifically wrong. So I built the one I wanted: real methodology, sources cited, nothing to sign up for.
 
-Color Vision Test is a 14-plate screening for red-green and blue-yellow color vision deficiency. It doesn't just say "you're colorblind" — it attempts to classify the type: protan (red-weak), deutan (green-weak), or tritan (blue-yellow), using dedicated classifier plates that vanish for one type but not the other.
+Color Vision Plates is a 14-plate screening for red-green and blue-yellow color vision deficiency. It doesn't just say "you're colorblind" — it attempts to classify the type: protan (red-weak), deutan (green-weak), or tritan (blue-yellow), using dedicated classifier plates that vanish for one type but not the other.
 
 HOW IT WORKS
 

@@ -1,4 +1,4 @@
-# App Store Connect Listing — Color Vision Test
+# App Store Connect Listing — Color Vision Plates
 
 Drop-in copy for App Store Connect submission. Field names match App Store Connect's UI exactly. Character limits are Apple's hard caps (over = upload error). Same format as `../../whatcolor/app-store-listing.md`.
 
@@ -17,7 +17,7 @@ No App Store Connect API key exists on this machine, so the record is a
    `one.whatcoloristhis.visiontest` (no capabilities needed — no app
    groups, no associated domains in v1).
 2. App Store Connect → My Apps → "+" → New App:
-   - Platform: iOS · Name: **Color Vision Test** · Language: English (U.S.)
+   - Platform: iOS · Name: **Color Vision Plates** · Language: English (U.S.) — done; "Color Vision Test" was taken
    - Bundle ID: `one.whatcoloristhis.visiontest` · SKU: `colorvisiontest-ios-001`
    - Full Access
 3. Paste the fields below.
@@ -28,9 +28,11 @@ No App Store Connect API key exists on this machine, so the record is a
 
 ### Name (30 char max)
 ```
-Color Vision Test
+Color Vision Plates
 ```
-*(17 chars — matches the page's og:title branding)*
+*(19 chars — "Color Vision Test" wasn't available as an App Store
+name; the ASC record was created as Color Vision Plates. Bundle id
+and SKU are unchanged.)*
 
 ### Subtitle (30 char max)
 ```
@@ -78,7 +80,7 @@ English (U.S.)
 ```
 I'm colorblind. Every "color blind test" app I tried was either a marketing funnel, an ad farm, or scientifically wrong. So I built the one I wanted: real methodology, sources cited, nothing to sign up for.
 
-Color Vision Test is a 14-plate screening for red-green and blue-yellow color vision deficiency. It doesn't just say "you're colorblind" — it attempts to classify the type: protan (red-weak), deutan (green-weak), or tritan (blue-yellow), using dedicated classifier plates that vanish for one type but not the other.
+Color Vision Plates is a 14-plate screening for red-green and blue-yellow color vision deficiency. It doesn't just say "you're colorblind" — it attempts to classify the type: protan (red-weak), deutan (green-weak), or tritan (blue-yellow), using dedicated classifier plates that vanish for one type but not the other.
 
 HOW IT WORKS
 
@@ -120,9 +122,9 @@ Made by Luke Steuber. Published by Bridge City Lab LLC.
 ## Keywords (100 char max, comma-separated, NO SPACES between commas)
 
 ```
-colorblind,colorblindness,ishihara,screening,protan,deutan,tritan,daltonism,CVD,eye,hrr,plates
+colorblind,colorblindness,ishihara,screening,protan,deutan,tritan,daltonism,CVD,eye,hrr,test
 ```
-*(94 chars. "color", "vision", and "test" are already in the app name — don't waste keyword chars on them. "daltonism" pulls non-English searches; "ishihara" is the highest-intent term in this niche.)*
+*(92 chars. "color", "vision", and "plates" are already in the app name — don't waste keyword chars on them. "test" earns its slot now that the name no longer contains it ("color blind test" is the niche's biggest query). "daltonism" pulls non-English searches; "ishihara" is the highest-intent term.)*
 
 ---
 
@@ -182,7 +184,7 @@ Upload order: results (04) first or second — it's the conversion shot. Suggest
 ### Notes for the reviewer
 
 ```
-Color Vision Test is a color vision (colorblindness) screening utility built by a colorblind developer.
+Color Vision Plates is a color vision (colorblindness) screening utility built by a colorblind developer.
 
 The app ships fully bundled and operates entirely offline: the 14 screening plates are generated on-device in CIELAB color space; there are no network calls, no account system, no ads, and no tracking (privacy manifest declares UserDefaults only). The web view loads only bundled local assets and is locked to App-Bound Domains; external links open in Safari.
 
