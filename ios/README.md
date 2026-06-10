@@ -25,11 +25,11 @@ brew install xcodegen        # once — keep ≥ the version that generated
                              # build settings; diff before committing)
 cd ios
 xcodegen generate
-xcodebuild -project ColorVisionTest.xcodeproj -scheme ColorVisionTest \
+xcodebuild -project ColorVisionPlates.xcodeproj -scheme ColorVisionPlates \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 
 # Smoke test (drives a full screening, verifies the JS bridge end to end)
-xcodebuild -project ColorVisionTest.xcodeproj -scheme ColorVisionTest \
+xcodebuild -project ColorVisionPlates.xcodeproj -scheme ColorVisionPlates \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
 ```
 
@@ -56,13 +56,15 @@ instead.
 
 ## App icon
 
-Generated, not drawn — `scripts/generate_icon.py` renders the family
-sibling of the What Color Is This? icon: the same six-wedge color
-wheel, dark field, and white center disc (geometry and palette
-sampled from whatcolor's Icon-1024), with the HRR screening triangle
-where whatcolor has its "?". Three appearance variants (light, dark,
-tinted) in the single-size 1024 catalog format. Deterministic; rerun
-after palette changes.
+Source artwork + derived appearances — `scripts/icon-source.png` is
+an Ishihara-style sibling of whatcolor's icon (green/cyan plate dots,
+orange/red figure; a hidden triangle where whatcolor hides its
+magnifying glass). `scripts/generate_icon.py` fits it to 1024 and
+derives the dark appearance (white field → charcoal, dot colors
+preserved) and the tinted appearance (luminance-separated mask, since
+the plate's chroma-separated dots vanish in naive grayscale — that
+being literally what the app tests for). Rerun after replacing the
+source art.
 
 ## App Store assets
 
