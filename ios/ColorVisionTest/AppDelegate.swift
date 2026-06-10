@@ -4,7 +4,10 @@ import UIKit
 final class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        true
+        if ProcessInfo.processInfo.environment["CVT_UITEST_CLEAR_HISTORY"] != nil {
+            UserDefaults.standard.removeObject(forKey: "screeningHistory")
+        }
+        return true
     }
 
     func application(_ application: UIApplication,

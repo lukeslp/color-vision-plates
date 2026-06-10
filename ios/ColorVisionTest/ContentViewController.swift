@@ -36,6 +36,16 @@ final class ContentViewController: UIViewController, WKUIDelegate, WKNavigationD
                 forMainFrameOnly: true
             ))
         }
+
+        let allowedUITestProfiles = ["calibration-inconclusive", "tritan-mild", "tritan-likely"]
+        if let profile = ProcessInfo.processInfo.environment["CVT_UITEST_PROFILE"],
+           allowedUITestProfiles.contains(profile) {
+            userController.addUserScript(WKUserScript(
+                source: "window.CVT_UITEST_PROFILE = '\(profile)';",
+                injectionTime: .atDocumentStart,
+                forMainFrameOnly: true
+            ))
+        }
         config.userContentController = userController
 
         webView = WKWebView(frame: .zero, configuration: config)

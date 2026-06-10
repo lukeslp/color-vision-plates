@@ -12,6 +12,7 @@ import XCTest
 final class SmokeTest: XCTestCase {
     func testFullScreeningReachesNativeHistory() {
         let app = XCUIApplication()
+        app.launchEnvironment["CVT_UITEST_CLEAR_HISTORY"] = "1"
         app.launch()
 
         let webView = app.webViews.firstMatch
@@ -68,6 +69,7 @@ final class SmokeTest: XCTestCase {
         let savedResult = app.tables.staticTexts["Inconclusive"]
         XCTAssertTrue(savedResult.waitForExistence(timeout: 10),
                       "screeningResult message never reached the native ResultStore")
+        XCTAssertEqual(app.tables.cells.count, 1, "history should contain only the result from this run")
 
         // Regression: retake after a completed screening must accept
         // input. The `submitting` flag used to stay latched through
@@ -89,5 +91,64 @@ final class SmokeTest: XCTestCase {
         ).firstMatch
         XCTAssertTrue(plate2.waitForExistence(timeout: 5),
                       "retake plates ignore input — submitting flag latched after showResults")
+    }
+
+    func testSkippedCalibrationIsInconclusive() {
+        let app = launch(profile: "calibration-inconclusive")
+        let webView = app.webViews.firstMatch
+
+        let wrongPatch = webView.buttons["Gray patch 1 of 4"]
+        XCTAssertTrue(wrongPatch.waitForExistence(timeout: 10))
+        wrongPatch.tap()
+
+        let skip = webView.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Skip'")).firstMatch
+        XCTAssertTrue(skip.waitForExistence(timeout: 5))
+        skip.tap()
+
+        let cantSee = webView.buttons["I can't see anything"]
+        XCTAssertTrue(cantSee.waitForExistence(timeout: 5))
+        cantSee.tap() // dismiss the unscored practice plate
+
+        XCTAssertTrue(webView.staticTexts["Inconclusive"].waitForExistence(timeout: 10))
+        let calibrationMessage = webView.staticTexts.matching(
+            NSPredicate(format: "label BEGINSWITH 'The display calibration check was not passed'")
+        ).firstMatch
+        XCTAssertTrue(calibrationMessage.exists)
+    }
+
+    func testTwoTritanMissesAreMild() {
+        let app = beginProfiledScreening("tritan-mild")
+        XCTAssertTrue(app.webViews.firstMatch.staticTexts["Possible Mild Blue-Yellow Color Difference"].waitForExistence(timeout: 10))
+    }
+
+    func testThreeTritanMissesAreLikely() {
+        let app = beginProfiledScreening("tritan-likely")
+        XCTAssertTrue(app.webViews.firstMatch.staticTexts["Likely Blue-Yellow Color Difference"].waitForExistence(timeout: 10))
+    }
+
+    private func launch(profile: String) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchEnvironment["CVT_UITEST_CLEAR_HISTORY"] = "1"
+        app.launchEnvironment["CVT_UITEST_PROFILE"] = profile
+        app.launch()
+
+        let start = app.webViews.firstMatch.buttons["Start Screening"]
+        XCTAssertTrue(start.waitForExistence(timeout: 15))
+        start.tap()
+        return app
+    }
+
+    private func beginProfiledScreening(_ profile: String) -> XCUIApplication {
+        let app = launch(profile: profile)
+        let webView = app.webViews.firstMatch
+
+        let correctPatch = webView.buttons["Gray patch 4 of 4"]
+        XCTAssertTrue(correctPatch.waitForExistence(timeout: 10))
+        correctPatch.tap()
+
+        let cantSee = webView.buttons["I can't see anything"]
+        XCTAssertTrue(cantSee.waitForExistence(timeout: 5))
+        cantSee.tap() // dismiss the unscored practice plate
+        return app
     }
 }
