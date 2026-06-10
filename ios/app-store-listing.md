@@ -164,11 +164,13 @@ Upload order: results (04) first or second — it's the conversion shot. Suggest
 
 **Data Not Collected.** The app makes no network requests: no analytics, no crash reporting, no accounts. Screening history is stored in UserDefaults on-device only. (`PrivacyInfo.xcprivacy` declares UserDefaults access, reason CA92.1, and nothing else.)
 
-- Privacy Policy URL: `https://whatcoloristhis.one/test/privacy.html`
-  (this app's own policy, served by `api.py` from `privacy.html` —
-  **must be deployed to production before submission**; whatcolor's
-  `/privacy.html` describes a camera app and would read as a
-  metadata mismatch under 5.1.1(i))
+- Privacy Policy URL: `https://whatcoloristhis.one/privacy.html`
+  (live today — `/test/privacy.html` 404'd during deliver validation
+  because this repo wasn't deployed yet. whatcolor's `privacy.html`
+  now has an explicit "Color Vision Plates (companion app)" section
+  so it isn't a 5.1.1(i) metadata mismatch; **deploy whatcolor before
+  App Review** so the section is live. This repo's own `privacy.html`
+  remains and will serve at `/test/privacy.html` once deployed.)
 
 ---
 
