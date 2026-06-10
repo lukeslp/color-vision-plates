@@ -26,13 +26,13 @@ The frontend is intentionally a single HTML file (matching the parent whatcolor 
 
 ## iOS app (`ios/`)
 
-Standalone iOS app ("Color Vision Test", `one.whatcoloristhis.visiontest`), same shape as `../whatcolor/ios/`: a WKWebView shell that loads the **bundled** root `index.html` + `color-math.js` (referenced from the repo root in `project.yml`, never copied), plus native screening history, Settings, and share sheet. The `.xcodeproj` is generated — edit `ios/project.yml` and rerun `xcodegen generate`; never hand-edit the project file.
+Standalone iOS app ("Color Vision Plates" — "Color Vision Test" was taken on the App Store; bundle id `one.whatcoloristhis.visiontest`), same shape as `../whatcolor/ios/`: a WKWebView shell that loads the **bundled** root `index.html` + `color-math.js` (referenced from the repo root in `project.yml`, never copied), plus native screening history, Settings, and share sheet. The `.xcodeproj` is generated — edit `ios/project.yml` and rerun `xcodegen generate`; never hand-edit the project file.
 
 The shell injects `window.CVT_NATIVE = true` at document start. Every native behavior in `index.html` is gated on that flag: results post to the `screeningResult` message handler, the share button posts to `share` (no `navigator.share`/`clipboard` in a `file://` WKWebView), the companion-app card collapses to a single link, GoatCounter never loads, and a settings gear posts to `settings`. When touching `showResults`, the share handler, or the CTA card, keep those branches working — `ios/ColorVisionTestUITests/SmokeTest.swift` drives a full screening through the bridge and fails if the contract breaks:
 
 ```bash
-cd ios && xcodegen generate && xcodebuild -project ColorVisionTest.xcodeproj \
-  -scheme ColorVisionTest -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
+cd ios && xcodegen generate && xcodebuild -project ColorVisionPlates.xcodeproj \
+  -scheme ColorVisionPlates -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
 ```
 
 See `ios/README.md` for the full bridge contract and App Review notes.

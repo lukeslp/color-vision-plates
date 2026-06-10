@@ -26,7 +26,7 @@ cd "$IOS_DIR"
 if [[ ! "$DEVICE" =~ ^[0-9A-Fa-f-]{36}$ ]]; then
   # `|| true`: under set -e/pipefail a transient -showdestinations
   # failure would otherwise kill the script before the error message.
-  RESOLVED=$( (xcodebuild -project ColorVisionTest.xcodeproj -scheme ColorVisionTest \
+  RESOLVED=$( (xcodebuild -project ColorVisionPlates.xcodeproj -scheme ColorVisionPlates \
       -showdestinations 2>/dev/null || true) \
     | { grep -F "name:$DEVICE }" || true; } | { grep "platform:iOS Simulator" || true; } \
     | sed -E 's/.*OS:([0-9.]+).*id:([0-9A-Fa-f-]{36}).*/\1 \2/;s/.*id:([0-9A-Fa-f-]{36}).*OS:([0-9.]+).*/\2 \1/' \
@@ -45,7 +45,7 @@ xcrun simctl status_bar "$DEVICE" override \
   --time "9:41" --batteryState charged --batteryLevel 100 \
   --cellularMode active --cellularBars 4 --wifiBars 3 --operatorName ""
 
-xcodebuild -project ColorVisionTest.xcodeproj -scheme ColorVisionTest \
+xcodebuild -project ColorVisionPlates.xcodeproj -scheme ColorVisionPlates \
   -destination "platform=iOS Simulator,id=$DEVICE" \
   -only-testing:ColorVisionTestUITests/ScreenshotTest \
   -resultBundlePath "$RESULT_BUNDLE" \

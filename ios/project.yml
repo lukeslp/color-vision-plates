@@ -1,4 +1,4 @@
-name: ColorVisionTest
+name: ColorVisionPlates
 options:
   bundleIdPrefix: one.whatcoloristhis
   deploymentTarget:
@@ -98,7 +98,7 @@ targets:
       - target: ColorVisionTest
 
 schemes:
-  ColorVisionTest:
+  ColorVisionPlates:
     build:
       targets:
         ColorVisionTest: all

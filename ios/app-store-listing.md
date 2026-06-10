@@ -208,7 +208,7 @@ No demo account needed — there are no accounts. To see a full flow quickly: St
 ## Build & upload (when ready)
 
 1. `cd ios && xcodegen generate`
-2. Xcode → Product → Archive (scheme ColorVisionTest, Any iOS Device)
+2. Xcode → Product → Archive (scheme ColorVisionPlates, Any iOS Device)
 3. Distribute App → App Store Connect → Upload
 4. TestFlight processing (~10-30 min), then internal testing
 5. Push this listing + screenshots with fastlane (after the record

@@ -15,10 +15,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "50DE28668E4CF18718E04258"
+               BlueprintIdentifier = "AC622734054ACC4B267EFFC9"
                BuildableName = "ColorVisionTest.app"
                BlueprintName = "ColorVisionTest"
-               ReferencedContainer = "container:ColorVisionTest.xcodeproj">
+               ReferencedContainer = "container:ColorVisionPlates.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -32,10 +32,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "50DE28668E4CF18718E04258"
+            BlueprintIdentifier = "AC622734054ACC4B267EFFC9"
             BuildableName = "ColorVisionTest.app"
             BlueprintName = "ColorVisionTest"
-            ReferencedContainer = "container:ColorVisionTest.xcodeproj">
+            ReferencedContainer = "container:ColorVisionPlates.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
@@ -44,10 +44,10 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7ED16BDA7BF84CB6D8364677"
+               BlueprintIdentifier = "5B5D24D64DB4E4949D7840C2"
                BuildableName = "ColorVisionTestUITests.xctest"
                BlueprintName = "ColorVisionTestUITests"
-               ReferencedContainer = "container:ColorVisionTest.xcodeproj">
+               ReferencedContainer = "container:ColorVisionPlates.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -68,10 +68,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "50DE28668E4CF18718E04258"
+            BlueprintIdentifier = "AC622734054ACC4B267EFFC9"
             BuildableName = "ColorVisionTest.app"
             BlueprintName = "ColorVisionTest"
-            ReferencedContainer = "container:ColorVisionTest.xcodeproj">
+            ReferencedContainer = "container:ColorVisionPlates.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -87,10 +87,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "50DE28668E4CF18718E04258"
+            BlueprintIdentifier = "AC622734054ACC4B267EFFC9"
             BuildableName = "ColorVisionTest.app"
             BlueprintName = "ColorVisionTest"
-            ReferencedContainer = "container:ColorVisionTest.xcodeproj">
+            ReferencedContainer = "container:ColorVisionPlates.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
