@@ -14,6 +14,10 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let win = UIWindow(windowScene: windowScene)
         win.rootViewController = nav
+        // The web app is permanently dark (#0d0d0d, forced by its own
+        // CSS); pin the native sheets to match so Settings/History
+        // don't flash a white UI inside a dark app.
+        win.overrideUserInterfaceStyle = .dark
         win.makeKeyAndVisible()
         self.window = win
     }

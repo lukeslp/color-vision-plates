@@ -53,10 +53,25 @@ instead.
 
 ## App icon
 
-Generated, not drawn — `scripts/generate_icon.py` (PIL, fixed seed)
-packs an Ishihara-style dot plate with an HRR-style triangle figure
-and writes every size in `AppIcon.appiconset`. Rerun it after palette
-changes; output is deterministic.
+Generated, not drawn — `scripts/generate_icon.py` is a faithful
+Python port of the plate math in `index.html` (mulberry32 PRNG,
+Poisson-disk dot packing, CIELAB-with-noise via the labToHex
+pipeline), rendering the HRR triangle in the control plate's palette
+(PLATES[0], seed 42 — the same plate the in-app hero shows). The
+control palette is deliberate: a true vanishing plate would be
+invisible to exactly the users this app serves. Deterministic; rerun
+after palette changes.
+
+## App Store assets
+
+- `app-store-listing.md` — every ASC field ready to paste (name,
+  subtitle, description, keywords, privacy labels, review notes),
+  plus the one manual step: creating the ASC record needs Luke's
+  Apple ID + 2FA (no ASC API key on this machine).
+- `screenshots/` — captured by `scripts/capture_screenshots.sh`,
+  which boots the simulator, pins the 9:41 status bar, drives
+  `ScreenshotTest` through a full screening, and exports the
+  attachments. iPhone 6.9" (1320×2868) and iPad 13" (2064×2752).
 
 ## App Review positioning (Guideline 4.2)
 
@@ -71,9 +86,8 @@ test screen, the results page, and the history footer.
 
 ## Not done yet
 
-- App Store Connect record + TestFlight upload (see
-  `../../whatcolor/ios/post-enrollment-checklist.md` for the
-  team-level steps already completed for whatcolor).
+- App Store Connect record (manual, 5 min — steps at the top of
+  `app-store-listing.md`), then archive + TestFlight upload.
 - Swap the in-app companion CTA href to the What Color Is This? App
   Store URL once it's live (marked `TODO` in `index.html`).
 - Device-matrix pass (small phone / Dynamic Island / iPad) before

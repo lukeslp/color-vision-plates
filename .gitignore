@@ -9,3 +9,6 @@ __pycache__/
 # iOS build artifacts (matches whatcolor convention)
 ios/build/
 xcuserdata/
+
+# macOS
+.DS_Store
