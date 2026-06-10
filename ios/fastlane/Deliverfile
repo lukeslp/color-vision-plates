@@ -5,6 +5,10 @@
 app_identifier("one.whatcoloristhis.visiontest")
 team_id("596T7J7FB6")
 
+# Apple ID for App Store Connect. Override with FASTLANE_USER if the
+# developer account uses a different login.
+username("luke@lukesteuber.com")
+
 # The binary is uploaded via Xcode Organizer / Transporter, not here.
 skip_binary_upload(true)
 
@@ -20,9 +24,6 @@ submit_for_review(false)
 # Skip the HTML preview prompt (CI-friendly).
 force(true)
 
-app_review_information(
-  first_name: "Luke",
-  last_name: "Steuber",
-  email_address: "luke@lukesteuber.com",
-  notes: File.read(File.join(File.dirname(__FILE__), "review_notes.txt"))
-)
+# Review contact + notes live in metadata/review_information/ —
+# deliver's native layout. (Don't File.read here: fastlane evals this
+# file, so __FILE__/relative paths don't resolve.)
