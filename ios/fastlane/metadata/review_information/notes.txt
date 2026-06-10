@@ -8,4 +8,4 @@ This is a screening tool, not a medical device, and it does not claim to diagnos
 
 The matching audited web experience is at https://whatcoloristhis.one/test/ ; the iOS app is the same validated test with native iOS integrations. Companion app: What Color Is This? (one.whatcoloristhis.ios), same developer.
 
-No demo account needed — there are no accounts. To see a full flow quickly: Start Screening → tap the brighter gray patch → answer the practice plate → answer or skip the 14 plates → results → gear icon (top right) → Screening History.
+No demo account needed: there are no accounts. To see a full flow quickly: Start Screening → tap the brighter gray patch → answer the practice plate → answer or skip the 14 plates → results → gear icon (top right) → Screening History.
