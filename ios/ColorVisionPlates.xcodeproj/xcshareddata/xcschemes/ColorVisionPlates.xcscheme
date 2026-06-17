@@ -50,6 +50,17 @@
                ReferencedContainer = "container:ColorVisionPlates.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "40250AB90593640FFAC1AC69"
+               BuildableName = "ColorVisionWidgetTests.xctest"
+               BlueprintName = "ColorVisionWidgetTests"
+               ReferencedContainer = "container:ColorVisionPlates.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>
