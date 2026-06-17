@@ -98,7 +98,9 @@ struct IshiharaPlate {
     /// mirroring the web clock's minute-bucket seed.
     static func seed(for date: Date, radius: CGFloat) -> UInt32 {
         let minuteBucket = UInt32(truncatingIfNeeded: Int(date.timeIntervalSince1970 / 60))
-        let dim = UInt32(truncatingIfNeeded: Int(radius.rounded()) * 131)
+        // Multiply in UInt32 (matches the JS unsigned 32-bit seed math; the
+        // signed-Int intermediate could wrap differently at huge radii).
+        let dim = UInt32(truncatingIfNeeded: Int(radius.rounded())) &* 131
         return (minuteBucket ^ salt ^ dim)
     }
 
@@ -140,21 +142,27 @@ struct IshiharaPlate {
         var mask = [Bool](repeating: false, count: w * w)
 
         let fontSize = CGFloat(value.count > 1 ? Double(w) * 0.42 : Double(w) * 0.55)
+        let font = UIFont.systemFont(ofSize: fontSize, weight: .black)
         let para = NSMutableParagraphStyle()
         para.alignment = .center
         let attrs: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: fontSize, weight: .black),
+            .font: font,
             .foregroundColor: UIColor.white,
             .paragraphStyle: para,
         ]
         let ns = NSString(string: value)
-        let textSize = ns.size(withAttributes: attrs)
+
+        // Draw into a full-width rect so the paragraph's .center alignment
+        // handles horizontal placement (metric-independent). Vertically,
+        // centre on the glyph cap-height — the visual centre of a digit —
+        // which mirrors the web clock's textBaseline='middle' intent better
+        // than the font's full line box would.
+        let topY = CGFloat(w) / 2 - font.ascender + font.capHeight / 2
+        let drawRect = CGRect(x: 0, y: topY, width: CGFloat(w), height: CGFloat(w))
 
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: w, height: w))
         let image = renderer.image { _ in
-            ns.draw(at: CGPoint(x: (CGFloat(w) - textSize.width) / 2,
-                                y: (CGFloat(w) - textSize.height) / 2),
-                    withAttributes: attrs)
+            ns.draw(in: drawRect, withAttributes: attrs)
         }
 
         guard let cg = image.cgImage,
