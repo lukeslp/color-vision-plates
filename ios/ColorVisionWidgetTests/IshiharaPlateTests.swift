@@ -83,4 +83,29 @@ final class IshiharaPlateTests: XCTestCase {
                                          selection: .fixed(.protan))
         XCTAssertEqual(result.number, "3")
     }
+
+    // Regression: the hidden numeral must render in the CENTRE of the plate.
+    // The mask is rasterised with UIGraphicsImageRenderer, which defaults to
+    // the screen scale; if the buffer and the sampling loop disagree on pixel
+    // dimensions, the figure is flung into a corner (and can vanish entirely
+    // at 3x). Classify figure dots by chroma — deutan fg is green-dominant,
+    // bg magenta-dominant — and assert their centroid sits near the centre.
+    func testFigureRendersCentred() {
+        var comps = DateComponents()
+        comps.year = 2026; comps.month = 6; comps.day = 17; comps.hour = 3; comps.minute = 0
+        let date = Calendar.current.date(from: comps)!
+        let size = CGSize(width: 158, height: 158)
+        let seed = IshiharaPlate.seed(for: date, radius: 75)
+        let plate = IshiharaPlate.build(size: size, date: date, seed: seed, selection: .fixed(.deutan))
+
+        let figure = plate.dots.filter { $0.green > $0.red }
+        XCTAssertGreaterThan(figure.count, 10, "the hidden digit should colour a cluster of dots")
+
+        let cx = figure.reduce(CGFloat(0)) { $0 + $1.x } / CGFloat(figure.count)
+        let cy = figure.reduce(CGFloat(0)) { $0 + $1.y } / CGFloat(figure.count)
+        let offX = abs(cx - plate.center.x) / plate.radius
+        let offY = abs(cy - plate.center.y) / plate.radius
+        XCTAssertLessThan(offX, 0.25, "figure centroid drifted in x (\(offX) of R) — mask scale bug?")
+        XCTAssertLessThan(offY, 0.25, "figure centroid drifted in y (\(offY) of R) — mask scale bug?")
+    }
 }

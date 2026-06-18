@@ -160,7 +160,15 @@ struct IshiharaPlate {
         let topY = CGFloat(w) / 2 - font.ascender + font.capHeight / 2
         let drawRect = CGRect(x: 0, y: topY, width: CGFloat(w), height: CGFloat(w))
 
-        let renderer = UIGraphicsImageRenderer(size: CGSize(width: w, height: w))
+        // Rasterise at scale 1 so the pixel buffer is exactly w×w — the
+        // sampling loop below indexes it as w×w. The default format uses the
+        // screen scale (2x/3x), producing a 2w/3w-wide buffer; reading only
+        // the first w columns and rows then captures a single quadrant of the
+        // centred glyph and flings the figure into the bottom-right of the
+        // plate (and at 3x drops it off the sampled region entirely).
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = 1
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: w, height: w), format: format)
         let image = renderer.image { _ in
             ns.draw(in: drawRect, withAttributes: attrs)
         }

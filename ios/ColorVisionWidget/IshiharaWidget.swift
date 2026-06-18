@@ -114,7 +114,7 @@ struct IshiharaClockWidget: Widget {
         }
         .configurationDisplayName("Ishihara Clock")
         .description("The hour hidden in a regenerating colorblindness plate.")
-        .supportedFamilies([.systemSmall, .systemLarge])
+        .supportedFamilies([.systemLarge])
     }
 }
 
