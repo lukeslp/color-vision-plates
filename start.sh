@@ -20,7 +20,7 @@ fi
 exec gunicorn \
   --workers 2 \
   --threads 2 \
-  --bind 0.0.0.0:5012 \
+  --bind 127.0.0.1:5012 \
   --access-logfile - \
   --error-logfile - \
   --timeout 30 \

@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color Vision Test — 14-plate screening with cited sources</title>
-    <meta name="description" content="Free 14-plate color vision deficiency screening. Tests for protan, deutan, and tritan types using Ishihara (1917), HRR (1954), and Brettel (1997) confusion-line methods. No signup. Sources cited. Made by a colorblind dev.">
+    <title>Colorblindness Test</title>
+    <meta name="description" content="A real one: free, with citations. Based on Ishihara and HRR plate methods, validated with the Viénot-Brettel-Mollon dichromacy model.">
     <link rel="canonical" href="https://whatcoloristhis.one/test/">
-    <meta property="og:title" content="Color Vision Test — 14 plates, real sources, no signup">
-    <meta property="og:description" content="Free color vision deficiency screening built from clinical Ishihara + HRR + Brettel methods. Plates generated from CIELAB and validated against the Brettel 1997 dichromacy model. No marketing list. Made by a colorblind developer.">
-    <meta property="og:image" content="https://whatcoloristhis.one/og-beta.png">
+    <meta property="og:title" content="Colorblindness Test">
+    <meta property="og:description" content="A real one: free, with citations. Based on Ishihara and HRR plate methods, validated with the Viénot-Brettel-Mollon dichromacy model.">
+    <meta property="og:image" content="https://whatcoloristhis.one/test/og-beta.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="What Color Is This? color vision screening test">
+    <meta property="og:image:alt" content="Colorblindness test plate of colored dots with a hidden number">
     <meta property="og:url" content="https://whatcoloristhis.one/test/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="What Color Is This?">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Color Vision Test — 14 plates, real sources, no signup">
-    <meta name="twitter:description" content="Free color vision deficiency screening built from clinical Ishihara + HRR + Brettel methods. Made by a colorblind dev.">
-    <meta name="twitter:image" content="https://whatcoloristhis.one/og-beta.png">
+    <meta name="twitter:title" content="Colorblindness Test">
+    <meta name="twitter:description" content="A real one: free, with citations. Based on Ishihara and HRR plate methods, validated with the Viénot-Brettel-Mollon dichromacy model.">
+    <meta name="twitter:image" content="https://whatcoloristhis.one/test/og-beta.png">
     <meta name="theme-color" content="#1a1a1a">
     <link rel="icon" type="image/x-icon" href="https://whatcoloristhis.one/favicon.ico">
     <link rel="apple-touch-icon" href="https://whatcoloristhis.one/apple-touch-icon.png">
@@ -337,8 +337,9 @@
             opacity: 0.85;
         }
 
-        /* TestFlight CTA card — replaces the old email signup since the
-           iOS public beta is open. Tighter, single primary action. */
+        /* App CTA card — links to the shipped App Store build, the web
+           app, and the Android APK. (Replaced the TestFlight beta CTA,
+           which itself replaced the original email signup.) */
         /* TestFlight CTA — inherits .card system (padding 20/22,
            radius, margin). Only the centered text alignment + larger
            heading + button row differ from the meaning/details cards. */
@@ -530,11 +531,11 @@
                     <h2>What Color Is This?</h2>
                     <p class="subtitle">A color identification app built for how you actually see.</p>
                     <div class="testflight-actions">
-                        <a class="btn btn-primary" href="https://testflight.apple.com/join/5y2mqQcH" target="_blank" rel="noopener">iOS beta (TestFlight)</a>
+                        <a class="btn btn-primary" href="https://apps.apple.com/us/app/what-color-is-this/id6767490668" target="_blank" rel="noopener">iOS (App Store)</a>
                         <a class="btn btn-secondary" href="https://whatcoloristhis.one/android-download/whatcolor.apk" rel="noopener">Android (APK)</a>
                         <a class="btn btn-secondary" href="https://whatcoloristhis.one" target="_blank" rel="noopener">Web</a>
                     </div>
-                    <p class="testflight-fineprint">Free. No accounts, no tracking, no ads. Camera identification, ~32,000 named colors, colorblind-safe palettes, CVD simulation.</p>
+                    <p class="testflight-fineprint">Free. No accounts, no ads, and the app itself contains no analytics or tracking. Camera identification, ~32,000 named colors, colorblind-safe palettes, CVD simulation.</p>
                 </div>
 
                 <div class="result-actions" style="margin-top:14px;">
@@ -554,19 +555,20 @@
         <section id="methodology-section" class="container" aria-label="How this screening works">
             <div class="card about-test">
                 <h3>About this screening</h3>
-                <p>This is a 14-plate pseudoisochromatic screening that tests for red-green and blue-yellow color vision deficiency, and attempts to classify red-green deficiency as protan-type or deutan-type. It combines two established clinical methodologies with confusion-line geometry from Brettel et al. (1997):</p>
+                <p>This is a 14-plate pseudoisochromatic screening that tests for red-green and blue-yellow color vision deficiency, and attempts to classify red-green deficiency as protan-type or deutan-type. It combines two established clinical methodologies with confusion-line geometry from the Viénot, Brettel &amp; Mollon (1999) dichromacy simulation:</p>
                 <p><strong>Ishihara-style plates</strong> present numbers hidden in fields of colored dots. The foreground and background colors are placed so that hue is the only available cue (matched luminance). People with color vision deficiency cannot distinguish the figure from the background.</p>
                 <p><strong>HRR-style plates</strong> use geometric shapes instead of numbers, which avoids digit-recognition bias and works for participants who cannot read numerals. The Hardy-Rand-Rittler test is the standard clinical complement to Ishihara for identifying both type and severity.</p>
-                <p><strong>Protan-only and deutan-only classifier plates</strong> use color pairs that vanish under one form of dichromacy but remain visible under the other. Their colors were generated by simulating each candidate pair under Brettel et al.'s 1997 dichromacy model and selecting pairs with very low CIEDE2000 distance for the target type and high distance for the opposite type. These plates let the screening separate protan-type from deutan-type rather than reporting both as undifferentiated red-green CVD.</p>
+                <p><strong>Protan-only and deutan-only classifier plates</strong> use color pairs that become near-invisible under one form of dichromacy but remain visible under the other. Their colors were generated by simulating each candidate pair under the Viénot-Brettel-Mollon (1999) dichromacy model and selecting pairs with very low CIEDE2000 distance for the target type and high distance for the opposite type. These plates let the screening attempt to separate protan-type from deutan-type rather than reporting both as undifferentiated red-green CVD. One honest caveat: the simulation models dichromats (a missing cone class), while the most common red-green differences are anomalous trichromacy (a shifted cone class) — for anomalous viewers the classifier figures fade rather than vanish, so the subtype call is less reliable than the overall red-green screen.</p>
                 <p><strong>Tritan plates</strong> use pairs that map to the same color under tritan simulation, which is a much stronger filter than the b*-axis separation a naive design would use. A b*-axis pair leaks ~30 CIEDE2000 units of contrast in tritan-simulated space; the confusion-line pairs here leak under 1 unit.</p>
                 <p>Plate 1 is a luminance-contrast control: it should be visible regardless of color vision type. If it is missed, the result is flagged as inconclusive (likely a screen brightness or lighting issue).</p>
-                <p><strong>Limitations:</strong> This is a screen-based approximation. Clinical Ishihara and HRR tests use precisely calibrated printed pigments under standardized illumination (CIE Illuminant C). Display color rendering varies by device, panel type, brightness, and ambient lighting. This screening can indicate the likely presence and type of color vision deficiency, but it cannot replace a clinical evaluation.</p>
+                <p><strong>Limitations:</strong> This is a screen-based approximation. Clinical Ishihara and HRR tests use precisely calibrated printed pigments under standardized illumination (CIE Illuminant C), specify a viewing distance (so the figure subtends a known visual angle), and test each eye separately — acquired color vision changes can affect one eye more than the other. Here the dot size varies with your screen and how far you sit from it, and both eyes are tested together. Display color rendering also varies by device, panel type, brightness, and ambient lighting, and the simulation used to validate the plates is least precise for the blue-yellow (tritan) case. This screening can indicate the likely presence and type of color vision deficiency, but it cannot replace a clinical evaluation.</p>
                 <details style="margin-top:18px;">
                     <summary style="cursor:pointer; font-weight:600; font-size:0.85rem; color:var(--text);">Citations &amp; references</summary>
                     <div style="margin-top:12px;">
                         <div class="citation">Ishihara, S. (1917). <em>Tests for Colour-Blindness</em>. Handaya, Tokyo, Hongo Harukicho.</div>
                         <div class="citation">Hardy, L.H., Rand, G., &amp; Rittler, M.C. (1954). <em>HRR Pseudoisochromatic Plates for Detecting and Classifying Color Vision Deficiency</em>. American Optical Company.</div>
                         <div class="citation">Brettel, H., Viénot, F., &amp; Mollon, J.D. (1997). Computerized simulation of color appearance for dichromats. <em>Journal of the Optical Society of America A</em>, 14(10), 2647-2655.</div>
+                        <div class="citation">Viénot, F., Brettel, H., &amp; Mollon, J.D. (1999). Digital video colourmaps for checking the legibility of displays by dichromats. <em>Color Research &amp; Application</em>, 24(4), 243-252. (The single-plane simulation implemented here.)</div>
                         <div class="citation">Sharma, G., Wu, W., &amp; Dalal, E.N. (2005). The CIEDE2000 color-difference formula: implementation notes, supplementary test data, and mathematical observations. <em>Color Research &amp; Application</em>, 30(1), 21-30.</div>
                         <div class="citation">Birch, J. (2012). Worldwide prevalence of red-green color deficiency. <em>Journal of the Optical Society of America A</em>, 29(3), 313-320.</div>
                         <div class="citation">Cole, B.L. (2007). Assessment of inherited colour vision defects in clinical practice. <em>Clinical and Experimental Optometry</em>, 90(3), 157-175.</div>
@@ -1297,6 +1299,10 @@
                 document.getElementById('plate-question').textContent = 'What shape do you see?';
                 numberAnswer.style.display = 'none'; shapeAnswer.style.display = '';
                 nextBtn.style.display = 'none'; // shape buttons auto-advance
+                // Keep keyboard users in the flow: without this, focus drops
+                // to <body> on shape plates and they must Tab back in.
+                var firstShape = shapeAnswer.querySelector('.shape-btn');
+                if (firstShape) firstShape.focus();
             }
 
             // Screenshot-pipeline hook. The iOS shell injects
@@ -1417,6 +1423,10 @@
         var retakeBtn = document.getElementById('retake-btn');
         if (retakeBtn) {
             retakeBtn.addEventListener('click', function() {
+                // The final submitAnswer() leaves `submitting` latched true
+                // (its showResults branch never advances a plate); clear it
+                // or every input on the retake run is swallowed.
+                submitting = false;
                 resultsSection.style.display = 'none';
                 testSection.style.display = 'flex';
                 document.body.classList.add('testing');
@@ -1538,22 +1548,31 @@
                     ' (' + axes.join(' and ') + '). You can probably see most colors, but the subtle differences are a little harder to catch. The clinical name for this pattern is anomalous trichromacy (deuteranomaly or protanomaly).');
             }
 
-            // 3. Protan-type signal — fails protan-only plates, passes deutan-only
-            if (protanOnlyFailed >= 1 && deutanOnlyFailed === 0 && (rgFailed >= 1 || protanOnlyFailed >= 2)) {
+            // 3. Protan-type signal — fails protan-only plates, passes deutan-only.
+            //    Requires either both classifier plates or one classifier plus
+            //    two screeners: a single classifier miss + one screener miss is
+            //    within noise for a self-administered web test, and the
+            //    classifiers are tuned to dichromat confusion lines, which
+            //    anomalous trichromats only partially follow.
+            if (deutanOnlyFailed === 0 && (protanOnlyFailed >= 2 || (protanOnlyFailed === 1 && rgFailed >= 2))) {
                 var sev = (protanOnlyFailed >= 2 && rgFailed >= 2) ? 'Likely Red-Type Color Difference' : 'Possible Red-Type Color Difference';
                 return result('protan', sev, 'badge-cvd',
                     'Your pattern matches the red-weakness signature — plates designed to vanish for the red-type pattern (' + protanOnlyFailed + ' of ' + c.protanOnly.total + ' missed) while the green-type plates came through clearly. About 1% of men have this pattern. The clinical name is protanopia or protanomaly.', true);
             }
 
-            // 4. Deutan-type signal — fails deutan-only plates, passes protan-only
-            if (deutanOnlyFailed >= 1 && protanOnlyFailed === 0 && (rgFailed >= 1 || deutanOnlyFailed >= 2)) {
+            // 4. Deutan-type signal — same gating rationale as rule 3.
+            if (protanOnlyFailed === 0 && (deutanOnlyFailed >= 2 || (deutanOnlyFailed === 1 && rgFailed >= 2))) {
                 var sevD = (deutanOnlyFailed >= 2 && rgFailed >= 2) ? 'Likely Green-Type Color Difference' : 'Possible Green-Type Color Difference';
                 return result('deutan', sevD, 'badge-cvd',
                     'Your pattern matches the green-weakness signature — plates designed to vanish for the green-type pattern (' + deutanOnlyFailed + ' of ' + c.deutanOnly.total + ' missed) while the red-type plates came through clearly. About 5% of men have this pattern. The clinical name is deuteranopia or deuteranomaly.', true);
             }
 
-            // 5. Mixed classifier — fails both classifier sets
-            if (protanOnlyFailed >= 1 && deutanOnlyFailed >= 1) {
+            // 5. Mixed classifier — fails both classifier sets. Needs three
+            //    classifier misses or a corroborating screener miss: exactly
+            //    one miss on each side is two independent noise events away
+            //    from "Typical", too thin a base for a "Strong" label.
+            if (protanOnlyFailed >= 1 && deutanOnlyFailed >= 1 &&
+                (protanOnlyFailed + deutanOnlyFailed >= 3 || rgFailed >= 1)) {
                 return result('red-green-mixed', 'Strong Red-Green Color Difference', 'badge-cvd',
                     'You missed plates from both red-type and green-type classifier sets — unusual, since each typically passes one and fails the other. Your pattern fits a strong red-green difference where overall contrast cues are also reduced, or a less-common color vision pattern. ' + totalRGFails + ' of ' + (c.rgScreen.total + c.protanOnly.total + c.deutanOnly.total) + ' red-green plates were missed.', true);
             }
@@ -1602,14 +1621,11 @@
             }
 
             // 12. Typical color vision (with note if any noise misses)
-            var earlyExitNote = answers.early_exit_at
-                ? ' (Test ended early after ' + answers.early_exit_at + ' clean plates — extending to all ' + PLATES.length + ' would not change the result.)'
-                : '';
             var noiseNote = totalFails === 1
                 ? ' One plate was missed, which is within the typical noise floor for a self-administered test of this length.'
                 : '';
             return result('normal', 'Typical Color Vision', 'badge-normal',
-                'Your answers are consistent with typical color vision.' + noiseNote + earlyExitNote + ' About 1 in 12 men and 1 in 200 women have some form of color vision difference, so this still matters for design and accessibility work even when your own vision is typical.');
+                'Your answers are consistent with typical color vision.' + noiseNote + ' About 1 in 12 men and 1 in 200 women have some form of color vision difference, so this still matters for design and accessibility work even when your own vision is typical.');
         }
 
         // Day-to-day implications per result type, surfaced on the
@@ -1660,6 +1676,17 @@
             document.body.classList.remove('testing');
             releaseWakeLock();
             var result = scoreResults();
+
+            // Hand the result to the What Color Is This? app: /test/ shares
+            // an origin with the app root on every domain, so the app's
+            // Settings can offer "Use my test result" without a backend.
+            try {
+                localStorage.setItem('whatcolor_test_result', JSON.stringify({
+                    visionType: result.type,
+                    label: result.label,
+                    at: new Date().toISOString()
+                }));
+            } catch (e) { /* private mode / storage full — sync is best-effort */ }
 
             document.getElementById('result-badge').textContent =
                 result.type === 'normal' ? 'Typical color vision' :

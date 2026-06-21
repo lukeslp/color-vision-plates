@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working in this
 
 ## Project
 
-Color Vision Screening Test served at `/test/` on `whatcoloristhis.one`, `whatcoloristhat.one`, `whatcolouristhat.com`, `dr.eamer.dev`, and `lukesteuber.com`. Companion to the [What Color Is This?](https://whatcoloristhis.one) app at `../whatcolor/`. Beta-tester signup feeds into the same SQLite database (`beta.db`).
+Color Vision Screening Test served at `/test/` on `whatcoloristhis.one`, `whatcoloristhat.one`, `whatcolouristhat.com`, `dr.eamer.dev`, and `lukesteuber.com`. Companion to the [What Color Is This?](https://whatcoloristhis.one) app at `../whatcolor/`. The results page links to the shipped App Store/web/Android builds; the old beta-signup API is gone (historical data stays in `beta.db`).
 
 This is a separate git repo from `../whatcolor/`. Root `git status` will not show changes here.
 
@@ -85,7 +85,7 @@ cd /home/coolhand/html/whatcolor && python tests/parity_test.py
 The `BETA_PLATES` constant in `parity_test.py` is a snapshot of beta's plate hex codes (computed from the LAB triples via beta's `labToHex`). When PLATES change, regenerate via:
 
 ```bash
-cd /home/coolhand/html/beta && node -e "
+cd /home/coolhand/html/colorblindness-test && node -e "
 const fs = require('fs');
 const html = fs.readFileSync('index.html', 'utf8');
 function labToHex(L, a, b) {
@@ -116,9 +116,6 @@ Paste the JSON into the `BETA_PLATES` list. Run the parity test. Commit both cha
 | `GET /color-math.js` | Static JS bundle (explicit route since Flask `static_folder='.'` doesn't auto-serve at root with the existing index handler) |
 | `GET /og-beta.png`, `GET /og-beta-v2.png` | Open Graph card image |
 | `GET /health` | Liveness check (used by `service_manager.py`) |
-| `POST /api/signup` | Beta tester signup. Body: `{email, vision_type, test_results, calibration_warning?}` |
-| `GET /api/signup/count` | Public signup count |
-| `GET /api/admin/signups` | CSV export, gated by `BETA_ADMIN_KEY` |
 
 CORS is allowlisted to: `whatcoloristhis.one`, `whatcoloristhat.one`, `whatcolouristhat.com`, `dr.eamer.dev`, `lukesteuber.com`, and `localhost:5012`.
 
@@ -132,7 +129,7 @@ sudo systemctl restart whatcolor-beta.service
 sudo journalctl -u whatcolor-beta -f
 ```
 
-The unit lives at `/etc/systemd/system/whatcolor-beta.service`. `Restart=always` so it self-recovers from crashes. Environment variables (`RESEND_API_KEY`, `BETA_ADMIN_KEY`) are baked into the unit.
+The unit lives at `/etc/systemd/system/whatcolor-beta.service`. `Restart=always` so it self-recovers from crashes. No environment variables are needed since the signup API was removed (the unit may still carry stale `RESEND_API_KEY`/`BETA_ADMIN_KEY` lines; harmless).
 
 ## Caddy routing
 
@@ -150,8 +147,8 @@ A bad config locks all routed services out at once: validate before reload.
 - **Single HTML file is intentional** (matches whatcolor): no bundler, no framework, no component library. Inline new scripts.
 - **Pure-JS plate verifier is intentional**: Brettel + CIEDE2000 are imported from `color-math.js`, plate definitions stay inline in `index.html` for grep-ability.
 - **Verifier in warn mode for v1**: the existing red-green plates pass at the threshold-10 boundary. After plate redesign for stricter thresholds, switch to throw mode so a broken plate fails CI.
-- **No new dependencies** without justification: current Python deps are Flask + flask-cors + requests + python-dotenv. Resist the urge to add ORMs, JS frameworks, or test runners.
-- **Privacy-first**: only PII stored is email + vision_type + test answers + IP + UA in SQLite. Don't expand. GoatCounter handles web analytics on the parent whatcolor domain, not here.
+- **No new dependencies** without justification: current Python deps are Flask + flask-cors + requests + gunicorn. Resist the urge to add ORMs, JS frameworks, or test runners.
+- **Privacy-first**: the backend stores nothing. This page loads the self-hosted GoatCounter snippet (stats.dr.eamer.dev) for pageview analytics; results never leave the browser.
 - **Never claim diagnostic accuracy**: this is a screener. The disclaimer "Screening tool, not a clinical diagnosis" is persistent below the progress bar AND in the results page; both must stay.
 
 ## Credit
