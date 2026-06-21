@@ -18,3 +18,11 @@ ios/fastlane/screenshots/
 ios/fastlane/report.xml
 ios/fastlane/README.md
 Gemfile.lock
+
+# Android TWA build (bubblewrap). The generated Android project is
+# rebuilt from android-build/twa-manifest.json via `bubblewrap build`,
+# so only the manifest is tracked. The signing keystore is a secret and
+# this repo is public: it stays out of git and is backed up to
+# ~/documentation/keystores/ instead.
+android-build/*
+!android-build/twa-manifest.json

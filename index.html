@@ -22,6 +22,10 @@
     <meta name="theme-color" content="#1a1a1a">
     <link rel="icon" type="image/x-icon" href="https://whatcoloristhis.one/favicon.ico">
     <link rel="apple-touch-icon" href="https://whatcoloristhis.one/apple-touch-icon.png">
+    <!-- iOS Safari shows a native "smart app banner" for this app id.
+         Android has no meta-tag equivalent; its banner is built in JS
+         (see #app-banner) and links to the sideload APK. -->
+    <meta name="apple-itunes-app" content="app-id=6778625150">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -378,6 +382,24 @@
         /* Animations */
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         .fade-in { animation: fadeInUp 0.4s ease forwards; }
+
+        /* Android app-install banner. iOS Safari shows its own native
+           smart banner from the apple-itunes-app meta tag in <head>;
+           Chrome has no equivalent, so this fills the Android gap.
+           Shown by JS only on Android, dismissal remembered in
+           localStorage. Top-of-flow (not sticky) so it mirrors the
+           native banner's scroll-away behaviour and never covers the
+           plates. */
+        .app-banner { display: none; align-items: center; gap: 12px; padding: 9px 12px; background: var(--surface); border-bottom: 1px solid var(--border); }
+        .app-banner.is-visible { display: flex; }
+        .app-banner__dismiss { flex: none; width: 28px; height: 28px; display: grid; place-items: center; background: none; border: none; color: var(--text-muted); font-size: 1.4rem; line-height: 1; cursor: pointer; border-radius: 50%; }
+        .app-banner__dismiss:hover { color: var(--text); background: var(--surface-raised); }
+        .app-banner__icon { flex: none; width: 38px; height: 38px; border-radius: 9px; }
+        .app-banner__body { flex: 1 1 auto; min-width: 0; }
+        .app-banner__name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+        .app-banner__tagline { font-size: 0.76rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-banner__cta { flex: none; padding: 7px 18px; background: var(--accent); color: #fff; border-radius: 100px; font-size: 0.85rem; font-weight: 600; }
+        .app-banner__cta:hover { text-decoration: none; background: var(--accent-dim); }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
             html { scroll-behavior: auto; }
@@ -407,6 +429,18 @@
 </head>
 <body>
     <a href="#main" class="skip-link">Skip to content</a>
+    <!-- Android app-install banner. Hidden until JS confirms Android;
+         iOS Safari gets its own native banner from the apple-itunes-app
+         meta tag in <head>. Links to the sideload TWA APK. -->
+    <aside class="app-banner" id="app-banner" aria-label="Get the Color Vision Plates app">
+        <button type="button" class="app-banner__dismiss" id="app-banner-dismiss" aria-label="Dismiss app banner">&times;</button>
+        <img class="app-banner__icon" src="https://whatcoloristhis.one/plates-icon-512.png" alt="" width="38" height="38">
+        <div class="app-banner__body">
+            <div class="app-banner__name">Color Vision Plates</div>
+            <div class="app-banner__tagline">This screening test, as an Android app.</div>
+        </div>
+        <a class="app-banner__cta" id="app-banner-install" href="https://whatcoloristhis.one/android-download/color-vision-plates.apk">Install</a>
+    </aside>
     <main id="main">
         <!-- Hero -->
         <section class="hero container" id="hero-section" aria-label="Color vision screening introduction">
@@ -1874,6 +1908,24 @@
 
         initHero();
         window.addEventListener('resize', function() { if (heroSection.style.display !== 'none') initHero(); });
+    })();
+    </script>
+    <script>
+    // Android app-install banner. iOS Safari shows the native smart
+    // banner via the apple-itunes-app meta tag, so this only fills the
+    // Android gap. Dismissal is remembered so it shows at most once per
+    // visitor (until they clear storage).
+    (function () {
+        var banner = document.getElementById('app-banner');
+        if (!banner) return;
+        var dismissed = false;
+        try { dismissed = localStorage.getItem('cvp_android_banner_dismissed') === '1'; } catch (e) {}
+        if (!/Android/i.test(navigator.userAgent) || dismissed) return;
+        banner.classList.add('is-visible');
+        document.getElementById('app-banner-dismiss').addEventListener('click', function () {
+            banner.classList.remove('is-visible');
+            try { localStorage.setItem('cvp_android_banner_dismissed', '1'); } catch (e) {}
+        });
     })();
     </script>
     <!-- GoatCounter Analytics — web only. The iOS app sets
