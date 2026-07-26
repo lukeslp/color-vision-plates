@@ -1,6 +1,6 @@
-Color Vision Plates 1.0.2 is a small update for people who finish a screening.
+Color Vision Plates 1.0.3 is a quiet stability update.
 
-- After you complete a few screenings across separate sessions, the app may occasionally invite an App Store rating. Never on first open, never mid-plate.
+- Improves reliability when returning to the app after a screening.
 - Same 14-plate flow, same on-device history, same free offline screening.
 
 Questions: luke@lukesteuber.com.
