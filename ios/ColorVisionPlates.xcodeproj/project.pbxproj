@@ -17,6 +17,7 @@
 		9438DEBB43F3C36B1A4FBA47 /* IshiharaPlate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E8982DAFB81D8255D5427A7 /* IshiharaPlate.swift */; };
 		96DAAD2FA9EA2A2BF95D87DB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E75E2D2783707A79552D017 /* SceneDelegate.swift */; };
 		9E6279F1B3A500AEBF2F1F10 /* ResultStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1360FC866BD5FC11B0A2E874 /* ResultStore.swift */; };
+		9FD283CE06E14D076EB2A310 /* ReviewPromptPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802105BDA76E48E647DAE051 /* ReviewPromptPolicy.swift */; };
 		B6CC316D50E3BE97B16DCDF9 /* IshiharaPlate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E8982DAFB81D8255D5427A7 /* IshiharaPlate.swift */; };
 		BD03374520FE3703E8195346 /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = CA747C539D11759E2D5025E0 /* index.html */; };
 		C117BDB1B17F242E0935616A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06524DA431E276508C10CB1D /* AppDelegate.swift */; };
@@ -72,6 +73,7 @@
 		58893EEB17053DC433DD2ED4 /* IshiharaWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IshiharaWidget.swift; sourceTree = "<group>"; };
 		68EB3DB042351242925CC325 /* ColorVisionWidgetTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ColorVisionWidgetTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6F39FEEA4D7F6FDC39635E73 /* IshiharaPlateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IshiharaPlateTests.swift; sourceTree = "<group>"; };
+		802105BDA76E48E647DAE051 /* ReviewPromptPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewPromptPolicy.swift; sourceTree = "<group>"; };
 		92FC742070E4BED71BD08DAE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9A2B2C22E5029EE3DB5CAA72 /* ColorVisionWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ColorVisionWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD7DF665D2E150A678301C61 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -116,9 +118,18 @@
 			);
 			sourceTree = "<group>";
 		};
+		76151E319DEA4F7DAB61A550 /* Reviews */ = {
+			isa = PBXGroup;
+			children = (
+				802105BDA76E48E647DAE051 /* ReviewPromptPolicy.swift */,
+			);
+			path = Reviews;
+			sourceTree = "<group>";
+		};
 		84518A17C57D5C22F8F754A1 /* ColorVisionTest */ = {
 			isa = PBXGroup;
 			children = (
+				76151E319DEA4F7DAB61A550 /* Reviews */,
 				06524DA431E276508C10CB1D /* AppDelegate.swift */,
 				92FC742070E4BED71BD08DAE /* Assets.xcassets */,
 				B35621C629BB50D8A3D94B94 /* ContentViewController.swift */,
@@ -328,6 +339,7 @@
 				FE4C5E127A707BE0E6572FFE /* ContentViewController.swift in Sources */,
 				350CC6061A421A9DFF5D913B /* HistoryViewController.swift in Sources */,
 				9E6279F1B3A500AEBF2F1F10 /* ResultStore.swift in Sources */,
+				9FD283CE06E14D076EB2A310 /* ReviewPromptPolicy.swift in Sources */,
 				96DAAD2FA9EA2A2BF95D87DB /* SceneDelegate.swift in Sources */,
 				CBAB0DAC78218C1C918BD4EA /* SettingsViewController.swift in Sources */,
 			);

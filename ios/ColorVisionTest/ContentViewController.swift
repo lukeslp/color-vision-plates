@@ -76,6 +76,7 @@ final class ContentViewController: UIViewController, WKUIDelegate, WKNavigationD
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         UIApplication.shared.isIdleTimerDisabled = true
+        ReviewPromptPolicy().recordSession()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -140,6 +141,8 @@ final class ContentViewController: UIViewController, WKUIDelegate, WKNavigationD
         case "screeningResult":
             guard let body = message.body as? [String: Any] else { return }
             ResultStore.shared.save(from: body)
+            // Finished screening + saved history is a calm completion moment.
+            ReviewPromptPolicy().noteSuccessAndRequestIfAppropriate()
         case "share":
             // navigator.share / navigator.clipboard don't exist in a
             // file:// WKWebView (not a secure context) — the page posts
