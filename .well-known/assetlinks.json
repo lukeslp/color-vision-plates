@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "one.whatcoloristhis.plates.twa",
+      "sha256_cert_fingerprints": [
+        "03:C2:31:72:80:A1:CB:25:2D:E0:7F:56:3F:E9:DB:88:64:D6:F5:F6:37:71:A2:19:73:A4:BA:2D:F1:91:97:01"
+      ]
+    }
+  }
+]

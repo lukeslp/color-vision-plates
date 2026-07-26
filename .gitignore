@@ -26,3 +26,8 @@ Gemfile.lock
 # ~/documentation/keystores/ instead.
 android-build/*
 !android-build/twa-manifest.json
+!android-build/package.json
+!android-build/package-lock.json
+!android-build/README.md
+!android-build/verify-release.mjs
+!android-build/stage-release.mjs

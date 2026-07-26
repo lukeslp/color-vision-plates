@@ -71,6 +71,22 @@ The service is reverse-proxied at `/test/` on the public domains. See the parent
 
 No environment variables are required: the backend only serves static files and a `/health` endpoint. (The former beta-signup API and its `RESEND_API_KEY`/`BETA_ADMIN_KEY` were removed 2026-06-09 when the iOS app shipped.)
 
+## Android TWA release
+
+Color Vision Plates has a retained Bubblewrap Trusted Web Activity configuration
+in `android-build/`. The Android package is
+`one.whatcoloristhis.plates.twa`, scoped to
+`https://whatcoloristhis.one/test/`. The web app manifest lives at
+`/test/pwa.webmanifest`; the corresponding Digital Asset Links source is
+`.well-known/assetlinks.json` and must be served from the canonical origin at
+`/.well-known/assetlinks.json`.
+
+The build directory pins Bubblewrap and includes metadata checks, an unsigned
+reproducible build command, and secret-safe APK/AAB checksum staging. See
+[`android-build/README.md`](android-build/README.md) for the exact release
+commands and signing prerequisites. No keystore or credential belongs in this
+repository.
+
 ## File map
 
 | File | Role |
@@ -79,6 +95,9 @@ No environment variables are required: the backend only serves static files and 
 | `api.py` | Flask backend: static file routes + `/health` (~50 lines; signup API removed 2026-06-09) |
 | `color-math.js` | Viénot-1999 CVD simulation, CIEDE2000, hex/LAB conversions. Copy of `whatcolor/color-math.js`, kept in parity by `whatcolor/tests/parity_test.py` |
 | `start.sh` | Production entrypoint (gunicorn) |
+| `pwa.webmanifest` | PWA identity and canonical `/test/` scope for the Android TWA |
+| `.well-known/assetlinks.json` | Android Digital Asset Links declaration for the TWA package |
+| `android-build/` | Retained Bubblewrap manifest, pinned build tooling, verification, and release staging instructions |
 | `requirements.txt` | Flask, flask-cors, gunicorn |
 | `beta.db` | Historical beta signups (gitignored; no longer read or written) |
 

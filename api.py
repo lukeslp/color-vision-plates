@@ -49,6 +49,16 @@ def color_math_js():
     return send_from_directory('.', 'color-math.js', mimetype='application/javascript')
 
 
+@app.route('/pwa.webmanifest')
+def pwa_manifest():
+    return send_from_directory('.', 'pwa.webmanifest', mimetype='application/manifest+json')
+
+
+@app.route('/.well-known/assetlinks.json')
+def digital_asset_links():
+    return send_from_directory('.well-known', 'assetlinks.json', mimetype='application/json')
+
+
 @app.route('/health')
 def health():
     return jsonify({'status': 'healthy', 'service': 'colorblindness-test', 'timestamp': time.time()})
