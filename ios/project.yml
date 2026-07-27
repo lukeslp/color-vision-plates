@@ -40,12 +40,14 @@ targets:
         buildPhase: resources
       - path: ../color-math.js
         buildPhase: resources
+      - path: ../icon-512.png
+        buildPhase: resources
     info:
       path: ColorVisionTest/Info.plist
       properties:
         CFBundleDisplayName: Color Vision Plates
         CFBundleShortVersionString: "1.0.3"
-        CFBundleVersion: "8"
+        CFBundleVersion: "9"
         CFBundleDevelopmentRegion: en
         CFBundleLocalizations:
           - en
@@ -110,7 +112,7 @@ targets:
       properties:
         CFBundleDisplayName: Ishihara Clock
         CFBundleShortVersionString: "1.0.3"
-        CFBundleVersion: "8"
+        CFBundleVersion: "9"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
@@ -127,6 +129,8 @@ targets:
         buildPhase: sources
       - path: ColorVisionTest/Reviews/ReviewPromptPolicy.swift
         buildPhase: sources
+      - path: ../index.html
+        buildPhase: resources
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
