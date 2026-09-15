@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy — Color Vision Plates</title>
+    <meta name="description" content="Privacy policy for the Color Vision Plates screening (web and iOS).">
+    <style>
+        :root {
+            --bg: #0d0d0d; --surface: #1a1a1a; --text: #e8e8e8;
+            --text-muted: #9a9a9a; --accent: #5b8def;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.7;
+            margin: 0; padding: 48px 20px;
+        }
+        main { max-width: 640px; margin: 0 auto; }
+        h1 { font-size: 1.6rem; letter-spacing: -0.02em; }
+        h2 { font-size: 1.1rem; margin-top: 32px; }
+        p, li { color: var(--text-muted); }
+        strong { color: var(--text); }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .updated { font-size: 0.85rem; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Color Vision Plates — Privacy</h1>
+    <p class="updated">Last updated: September 15, 2026</p>
+
+    <p><strong>The screening runs on your device.</strong> It does not submit
+    your answers to the server. The website uses pageview analytics and server
+    request logs, as described below.</p>
+
+    <h2>The iOS app</h2>
+    <p>The bundled screening runs offline and does not upload answers.
+    Screening history is stored on your device. You can erase it with
+    Settings&nbsp;&rarr;&nbsp;Clear Screening History. The bundled page disables
+    web analytics. Opening an external link or choosing to share a link uses
+    the destination app or website and its own privacy policy.</p>
+
+    <h2>The web version</h2>
+    <p>Answers are scored in your browser. After a completed run, the page saves
+    a result category, label, and timestamp in local storage under
+    <code>whatcolor_test_result</code>. The companion What Color app on the same
+    website origin can read that summary. The Android availability banner also
+    remembers dismissal locally. You can remove this storage by clearing the
+    website's data in your browser.</p>
+    <p>The screening page loads
+    <a href="https://www.goatcounter.com/">GoatCounter</a> pageview analytics
+    from <code>stats.dr.eamer.dev</code>. The screening code does not send
+    answers or result summaries to that service. Web-server access logs can
+    contain request information such as IP addresses and user agents.</p>
+
+    <h2>External links and sharing</h2>
+    <p>Sharing is initiated by you and shares a link to the screening.
+    External sites, including the companion app and references, have their
+    own privacy policies. The screening does not require an account or email
+    signup.</p>
+
+    <h2>Contact</h2>
+    <p>Questions: <a href="mailto:luke@lukesteuber.com">luke@lukesteuber.com</a>.
+    Color Vision Plates is made by Luke Steuber and published by Bridge City Lab LLC.</p>
+
+    <p><a href="https://whatcoloristhis.one/test/">&larr; Back to the test</a></p>
+</main>
+</body>
+</html>

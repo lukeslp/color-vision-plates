@@ -1,0 +1,54 @@
+{
+  "packageId": "one.whatcoloristhis.plates.twa",
+  "host": "whatcoloristhis.one",
+  "name": "Color Vision Plates",
+  "launcherName": "Color Plates",
+  "display": "standalone",
+  "themeColor": "#1A1A1A",
+  "themeColorDark": "#000000",
+  "navigationColor": "#1A1A1A",
+  "navigationColorDark": "#1A1A1A",
+  "navigationDividerColor": "#1A1A1A",
+  "navigationDividerColorDark": "#1A1A1A",
+  "backgroundColor": "#0D0D0D",
+  "enableNotifications": false,
+  "startUrl": "/test/",
+  "iconUrl": "https://whatcoloristhis.one/plates-icon-512.png",
+  "maskableIconUrl": "https://whatcoloristhis.one/plates-icon-512-maskable.png",
+  "monochromeIconUrl": "",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./plates-keystore.jks",
+    "alias": "plates"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://whatcoloristhis.one/test/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [
+    {
+      "name": "assetlinks",
+      "value": "03:C2:31:72:80:A1:CB:25:2D:E0:7F:56:3F:E9:DB:88:64:D6:F5:F6:37:71:A2:19:73:A4:BA:2D:F1:91:97:01"
+    }
+  ],
+  "additionalTrustedOrigins": [
+    "https://whatcoloristhat.one",
+    "https://whatcolouristhat.com",
+    "https://dr.eamer.dev",
+    "https://lukesteuber.com"
+  ],
+  "retainedBundles": [],
+  "displayOverride": [],
+  "appVersion": "1.0.0"
+}

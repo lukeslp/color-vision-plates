@@ -1,0 +1,4 @@
+app_identifier("one.whatcoloristhis.visiontest")
+apple_id("luke@lukesteuber.com")
+team_id("596T7J7FB6")     # Bridge City Lab (Developer Portal)
+itc_team_id("117870543")  # Bridge City Lab LLC (App Store Connect)

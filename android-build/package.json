@@ -1,0 +1,13 @@
+{
+  "name": "color-vision-plates-android-build",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Reproducible Bubblewrap tooling for Color Vision Plates.",
+  "scripts": {
+    "verify": "node verify-release.mjs",
+    "build:unsigned": "npm exec bubblewrap -- build --skipPwaValidation --skipSigning --manifest twa-manifest.json"
+  },
+  "devDependencies": {
+    "@bubblewrap/cli": "1.24.1"
+  }
+}

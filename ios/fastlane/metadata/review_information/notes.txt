@@ -1,0 +1,11 @@
+Color Vision Plates is a color vision (colorblindness) screening utility built by a colorblind developer.
+
+The app ships fully bundled and operates entirely offline: the 14 screening plates are generated on-device in CIELAB color space; there are no network calls, no account system, no ads, and no tracking (privacy manifest declares UserDefaults only). The web view loads only bundled local assets and is locked to App-Bound Domains; external links open in Safari.
+
+Native iOS surface beyond the screening itself: on-device screening history with retest-over-time comparison (Settings → Screening History), a native Settings screen (About, Privacy, Sources & Licenses), and native share-sheet integration.
+
+This is a screening tool, not a medical device, and it does not claim to diagnose. The "screening, not a medical diagnosis" disclaimer is persistent: shown on the test screen, on every results page, and in the screening history. Results that fail the built-in display-calibration control are reported as inconclusive rather than scored. All methodology is cited in-app (Ishihara 1917; Hardy-Rand-Rittler 1954; Brettel-Viénot-Mollon 1997; Sharma-Wu-Dalal 2005).
+
+The matching audited web experience is at https://whatcoloristhis.one/test/ ; the iOS app is the same validated test with native iOS integrations. Companion app: What Color Is This? (one.whatcoloristhis.ios), same developer.
+
+No demo account needed: there are no accounts. To see a full flow quickly: Start Screening → tap the brighter gray patch → answer the practice plate → answer or skip the 14 plates → results → gear icon (top right) → Screening History.

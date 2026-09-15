@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorblindness Test</title>
+    <meta name="description" content="Explore 14 generated color vision plates with source code and references. Experimental screening, not a clinical diagnosis.">
+    <link rel="canonical" href="https://whatcoloristhis.one/test/">
+    <meta property="og:title" content="Colorblindness Test">
+    <meta property="og:description" content="Explore 14 generated color vision plates with source code and references. Experimental screening, not a clinical diagnosis.">
+    <meta property="og:image" content="https://whatcoloristhis.one/test/icon-512.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:alt" content="Color Vision Plates app icon">
+    <meta property="og:url" content="https://whatcoloristhis.one/test/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="What Color Is This?">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Colorblindness Test">
+    <meta name="twitter:description" content="Explore 14 generated color vision plates with source code and references. Experimental screening, not a clinical diagnosis.">
+    <meta name="twitter:image" content="https://whatcoloristhis.one/test/icon-512.png">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="manifest" href="pwa.webmanifest">
+    <link rel="icon" type="image/png" href="icon-512.png">
+    <link rel="apple-touch-icon" href="icon-512.png">
+    <!-- iOS Safari shows a native "smart app banner" for this app id.
+         Android has no meta-tag equivalent; its banner is built in JS
+         (see #app-banner) and links to the sideload APK. -->
+    <meta name="apple-itunes-app" content="app-id=6778625150">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            /* Near-pure black background to minimize chromatic
+               adaptation drift during the test. The eye adapts to the
+               surround; a slight color cast in the page background
+               shifts how the plates read. #0d0d0d is dark enough to
+               function as a neutral surround without making cards
+               look harsh against a hard #000. */
+            --bg: #0d0d0d; --surface: #1a1a1a; --surface-raised: #242424;
+            --text: #f0f0f0; --text-muted: #999; --accent: #5070d9;
+            --accent-dim: #3d569e; --border: #3a3a3a; --danger: #f07070;
+            --success: #55b87a; --radius: 12px; --radius-sm: 8px;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 2px solid var(--accent); outline-offset: 2px;
+        }
+        .skip-link {
+            position: absolute; top: -100px; left: 16px; background: var(--accent);
+            color: #fff; padding: 8px 16px; border-radius: var(--radius-sm); z-index: 100;
+        }
+        .skip-link:focus { top: 16px; }
+        /* Container fills the viewport. Phone-narrow centering was
+           wrong on desktop — left a small column floating in a sea of
+           dark space. Text-heavy elements still cap themselves at
+           reading width (.hero-method, .result-description, etc) so
+           paragraphs don't run 1400px line widths. */
+        .container { max-width: 100%; margin: 0 auto; padding: 36px 20px 0; }
+        section {
+            min-height: 80vh; display: flex; flex-direction: column;
+            justify-content: center; padding: 60px 0;
+        }
+        /* Hero */
+        .hero { text-align: center; min-height: 100vh; min-height: 100dvh; }
+        .hero-plate { margin: 0 auto 32px; width: min(320px, 85vw); height: min(320px, 85vw); }
+        .hero h1 { font-size: clamp(1.8rem, 6vw, 2.4rem); font-weight: 700; margin-bottom: 12px; letter-spacing: -0.02em; }
+        .hero p { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 8px; }
+        .hero .note { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 28px; opacity: 0.7; }
+        /* Breathing room between the Start Screening button and the
+           methodology paragraph below. Was zero — now reads as a
+           clean visual pause. */
+        .hero #start-btn { margin-bottom: 36px; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 14px 32px; border-radius: var(--radius); border: none;
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            transition: background 0.2s, transform 0.1s; min-height: 48px; min-width: 48px;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-dim); }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-secondary { background: var(--surface-raised); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--border); }
+        .btn-ghost { background: transparent; color: var(--text-muted); padding: 14px 20px; }
+        .btn-ghost:hover { color: var(--text); }
+        /* Test */
+        #test-section { display: none; text-align: center; }
+        /* Focus mode — body.testing while calibration/plates are on
+           screen. The methodology card and footer are reference
+           material; mid-test they're scroll-reachable distraction, so
+           they leave the page entirely and the active section takes
+           the full viewport, centering the plate. Restored on the
+           results page (which links back down to methodology). */
+        body.testing #methodology-section, body.testing footer { display: none; }
+        body.testing #calibration-section, body.testing #test-section {
+            min-height: 100vh; min-height: 100dvh;
+            padding-top: 0; padding-bottom: 0;
+        }
+        /* Keyboard-up compaction. iOS never reflows the layout
+           viewport for the keyboard — WebKit pans to the focused
+           input, which shoves a centered plate offscreen. JS tracks
+           the visual viewport (body.kb-up + --vvh) and while typing
+           we anchor the controls to the bottom of the visible area —
+           the Next button is the bottom of the page — and shrink the
+           plate to fit above them. Centering returns the moment the
+           keyboard dismisses. */
+        body.testing.kb-up #test-section {
+            min-height: 0;
+            height: var(--vvh, 100dvh);
+            justify-content: flex-end;
+            overflow: hidden;
+            padding-bottom: 10px;
+        }
+        body.testing.kb-up #plate-area canvas {
+            width: calc(var(--vvh, 100vh) * 0.32) !important;
+            height: calc(var(--vvh, 100vh) * 0.32) !important;
+        }
+        body.testing.kb-up .progress-bar { margin-bottom: 4px; }
+        body.testing.kb-up .plate-label { margin-bottom: 2px; }
+        /* The inline-styled disclaimer line under the plate label. */
+        body.testing.kb-up #plate-label + p { margin-bottom: 6px !important; }
+        body.testing.kb-up .plate-question { margin: 6px 0; }
+        .progress-bar { display: flex; gap: 6px; justify-content: center; margin-bottom: 28px; }
+        .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
+        /* Active dot is white-text-color, NOT accent-blue, while the
+           test is running. Saturated accent colors adjacent to the
+           plate cause simultaneous chromatic contrast — the user's
+           reds look greener next to a blue dot. Same logic for the
+           Next button override below. */
+        .progress-dot.active { background: var(--text); }
+        .progress-dot.done { background: var(--success); }
+
+        /* Test + calibration screens neutralize the primary button so
+           there's no large saturated-blue element adjacent to the
+           plate. Other screens keep the normal accent treatment. */
+        #test-section .btn-primary,
+        #calibration-section .btn-primary {
+            background: var(--surface-raised);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        #test-section .btn-primary:hover,
+        #calibration-section .btn-primary:hover {
+            background: var(--border);
+        }
+        .plate-container { margin: 0 auto 20px; }
+        .plate-canvas { border-radius: 50%; display: block; margin: 0 auto; }
+        .plate-question { font-size: 1.15rem; font-weight: 600; margin-bottom: 16px; }
+        .plate-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em; }
+        .answer-group { display: flex; flex-direction: column; gap: 12px; align-items: center; margin-bottom: 20px; }
+        .answer-input {
+            width: 120px; padding: 12px 16px; border-radius: var(--radius);
+            border: 2px solid var(--border); background: var(--surface); color: var(--text);
+            font-size: 1.4rem; text-align: center; font-weight: 600; letter-spacing: 0.1em;
+        }
+        .answer-input:focus { border-color: var(--accent); }
+        .answer-input:focus:not(:focus-visible) { outline: none; }
+        .answer-input::placeholder { color: var(--text-muted); font-weight: 400; font-size: 1rem; letter-spacing: 0; }
+        .shape-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .shape-btn {
+            padding: 10px 18px; border-radius: var(--radius); border: 2px solid var(--border);
+            background: var(--surface); color: var(--text); font-size: 0.95rem; font-weight: 500;
+            cursor: pointer; transition: border-color 0.2s, background 0.2s; min-height: 48px;
+        }
+        .shape-btn:hover { border-color: var(--accent); background: var(--surface-raised); }
+        .shape-btn:active { transform: scale(0.96); }
+        .test-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .plate-transition { animation: fadeInUp 0.35s ease forwards; }
+        /* Results */
+        /* Extra top breathing room on the results section so the
+           result-type heading isn't half-clipped by mobile-Safari's
+           URL bar at first paint. The container's 36px padding +
+           safe-area inset are enough on most browsers, but Safari's
+           collapsing URL bar can re-cover the top during scroll. */
+        #results-section { display: none; text-align: center; padding-top: 64px; }
+        .result-type { font-size: clamp(1.3rem, 5vw, 1.7rem); font-weight: 700; margin-bottom: 8px; }
+        .result-description { color: var(--text-muted); font-size: 1rem; margin-bottom: 24px; max-width: 380px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+        .result-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 20px; }
+        .badge-normal { background: rgba(85,184,122,0.15); color: var(--success); }
+        .badge-cvd { background: rgba(108,140,255,0.15); color: var(--accent); }
+        .badge-inconclusive { background: rgba(153,153,153,0.15); color: var(--text-muted); }
+        /* ──────────────────────────────────────────────────────────
+           Results-page card system: ONE consistent shape.
+           Every card on the results page (meaning, disclaimer, the
+           two <details>, TestFlight CTA) shares the same padding,
+           border-radius, border, and bottom margin. The previous
+           setup had 4 different paddings (.card no padding,
+           .result-detail 20px, .about-test 20/22px, .testflight-card
+           24/20px) plus an inline-styled disclaimer pill with its own
+           border-radius — looked chaotic stacked. */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 14px;
+            padding: 20px 22px;
+            text-align: left;
+        }
+        .result-detail h3 { font-size: 0.95rem; margin-bottom: 12px; }
+        .plate-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .plate-result-item { display: flex; align-items: center; gap: 10px; background: var(--surface-raised); border-radius: var(--radius-sm); padding: 10px; }
+        .plate-result-item canvas { border-radius: 50%; flex-shrink: 0; }
+        .plate-result-info { text-align: left; min-width: 0; }
+        .plate-result-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+        .plate-result-answer { font-size: 0.85rem; font-weight: 600; }
+        .plate-result-answer.pass { color: var(--success); }
+        .plate-result-answer.partial { color: #d4a54a; }
+        .plate-result-answer.fail { color: var(--danger); }
+        .plate-result-correct { font-size: 0.75rem; color: var(--text-muted); }
+        @media (max-width: 420px) { .plate-results-grid { grid-template-columns: 1fr; } }
+        /* Disclaimer card variant — subtle accent tint to mark it as
+           "important note" without breaking the unified card shape. */
+        .result-disclaimer {
+            text-align: center;
+            background: rgba(80, 112, 217, 0.06);
+            border-color: rgba(80, 112, 217, 0.25);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        /* Action row inside the results column. Buttons stretch to
+           full column width to match the card rhythm — was a small
+           pill floating in the middle which broke the visual column. */
+        .result-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .result-actions .btn { width: 100%; }
+        /* Spacing pause between the action area and the CTA card.
+           Replaces the old .cta-divider (decorative line that read as
+           "page is ending; stop scrolling"). */
+        .result-section-break { height: 24px; }
+
+        /* Custom <details> styling — replace the default browser ▶
+           marker with an integrated chevron that rotates on open.
+           The default markers were the "unstyled" look on the
+           results page. */
+        /* details.card overrides the unified padding because the
+           summary handles its own. Content inside gets uniform 20/22
+           padding via the rule below. */
+        details.card { padding: 0; overflow: hidden; }
+        details.card > summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 16px 20px 16px 20px;
+            padding-right: 44px;
+            position: relative;
+            font-weight: 600;
+            transition: background var(--transition);
+        }
+        details.card > summary::-webkit-details-marker { display: none; }
+        details.card > summary::after {
+            content: '';
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            width: 9px;
+            height: 9px;
+            border-right: 2px solid var(--text-muted);
+            border-bottom: 2px solid var(--text-muted);
+            transform: translateY(-70%) rotate(45deg);
+            transition: transform 0.2s ease;
+        }
+        details.card[open] > summary::after {
+            transform: translateY(-30%) rotate(-135deg);
+        }
+        details.card > summary:hover { background: rgba(255, 255, 255, 0.02); }
+        details.card > summary:hover::after { border-color: var(--text); }
+        details.card > *:not(summary) {
+            padding: 0 22px 20px;
+            margin: 0;
+        }
+        details.card > .plate-results-grid,
+        details.card > ul.result-card-list {
+            padding: 0 22px 20px;
+        }
+        /* About / Citations — inherits .card padding/margin/etc now,
+           only typography overrides remain. */
+        .about-test h3 { font-size: 0.95rem; margin-bottom: 10px; }
+        .about-test p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 10px; }
+        .about-test p:last-child { margin-bottom: 0; }
+        .about-test .citation { font-size: 0.78rem; color: var(--text-muted); padding-left: 16px; border-left: 2px solid var(--border); margin-bottom: 8px; }
+        .about-test .citation:last-child { margin-bottom: 0; }
+        .hero-method { color: var(--text-muted); font-size: 0.82rem; max-width: 380px; margin: 0 auto 12px; line-height: 1.45; opacity: 0.85; }
+        .hero-method a { color: var(--text-muted); text-decoration: underline; text-underline-offset: 2px; }
+        .hero-method a:hover { color: var(--text); }
+        /* Separate block, not inline-block inside the paragraph (which
+           was creating uneven line spacing when the text wrapped to
+           include it). */
+        .hero-method-link {
+            display: block;
+            text-align: center;
+            margin: 0 auto 28px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+        .hero-method-link:hover { color: var(--text); }
+        .methodology-link { color: var(--text-muted); font-size: 0.9rem; text-decoration: underline; text-underline-offset: 3px; }
+        .methodology-link:hover { color: var(--text); }
+        html { scroll-behavior: smooth; }
+
+        /* Results-page lists. Default browser bullets render as
+           hard-to-see specks against the dark theme; replace with
+           accent-colored marker via ::before so they actually read. */
+        .result-card-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .result-card-list li {
+            position: relative;
+            padding-left: 22px;
+            margin-bottom: 10px;
+            line-height: 1.55;
+            /* Override the inherited text-align: center from the parent
+               results section. Without this, text is centered but the
+               bullet ::before stays anchored at left: 6px, leaving the
+               two visually disconnected. */
+            text-align: left;
+        }
+        .result-card-list li:last-child { margin-bottom: 0; }
+        .result-card-list li::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 0.55em;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.85;
+        }
+
+        /* App CTA card — links to the shipped App Store build, the web
+           app, and the Android APK. (Replaced the TestFlight beta CTA,
+           which itself replaced the original email signup.) */
+        /* TestFlight CTA — inherits .card system (padding 20/22,
+           radius, margin). Only the centered text alignment + larger
+           heading + button row differ from the meaning/details cards. */
+        .testflight-card { text-align: center; }
+        .testflight-card h2 { font-size: 1.2rem; margin-bottom: 6px; }
+        .testflight-card .subtitle { color: var(--text-muted); margin-bottom: 18px; font-size: 0.92rem; line-height: 1.5; }
+        .testflight-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+        .testflight-actions .btn { width: 100%; }
+        .testflight-fineprint { font-size: 0.78rem; color: var(--text-muted); margin-top: 14px; line-height: 1.5; }
+        /* Settings gear — only exists in the native iOS shell (created
+           by the CVT_NATIVE block in the init script). Fixed top-right,
+           clear of the notch via safe-area inset. */
+        #native-settings-btn {
+            position: fixed;
+            top: calc(env(safe-area-inset-top, 0px) + 10px);
+            right: 14px;
+            z-index: 50;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--surface-raised);
+            background: var(--surface);
+            color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        @media (min-width: 480px) {
+            .testflight-actions { flex-direction: row; justify-content: center; }
+            .testflight-actions .btn { width: auto; min-width: 160px; }
+        }
+
+        /* Footer */
+        footer { text-align: center; padding: 36px 20px; color: var(--text-muted); font-size: 0.82rem; border-top: 1px solid var(--border); }
+        footer a { color: var(--text-muted); }
+        footer a:hover { color: var(--text); }
+        .footer-links { display: flex; gap: 20px; justify-content: center; margin-top: 8px; }
+        /* Animations */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeInUp 0.4s ease forwards; }
+
+        /* Android app-install banner. iOS Safari shows its own native
+           smart banner from the apple-itunes-app meta tag in <head>;
+           Chrome has no equivalent, so this fills the Android gap.
+           Shown by JS only on Android, dismissal remembered in
+           localStorage. Top-of-flow (not sticky) so it mirrors the
+           native banner's scroll-away behaviour and never covers the
+           plates. */
+        .app-banner { display: none; align-items: center; gap: 12px; padding: 9px 12px; background: var(--surface); border-bottom: 1px solid var(--border); }
+        .app-banner.is-visible { display: flex; }
+        .app-banner__dismiss { flex: none; width: 28px; height: 28px; display: grid; place-items: center; background: none; border: none; color: var(--text-muted); font-size: 1.4rem; line-height: 1; cursor: pointer; border-radius: 50%; }
+        .app-banner__dismiss:hover { color: var(--text); background: var(--surface-raised); }
+        .app-banner__icon { flex: none; width: 38px; height: 38px; border-radius: 9px; }
+        .app-banner__body { flex: 1 1 auto; min-width: 0; }
+        .app-banner__name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+        .app-banner__tagline { font-size: 0.76rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-banner__cta { flex: none; padding: 7px 18px; background: var(--accent); color: #fff; border-radius: 100px; font-size: 0.85rem; font-weight: 600; }
+        .app-banner__cta:hover { text-decoration: none; background: var(--accent-dim); }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+            html { scroll-behavior: auto; }
+        }
+        /* Cap reading width on the results section as ONE block — every
+           element inside (badge, heading, description, cards, disclaimer,
+           details, action row, CTA, methodology link) stays at the same
+           width and centers together. Per-element caps were making the
+           layout look chaotic (some elements at 640px, the disclaimer
+           pill at 100%, action row at content-width, etc).
+           The hero/calibration/test screens stay full-viewport — they
+           need it for the plate canvas and gray-patch grid. */
+        @media (min-width: 768px) {
+            #results-section > .fade-in,
+            #methodology-section > .card { max-width: 640px; margin: 0 auto; }
+            .hero-method { max-width: 480px; }
+        }
+        .btn.loading { pointer-events: none; opacity: 0.7; }
+        .btn.loading::after {
+            content: ''; width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+            border-radius: 50%; animation: spin 0.6s linear infinite; margin-left: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+    <script src="color-math.js"></script>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <!-- Android availability banner. Hidden until JS confirms Android;
+         iOS Safari gets its own native banner from the apple-itunes-app
+         meta tag in <head>. The Android build is still in testing, so this
+         deliberately links to its status page rather than a false APK URL. -->
+    <aside class="app-banner" id="app-banner" aria-label="Color Vision Plates Android availability">
+        <button type="button" class="app-banner__dismiss" id="app-banner-dismiss" aria-label="Dismiss app banner">&times;</button>
+        <img class="app-banner__icon" src="icon-512.png" alt="" width="38" height="38">
+        <div class="app-banner__body">
+            <div class="app-banner__name">Color Vision Plates</div>
+            <div class="app-banner__tagline">Android is in testing. See release status.</div>
+        </div>
+        <a class="app-banner__cta" id="app-banner-install" href="https://dr.eamer.dev/downloads/apps/color-vision-plates/">Status</a>
+    </aside>
+    <main id="main">
+        <!-- Hero -->
+        <section class="hero container" id="hero-section" aria-label="Color vision screening introduction">
+            <div>
+                <div class="hero-plate">
+                    <canvas id="hero-canvas" class="plate-canvas" aria-label="Ishihara-style color vision test plate"></canvas>
+                </div>
+                <h1>Can you see the number?</h1>
+                <p class="note">Full brightness, no night mode. About 60 seconds.</p>
+                <button class="btn btn-primary" id="start-btn">Start Screening</button>
+                <p class="hero-method">14 generated colored-dot plates inspired by Ishihara and HRR. An experimental screening, not a medical diagnosis.</p>
+                <a href="#methodology-section" class="hero-method-link">How this works &amp; sources &darr;</a>
+            </div>
+        </section>
+
+        <!-- Calibration probe (gray-ramp odd-patch detection) -->
+        <section id="calibration-section" class="container" aria-label="Display calibration check" role="region" style="display:none;">
+            <div style="text-align:center; max-width:520px; margin:0 auto;">
+                <h2 style="font-size:1.4rem; margin-bottom:8px;">Quick screen check</h2>
+                <p style="color:var(--text-muted); margin-bottom:24px; font-size:0.95rem;">One of these gray squares is slightly brighter than the others. Tap it. This checks whether you can distinguish these gray patches; it does not calibrate screen colors.</p>
+                <div id="calibration-warning-filters" style="margin-bottom:18px; padding:12px 16px; background:rgba(240,200,80,0.08); border:1px solid rgba(240,200,80,0.3); border-radius:var(--radius-sm); font-size:0.85rem; color:var(--text); text-align:left;">
+                    <strong>Before you start:</strong> turn off Night Shift, True Tone, and any blue-light filters. They warm the white point and shift hues, especially affecting the blue-yellow plates. Set screen brightness to maximum.
+                </div>
+                <div id="calibration-patches" style="display:flex; gap:14px; justify-content:center; margin-bottom:24px;" role="group" aria-label="Click the patch that looks different"></div>
+                <div id="calibration-feedback" style="min-height:36px; margin-bottom:16px;"></div>
+                <div id="calibration-actions" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+                    <button class="btn btn-secondary" id="calibration-retry" style="display:none;">Retry calibration</button>
+                    <button class="btn btn-ghost" id="calibration-skip" style="display:none;">Skip - results may be inaccurate</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Test -->
+        <section id="test-section" class="container" aria-label="Color vision test" role="region" aria-live="polite">
+            <div>
+                <div class="progress-bar" role="progressbar" aria-valuemin="1" aria-valuemax="14" aria-valuenow="1" id="progress">
+                    <div class="progress-dot active"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                    <div class="progress-dot"></div>
+                </div>
+                <p class="plate-label" id="plate-label">Plate 1 of 14</p>
+                <p style="font-size:0.72rem; color:var(--text-muted); text-align:center; margin-top:-12px; margin-bottom:18px;">Screening tool, not a clinical diagnosis</p>
+                <div class="plate-container" id="plate-area">
+                    <canvas id="test-canvas" class="plate-canvas" aria-label="Color vision test plate"></canvas>
+                </div>
+                <p class="plate-question" id="plate-question">What number do you see?</p>
+                <!-- Number input -->
+                <div class="answer-group" id="number-answer">
+                    <input type="text" id="answer-input" class="answer-input"
+                           inputmode="numeric" pattern="[0-9]*" maxlength="3"
+                           placeholder="?" aria-label="Enter the number you see">
+                </div>
+                <!-- Shape buttons -->
+                <div class="answer-group" id="shape-answer" style="display:none">
+                    <div class="shape-buttons">
+                        <button type="button" class="shape-btn" data-shape="circle">Circle</button>
+                        <button type="button" class="shape-btn" data-shape="triangle">Triangle</button>
+                        <button type="button" class="shape-btn" data-shape="star">Star</button>
+                        <button type="button" class="shape-btn" data-shape="square">Square</button>
+                    </div>
+                </div>
+                <div class="test-actions">
+                    <button class="btn btn-ghost" id="cant-see-btn">I can't see anything</button>
+                    <button class="btn btn-primary" id="next-btn">Next</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results -->
+        <section id="results-section" class="container" aria-label="Test results" role="region" aria-live="polite">
+            <div class="fade-in">
+                <div id="result-badge" class="result-badge"></div>
+                <h2 class="result-type" id="result-type"></h2>
+                <p class="result-description" id="result-description"></p>
+
+                <!-- What this might mean day-to-day (populated by JS based on result type) -->
+                <div class="card" id="result-meaning" style="display:none;">
+                    <h3 id="result-meaning-title">Understanding this result</h3>
+                    <ul class="result-card-list" id="result-meaning-bullets"></ul>
+                </div>
+
+                <div class="card result-disclaimer">
+                    <strong>This is a screening, not a medical diagnosis.</strong> See an eye care professional for a clinical evaluation.
+                </div>
+
+                <details class="card">
+                    <summary>What can affect my answers?</summary>
+                    <ul class="result-card-list" style="color:var(--text-muted); font-size:0.92rem;">
+                        <li><strong>Display calibration.</strong> Displays differ in color rendering. The gray-patch check cannot establish accurate color reproduction.</li>
+                        <li><strong>Night Shift / True Tone / blue-light filters.</strong> These warm the white point and shift hues, especially affecting blue-yellow plates. Turn them off and retake.</li>
+                        <li><strong>Ambient lighting.</strong> Bright sunlight or warm indoor lighting can wash out the chromatic contrast the test relies on.</li>
+                        <li><strong>Screen brightness.</strong> Low brightness can make dot boundaries harder to see.</li>
+                        <li><strong>Fatigue or fast clicking.</strong> Color discrimination is harder when you're tired or rushing. Slow down on retake.</li>
+                        <li><strong>Color vision differences.</strong> A clinical evaluation can assess color vision; this screening cannot identify the cause of a missed plate.</li>
+                    </ul>
+                </details>
+
+                <details class="card result-detail" id="result-detail">
+                    <summary>Your results plate by plate</summary>
+                    <div class="plate-results-grid" id="plate-results-grid"></div>
+                </details>
+
+                <div class="result-actions">
+                    <button type="button" class="btn btn-secondary" id="retake-btn">Try with different plates</button>
+                </div>
+
+                <div class="result-section-break"></div>
+
+                <!-- Companion app CTA — only verified public release paths. -->
+                <div class="card testflight-card">
+                    <h2>What Color Is This?</h2>
+                    <p class="subtitle">A color identification app built for how you actually see.</p>
+                    <div class="testflight-actions">
+                        <a class="btn btn-primary" href="https://apps.apple.com/us/app/what-color-is-this/id6767490668" target="_blank" rel="noopener">iOS (App Store)</a>
+                        <a class="btn btn-secondary" href="https://dr.eamer.dev/downloads/apps/what-color-is-this/">Android (in testing)</a>
+                        <a class="btn btn-secondary" href="https://whatcoloristhis.one" target="_blank" rel="noopener">Web</a>
+                    </div>
+                    <p class="testflight-fineprint">Free. No accounts, no ads, and the app itself contains no analytics or tracking. Camera identification, ~32,000 named colors, colorblind-safe palettes, CVD simulation.</p>
+                </div>
+
+                <div class="result-actions" style="margin-top:14px;">
+                    <button class="btn btn-secondary" id="share-btn">Share this test</button>
+                </div>
+
+                <p style="text-align:center; margin-top:8px;">
+                    <a href="#methodology-section" class="methodology-link">Read methodology and sources &darr;</a>
+                </p>
+            </div>
+        </section>
+
+        <!-- Methodology section: visible by default, accessible from the
+             hero's "How this works" link AND the results page's
+             "Read methodology" link. Citations collapsed in <details>
+             so the read-through stays focused. -->
+        <section id="methodology-section" class="container" aria-label="How this screening works">
+            <div class="card about-test">
+                <h3>About this screening</h3>
+                <p>I generate 14 colored-dot plates from CIELAB color specifications. Numbers and shapes are inspired by pseudoisochromatic tests such as Ishihara and HRR; these are original generated plates, not scans of their clinical plate sets.</p>
+                <p>The code groups plates into red-green, experimental protan/deutan, blue-yellow, and control sets. It checks foreground/background color differences using the project's single-plane color-vision simulations and CIEDE2000. These checks measure behavior of the mathematical model, not what a person will see.</p>
+                <p>The Viénot, Brettel &amp; Mollon (1999) paper describes red-green display simulations. This project's tritan matrix is an approximation and is not validated by that paper. Passing the verifier does not establish clinical accuracy for any plate group.</p>
+                <p>The control plate uses brightness contrast. If it is missed, or the gray-patch check is skipped after a miss, the result is inconclusive. Other results summarize answer patterns using experimental rules.</p>
+                <p><strong>Limitations:</strong> Sensitivity, specificity, subtype accuracy, and severity assessment have not been established for this screening. Display colors, lighting, viewing distance, number recognition, and repeated exposure can affect answers. The gray-patch check does not calibrate colors. Matching every plate does not rule out a color vision difference. For a clinical assessment, see an eye care professional.</p>
+                <details style="margin-top:18px;">
+                    <summary style="cursor:pointer; font-weight:600; font-size:0.85rem; color:var(--text);">Citations &amp; references</summary>
+                    <div style="margin-top:12px;">
+                        <div class="citation">Ishihara, S. (1917). <em>Tests for Colour-Blindness</em>. Handaya, Tokyo, Hongo Harukicho.</div>
+                        <div class="citation">Hardy, L.H., Rand, G., &amp; Rittler, M.C. (1954). <em>HRR Pseudoisochromatic Plates for Detecting and Classifying Color Vision Deficiency</em>. American Optical Company.</div>
+                        <div class="citation">Brettel, H., Viénot, F., &amp; Mollon, J.D. (1997). Computerized simulation of color appearance for dichromats. <em>Journal of the Optical Society of America A</em>, 14(10), 2647-2655.</div>
+                        <div class="citation">Viénot, F., Brettel, H., &amp; Mollon, J.D. (1999). Digital video colourmaps for checking the legibility of displays by dichromats. <em>Color Research &amp; Application</em>, 24(4), 243-252. (Red-green display simulation reference.)</div>
+                        <div class="citation">Sharma, G., Wu, W., &amp; Dalal, E.N. (2005). The CIEDE2000 color-difference formula: implementation notes, supplementary test data, and mathematical observations. <em>Color Research &amp; Application</em>, 30(1), 21-30.</div>
+                        <div class="citation">Birch, J. (2012). Worldwide prevalence of red-green color deficiency. <em>Journal of the Optical Society of America A</em>, 29(3), 313-320.</div>
+                        <div class="citation">Cole, B.L. (2007). Assessment of inherited colour vision defects in clinical practice. <em>Clinical and Experimental Optometry</em>, 90(3), 157-175.</div>
+                    </div>
+                </details>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="#methodology-section">Methodology</a>
+            <a href="https://whatcoloristhis.one">The App</a>
+            <a href="https://lukesteuber.com">Me</a>
+            <a href="https://bsky.app/profile/lukesteuber.com">Bluesky</a>
+        </div>
+    </footer>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // ── Seeded PRNG (mulberry32) ─────────────────────────────────
+        // Deterministic plates — same pattern every visit
+
+        function mulberry32(seed) {
+            return function() {
+                seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+                var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+                t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+                return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            };
+        }
+
+        // ── Color Generation (CIELAB) ────────────────────────────────
+        //
+        // Colors are defined in CIELAB (L*, a*, b*) to guarantee perceptual
+        // luminance matching. HSL "lightness" is a geometric property of the
+        // RGB cube and does NOT correspond to perceived brightness — equal
+        // HSL L for red and green produces ~20 L* units of luminance leak.
+        //
+        // CIELAB L* is perceptually uniform: matched L* = matched brightness.
+        // a* encodes the red(+)/green(-) opponent channel.
+        // b* encodes the yellow(+)/blue(-) opponent channel.
+        //
+        // Pipeline: CIELAB → XYZ (D65) → linear sRGB → gamma sRGB → hex
+        //
+        // Reuse split: this file owns the LAB→hex direction (only beta needs
+        // to *generate* colors from LAB specs). Everything else — hex→LAB,
+        // ΔE2000, Brettel CVD simulation — comes from ColorMath in
+        // /home/coolhand/html/beta/color-math.js (a duplicate of whatcolor's,
+        // protected against drift by whatcolor/tests/parity_test.py).
+
+        function labToHex(L, a, b) {
+            // CIELAB → XYZ via inverse f function
+            var delta = 6 / 29;
+            var k = 3 * delta * delta;
+
+            function fInv(t) { return t > delta ? t * t * t : k * (t - 4 / 29); }
+
+            var fy = (L + 16) / 116;
+            var X = 0.95047 * fInv(fy + a / 500);
+            var Y = 1.00000 * fInv(fy);
+            var Z = 1.08883 * fInv(fy - b / 200);
+
+            // XYZ → linear sRGB (IEC 61966-2-1)
+            var rl =  3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z;
+            var gl = -0.9692660 * X + 1.8760108 * Y + 0.0415560 * Z;
+            var bl =  0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z;
+
+            // Gamut clamp + sRGB gamma
+            function gamma(c) {
+                c = Math.max(0, Math.min(1, c));
+                return c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+            }
+            function hex(v) {
+                var n = Math.round(Math.max(0, Math.min(255, v * 255)));
+                return (n < 16 ? '0' : '') + n.toString(16);
+            }
+            return '#' + hex(gamma(rl)) + hex(gamma(gl)) + hex(gamma(bl));
+        }
+
+        function rndColor(cfg, rng) {
+            return labToHex(
+                cfg.L + (rng() - 0.5) * cfg.LR,
+                cfg.a + (rng() - 0.5) * cfg.aR,
+                cfg.b + (rng() - 0.5) * cfg.bR
+            );
+        }
+
+        // ── Plate Definitions ────────────────────────────────────────
+        //
+        // 14 plates total:
+        //   1 control (L*-contrast, vanishing for nobody)
+        //   5 red-green screening (Ishihara/HRR-style, lump protan+deutan)
+        //   2 protan-only classifiers (invisible to protans, visible to deutans)
+        //   2 deutan-only classifiers (invisible to deutans, visible to protans)
+        //   4 tritan plates (4 invisible to tritans, visible to others)
+        //
+        // Mix of numbers (Ishihara-style) and shapes (HRR-style).
+        // Seeded PRNG for deterministic generation per session.
+        //
+        // Color science:
+        //   All colors defined in CIELAB (L*, a*, b*). FG and BG share
+        //   identical L* and LR (luminance noise range), so the figure
+        //   boundary is purely chromatic — no luminance leak.
+        //
+        //   Red-green plates: FG and BG separated on a*. Marginally aligned
+        //     with both protan and deutan confusion lines (dE_protan 3-7,
+        //     dE_deutan 5-10 in Brettel simulation). Detects but does not
+        //     classify red-green CVD.
+        //
+        //   Protan-only / deutan-only plates: FG/BG pairs found by Brettel-
+        //     simulation grid search at L=65. dE_target<5 (invisible to
+        //     target dichromat), dE_other>15 (visible to other dichromat
+        //     and to normal vision). Together with red-green screeners
+        //     these resolve protan vs deutan classification.
+        //
+        //   Tritan plates: pairs that map to identical color under tritan
+        //     simulation (dE_tritan ~0). NOT a b*-axis separation — that
+        //     was the v1 design and leaked dE_tritan ~30 (i.e. tritans
+        //     could see the figure clearly).
+        //
+        //   Control plate: intentional L* difference (bright vs dark),
+        //     visible to everyone. Failing it means display/lighting issue.
+        //
+        // Refs: Ishihara (1917), Hardy-Rand-Rittler (1954),
+        //       Brettel-Viénot-Mollon (1997 simulation),
+        //       Sharma-Wu-Dalal (2005 CIEDE2000).
+
+        // tests: array of CVD types this plate screens for. The verifier
+        // checks that each listed type sees the plate as low-dE (target
+        // dichromat finds figure invisible). Empty array = no CVD screening
+        // (control plates).
+        //
+        // Plate 1 stays the L*-contrast control (vanishing for nobody) — it
+        // gates display brightness. The display-calibration probe (gray
+        // ramp) lives in its own stage before scoring (see Step 5).
+        //
+        // Tritan and protan-only / deutan-only plates use confusion-line-
+        // aware fg/bg pairs found via Brettel-simulation grid search
+        // (see beta/tools/find_plate_pairs.js for the methodology).
+        // Their LAB triples were validated to dE_target<5 and
+        // dE_normal>15 before being baked in.
+        var PLATES = [
+            // 1. Control — L* contrast (65 vs 38), everyone sees it.
+            //    Failing this means the display is off — result is Inconclusive.
+            { type: 'number', value: '12', correct: '12', tests: [], seed: 42,
+              fg: { L: 65, LR: 12, a: 10, aR: 16, b: 15, bR: 16 },
+              bg: { L: 38, LR: 12, a: -6, aR: 16, b: -10, bR: 16 } },
+
+            // 2. Red-green: number 74 — a* separation 54 (existing)
+            { type: 'number', value: '74', correct: '74', tests: ['protan','deutan'], seed: 137,
+              nearMisses: ['71', '21', '7', '4'],
+              fg: { L: 50, LR: 14, a: 30, aR: 12, b: 5, bR: 14 },
+              bg: { L: 50, LR: 14, a: -24, aR: 12, b: 5, bR: 14 } },
+
+            // 3. Red-green: circle (HRR) — a* separation 50 (existing)
+            { type: 'shape', value: 'circle', correct: 'circle', tests: ['protan','deutan'], seed: 256,
+              fg: { L: 50, LR: 14, a: 28, aR: 10, b: 3, bR: 12 },
+              bg: { L: 50, LR: 14, a: -22, aR: 10, b: 3, bR: 12 } },
+
+            // 4. Tritan: number 5 — confusion-line aware (was b*-axis "2",
+            //    which under Brettel showed dE_tritan ~33; this pair gives
+            //    dE_tritan ~0.0, dE_normal ~67, dE_protan ~64, dE_deutan ~62).
+            { type: 'number', value: '5', correct: '5', tests: ['tritan'], seed: 389,
+              nearMisses: ['6', '3'],
+              fg: { L: 50, LR: 12, a: -23, aR: 8, b: 53, bR: 8 },
+              bg: { L: 50, LR: 12, a: 41, aR: 8, b: -55, bR: 8 } },
+
+            // 5. Red-green: number 8 — a* separation 58 (existing)
+            { type: 'number', value: '8', correct: '8', tests: ['protan','deutan'], seed: 512,
+              nearMisses: ['0', '3', '6'],
+              fg: { L: 50, LR: 14, a: 32, aR: 12, b: 4, bR: 14 },
+              bg: { L: 50, LR: 14, a: -26, aR: 12, b: 4, bR: 14 } },
+
+            // 6. Tritan: triangle HRR — wide tritan pair (different from #4
+            //    so a tritan failing both confirms the axis, not noise).
+            //    dE_tritan ~0.2, dE_normal ~57, dE_protan ~64, dE_deutan ~62.
+            { type: 'shape', value: 'triangle', correct: 'triangle', tests: ['tritan'], seed: 634,
+              fg: { L: 55, LR: 12, a: -47, aR: 6, b: 53, bR: 8 },
+              bg: { L: 55, LR: 12, a: 25, aR: 6, b: -55, bR: 8 } },
+
+            // 7. Protan-only: number 3 — confusion-line aware. Invisible to
+            //    protans, visible to deutans. dE_protan ~3.5, dE_deutan ~21.3.
+            //    Failing this while passing #9 (deutan-only) suggests protan.
+            { type: 'number', value: '3', correct: '3', tests: ['protan'], seed: 718,
+              nearMisses: ['8', '5', '9'],
+              fg: { L: 65, LR: 10, a: -39, aR: 6, b: -3, bR: 8 },
+              bg: { L: 65, LR: 10, a: 45, aR: 6, b: 5, bR: 8 } },
+
+            // 8. Deutan-only: number 9 — confusion-line aware. Invisible to
+            //    deutans, visible to protans. dE_deutan ~5.1, dE_protan ~19.6.
+            //    Failing this while passing #7 (protan-only) suggests deutan.
+            { type: 'number', value: '9', correct: '9', tests: ['deutan'], seed: 845,
+              nearMisses: ['0', '6', '4'],
+              fg: { L: 65, LR: 10, a: -23, aR: 6, b: 9, bR: 8 },
+              bg: { L: 65, LR: 10, a: 53, aR: 6, b: -3, bR: 8 } },
+
+            // 9. Subtle red-green: number 6 — a* separation 36 (existing).
+            //    Near-miss note: at 36* separation, the top loop of "6"
+            //    degrades first under reduced chromatic contrast, yielding "0".
+            { type: 'number', value: '6', correct: '6', tests: ['protan','deutan'], seed: 777,
+              nearMisses: ['0', '8'],
+              fg: { L: 50, LR: 14, a: 20, aR: 10, b: 4, bR: 12 },
+              bg: { L: 50, LR: 14, a: -16, aR: 10, b: 4, bR: 12 } },
+
+            // 10. Tritan classifier: number 0 — second tritan plate gives
+            //     a discriminator if user fails #4 and #6.
+            //     dE_tritan ~0.0, dE_normal ~67, dE_protan ~64, dE_deutan ~62.
+            { type: 'number', value: '0', correct: '0', tests: ['tritan'], seed: 893,
+              nearMisses: ['8', '6'],
+              fg: { L: 60, LR: 12, a: -11, aR: 8, b: 53, bR: 8 },
+              bg: { L: 60, LR: 12, a: 49, aR: 8, b: -55, bR: 8 } },
+
+            // 11. Tritan narrow: number 2 — narrower tritan separation.
+            //     Catches mild tritanomalous but more sensitive to display
+            //     calibration. dE_tritan ~0.4, dE_normal ~30, dE_protan ~41,
+            //     dE_deutan ~41.
+            { type: 'number', value: '2', correct: '2', tests: ['tritan'], seed: 700,
+              nearMisses: ['7', '3'],
+              fg: { L: 55, LR: 10, a: 25, aR: 6, b: 21, bR: 8 },
+              bg: { L: 55, LR: 10, a: 53, aR: 6, b: -35, bR: 8 } },
+
+            // 12. Protan-only #2: number 7 — second protan classifier.
+            //     dE_protan ~3.2, dE_deutan ~19.9.
+            { type: 'number', value: '7', correct: '7', tests: ['protan'], seed: 956,
+              nearMisses: ['1'],
+              fg: { L: 65, LR: 10, a: -31, aR: 6, b: -7, bR: 6 },
+              bg: { L: 65, LR: 10, a: 37, aR: 6, b: 1, bR: 6 } },
+
+            // 13. Deutan-only #2: number 4 — second deutan classifier.
+            //     dE_deutan ~5.0, dE_protan ~19.1.
+            { type: 'number', value: '4', correct: '4', tests: ['deutan'], seed: 1011,
+              nearMisses: ['1', '7'],
+              fg: { L: 65, LR: 10, a: -15, aR: 6, b: 9, bR: 6 },
+              bg: { L: 65, LR: 10, a: 53, aR: 6, b: -3, bR: 6 } },
+
+            // 14. Subtle red-green: star (HRR) — a* separation 32 (existing).
+            //     Most sensitive to anomalous trichromacy.
+            { type: 'shape', value: 'star', correct: 'star', tests: ['protan','deutan'], seed: 901,
+              fg: { L: 50, LR: 14, a: 18, aR: 10, b: 3, bR: 12 },
+              bg: { L: 50, LR: 14, a: -14, aR: 10, b: 3, bR: 12 } },
+        ];
+
+        // ── Plate Verifier (Brettel 1997 simulation) ─────────────────
+        //
+        // For each plate, simulate fg/bg under protan, deutan, and tritan
+        // dichromacy and compute CIEDE2000 distance. A plate that *claims*
+        // to screen for (say) protan should produce a low dE in protan-
+        // simulated space — i.e. the figure becomes invisible to a protan.
+        //
+        // V1 is in WARN MODE: results are exposed on window.__PLATE_VERIFICATION
+        // and warnings printed for any plate with dE > threshold for a type
+        // it claims to test. Step 4 of the upgrade plan redesigns plates on
+        // actual confusion-line geometry; once that lands the verifier will
+        // tighten thresholds and switch to throwing on violations.
+
+        function verifyPlates(plates) {
+            if (typeof ColorMath === 'undefined' || !ColorMath._internal) {
+                console.error('[verifier] ColorMath not available; skipping plate verification');
+                return null;
+            }
+            var I = ColorMath._internal;
+            var MATRICES = {
+                protan: I.PROTAN_SIM,
+                deutan: I.DEUTAN_SIM,
+                tritan: I.TRITAN_SIM,
+            };
+            var NORMAL_DE_MIN = 12;          // plates must be visible to normal vision
+            var CVD_DE_MAX_INVISIBLE = 10;   // v1 threshold; tighten to 3-5 after plate redesign
+
+            function clamp(v) { return Math.max(0, Math.min(255, Math.round(v))); }
+
+            var report = [];
+            for (var i = 0; i < plates.length; i++) {
+                var p = plates[i];
+                var fgHex = labToHex(p.fg.L, p.fg.a, p.fg.b);
+                var bgHex = labToHex(p.bg.L, p.bg.a, p.bg.b);
+                var fgLab = I.hexToLab(fgHex);
+                var bgLab = I.hexToLab(bgHex);
+                var dE_norm = I.deltaECiede2000(fgLab, bgLab);
+
+                var cvdResults = {};
+                var fgRgb = I.hexToRgb(fgHex);
+                var bgRgb = I.hexToRgb(bgHex);
+                ['protan', 'deutan', 'tritan'].forEach(function(cvd) {
+                    var fgSim = I.simulateCvd(fgRgb, MATRICES[cvd]);
+                    var bgSim = I.simulateCvd(bgRgb, MATRICES[cvd]);
+                    var fgSimHex = I.rgbToHex(clamp(fgSim[0]), clamp(fgSim[1]), clamp(fgSim[2]));
+                    var bgSimHex = I.rgbToHex(clamp(bgSim[0]), clamp(bgSim[1]), clamp(bgSim[2]));
+                    cvdResults[cvd] = I.deltaECiede2000(I.hexToLab(fgSimHex), I.hexToLab(bgSimHex));
+                });
+
+                var issues = [];
+                if (dE_norm < NORMAL_DE_MIN) {
+                    issues.push('not visible to normal vision (dE=' + dE_norm.toFixed(1) + ')');
+                }
+                var tests = Array.isArray(p.tests) ? p.tests : [];
+                for (var t = 0; t < tests.length; t++) {
+                    var cvdType = tests[t];
+                    if (cvdResults[cvdType] > CVD_DE_MAX_INVISIBLE) {
+                        issues.push(cvdType + ' can still see it (dE=' + cvdResults[cvdType].toFixed(1) +
+                            ', threshold ' + CVD_DE_MAX_INVISIBLE + ')');
+                    }
+                }
+
+                report.push({
+                    plate: i + 1,
+                    value: p.value,
+                    tests: tests,
+                    dE_normal: +dE_norm.toFixed(2),
+                    dE_protan: +cvdResults.protan.toFixed(2),
+                    dE_deutan: +cvdResults.deutan.toFixed(2),
+                    dE_tritan: +cvdResults.tritan.toFixed(2),
+                    issues: issues,
+                });
+                if (issues.length > 0) {
+                    console.warn('[verifier] plate ' + (i + 1) + ' (' + p.value + '): ' + issues.join('; '));
+                }
+            }
+
+            window.__PLATE_VERIFICATION = report;
+            var failing = report.filter(function(r) { return r.issues.length > 0; }).length;
+            console.info('[verifier] checked ' + report.length + ' plates; ' + failing + ' have issues. ' +
+                'window.__PLATE_VERIFICATION has full report.');
+            return report;
+        }
+
+        verifyPlates(PLATES);
+
+        // ── Poisson Disk Sampling ────────────────────────────────────
+
+        function poissonDiskSample(cx, cy, plateR, minR, maxR, rng) {
+            var cellSize = minR * 1.5 / Math.SQRT2;
+            var gridW = Math.ceil(plateR * 2 / cellSize);
+            var grid = new Array(gridW * gridW).fill(-1);
+            var dots = [], active = [];
+
+            function gi(x, y) {
+                var gx = Math.floor((x - cx + plateR) / cellSize);
+                var gy = Math.floor((y - cy + plateR) / cellSize);
+                return (gx < 0 || gx >= gridW || gy < 0 || gy >= gridW) ? -1 : gy * gridW + gx;
+            }
+            function canPlace(x, y, r) {
+                if (Math.hypot(x - cx, y - cy) + r > plateR - 1) return false;
+                var idx = gi(x, y); if (idx < 0) return false;
+                var gx = Math.floor((x - cx + plateR) / cellSize);
+                var gy = Math.floor((y - cy + plateR) / cellSize);
+                for (var dy = -3; dy <= 3; dy++) for (var dx = -3; dx <= 3; dx++) {
+                    var nx = gx+dx, ny = gy+dy;
+                    if (nx<0||nx>=gridW||ny<0||ny>=gridW) continue;
+                    var ni = ny*gridW+nx;
+                    if (grid[ni] >= 0) { var o = dots[grid[ni]]; if (Math.hypot(x-o.x,y-o.y) < r+o.r+0.8) return false; }
+                }
+                return true;
+            }
+            function add(x, y) {
+                var r = minR + rng() * (maxR - minR);
+                if (!canPlace(x, y, r)) return false;
+                var i = dots.length; dots.push({x:x,y:y,r:r}); active.push(i);
+                var idx = gi(x, y); if (idx >= 0) grid[idx] = i; return true;
+            }
+            add(cx, cy);
+            while (active.length > 0) {
+                var ai = Math.floor(rng() * active.length), src = dots[active[ai]], found = false;
+                for (var i = 0; i < 30; i++) {
+                    var a = rng() * Math.PI * 2, d = minR*2 + rng()*minR*2.5;
+                    if (add(src.x + Math.cos(a)*d, src.y + Math.sin(a)*d)) { found = true; break; }
+                }
+                if (!found) active.splice(ai, 1);
+            }
+            return dots;
+        }
+
+        // ── Shape Drawing ────────────────────────────────────────────
+
+        function drawShapeMask(ctx, shape, cx, cy, plateR) {
+            var r, i, angle, x, y, outer, inner;
+            ctx.beginPath();
+            switch (shape) {
+                case 'circle':
+                    ctx.arc(cx, cy, plateR * 0.32, 0, Math.PI * 2);
+                    break;
+                case 'triangle':
+                    r = plateR * 0.38;
+                    ctx.moveTo(cx, cy - r);
+                    ctx.lineTo(cx + r * 0.866, cy + r * 0.5);
+                    ctx.lineTo(cx - r * 0.866, cy + r * 0.5);
+                    ctx.closePath();
+                    break;
+                case 'star':
+                    outer = plateR * 0.36; inner = outer * 0.42;
+                    for (i = 0; i < 10; i++) {
+                        r = i % 2 === 0 ? outer : inner;
+                        angle = (i * Math.PI / 5) - Math.PI / 2;
+                        x = cx + r * Math.cos(angle); y = cy + r * Math.sin(angle);
+                        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    break;
+                case 'square':
+                    r = plateR * 0.28;
+                    ctx.rect(cx - r, cy - r, r * 2, r * 2);
+                    break;
+            }
+            ctx.lineJoin = 'round'; ctx.lineWidth = plateR * 0.06;
+            ctx.strokeStyle = '#fff'; ctx.stroke();
+            ctx.fillStyle = '#fff'; ctx.fill();
+        }
+
+        // ── Plate Rendering ──────────────────────────────────────────
+
+        function createMask(size, plate) {
+            size = Math.round(size);
+            var mask = document.createElement('canvas');
+            mask.width = size; mask.height = size;
+            var ctx = mask.getContext('2d');
+            var cx = size / 2, cy = size / 2, plateR = size / 2 - 4;
+
+            if (plate.type === 'number') {
+                var digits = plate.value.length;
+                var fontSize = digits > 1 ? size * 0.42 : size * 0.55;
+                ctx.font = '900 ' + fontSize + 'px Arial, Helvetica, sans-serif';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.lineJoin = 'round'; ctx.lineWidth = fontSize * 0.08;
+                ctx.strokeStyle = '#fff'; ctx.strokeText(plate.value, cx, cy);
+                ctx.fillStyle = '#fff'; ctx.fillText(plate.value, cx, cy);
+            } else {
+                drawShapeMask(ctx, plate.value, cx, cy, plateR);
+            }
+            return ctx.getImageData(0, 0, size, size).data;
+        }
+
+        // Session salt — rerolled when the user starts a fresh test (or
+        // hits "retake with different plates"). Mixed into each plate's
+        // seed so dot positions shift across visits. This does not prevent
+        // answer memorization. The plate's correct answer (the digit "74") is
+        // unchanged because the answer comes from plate.value, not the seed.
+        var sessionSalt = (Math.random() * 0xffff) | 0;
+        function rerollSessionSalt() { sessionSalt = (Math.random() * 0xffff) | 0; }
+
+        // Display order — index 0 (control) is always first, indices 1..13
+        // get shuffled so users can't memorize "the third plate is 5".
+        // The canonical plate identity (PLATES[i]) stays fixed — only the
+        // ORDER in which plates are presented changes. Scoring uses the
+        // canonical index stored on each answer, so randomization doesn't
+        // affect the algorithm.
+        var displayOrder = PLATES.map(function(_, i) { return i; });
+        function reshufflePlateOrder() {
+            // Fisher-Yates on indices 1..N-1, leaving index 0 (control) fixed.
+            displayOrder = PLATES.map(function(_, i) { return i; });
+            for (var i = displayOrder.length - 1; i > 1; i--) {
+                var j = 1 + Math.floor(Math.random() * i);
+                var tmp = displayOrder[i]; displayOrder[i] = displayOrder[j]; displayOrder[j] = tmp;
+            }
+        }
+
+        function renderPlate(canvas, plate, size) {
+            var dpr = window.devicePixelRatio || 1;
+            canvas.width = size * dpr; canvas.height = size * dpr;
+            canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
+            var ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            var cx = size/2, cy = size/2, plateR = size/2 - 4;
+            // Mix sessionSalt into the seed. Hero canvas uses raw plate.seed
+            // (so the static hero plate is identical for all visitors) by
+            // passing a reserved hero plate with seed unaffected.
+            var seed = (plate.seed ^ sessionSalt) | 0;
+            var rng = mulberry32(seed);
+
+            // Background
+            ctx.beginPath(); ctx.arc(cx, cy, plateR + 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#111'; ctx.fill();
+
+            // Mask
+            var maskW = Math.round(size);
+            var maskData = createMask(size, plate);
+
+            // Dots — small for density
+            var minR = size > 200 ? 2.5 : 2, maxR = size > 200 ? 6.5 : 4.5;
+            var dots = poissonDiskSample(cx, cy, plateR, minR, maxR, rng);
+
+            // Threshold 128 (50% of 255) for "is this dot inside the
+            // figure?" — was 40 (~16%), which counted anti-aliased edge
+            // pixels as shape and produced fuzzy digit boundaries.
+            // Sighted-user feedback flagged 5/6 and 8/0 confusion on
+            // higher-contrast plates; 128 sharpens the figure shape so
+            // the 5's flat top and 6's closed loop are visually distinct
+            // in the dot pattern.
+            dots.forEach(function(dot) {
+                var px = Math.floor(dot.x), py = Math.floor(dot.y);
+                if (px < 0 || px >= maskW || py < 0 || py >= maskW) return;
+                var isShape = maskData[(py * maskW + px) * 4] > 128;
+                ctx.beginPath(); ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
+                ctx.fillStyle = rndColor(isShape ? plate.fg : plate.bg, rng);
+                ctx.fill();
+            });
+        }
+
+        // ── Test State Machine ───────────────────────────────────────
+
+        var currentPlate = 0, answers = [];
+        var plateStartMs = 0;
+        var inDemo = false;
+
+        // Demo plate — achromatic black-on-white, high contrast.
+        // Shown once before scoring starts to teach the input mechanic
+        // and surface the on-screen keyboard. Not part of PLATES so the
+        // verifier and scorer never see it.
+        var DEMO_PLATE = {
+            type: 'number', value: '8', correct: '8', tests: [], seed: 1,
+            fg: { L: 12, LR: 4, a: 0, aR: 4, b: 0, bR: 4 },
+            bg: { L: 86, LR: 4, a: 0, aR: 4, b: 0, bR: 4 },
+        };
+        var heroSection = document.getElementById('hero-section');
+        var testSection = document.getElementById('test-section');
+        var resultsSection = document.getElementById('results-section');
+        var testCanvas = document.getElementById('test-canvas');
+        var heroCanvas = document.getElementById('hero-canvas');
+        var answerInput = document.getElementById('answer-input');
+        var numberAnswer = document.getElementById('number-answer');
+        var shapeAnswer = document.getElementById('shape-answer');
+        var progressBar = document.getElementById('progress');
+        var nextBtn = document.getElementById('next-btn');
+
+        function plateSize() { return Math.min(320, Math.floor(window.innerWidth * 0.85)); }
+
+        function initHero() {
+            renderPlate(heroCanvas, PLATES[0], plateSize());
+        }
+
+        document.getElementById('start-btn').addEventListener('click', function() {
+            heroSection.style.display = 'none';
+            document.body.classList.add('testing');
+            currentPlate = 0; answers.length = 0;
+            calibrationWarning = false;
+            rerollSessionSalt();
+            reshufflePlateOrder();
+            showCalibration();
+        });
+
+        // ── Calibration probe ────────────────────────────────────────
+        //
+        // Shows 4 gray patches; one is L*+6 brighter than the others.
+        // The user picks the odd patch. A correctly calibrated display
+        // (full brightness, no Night Shift / blue-light filter, normal
+        // ambient lighting) makes the difference obvious. A miscalibrated
+        // or dimmed display blends them.
+        //
+        // calibrationWarning records the result for the test_results
+        // payload — true if the user skipped after a miss.
+
+        var calibrationWarning = false;
+        var calibrationOddIndex = -1;
+        var calibrationSection = document.getElementById('calibration-section');
+        var calibrationPatches = document.getElementById('calibration-patches');
+        var calibrationFeedback = document.getElementById('calibration-feedback');
+        var calibrationRetry = document.getElementById('calibration-retry');
+        var calibrationSkip = document.getElementById('calibration-skip');
+
+        function showCalibration() {
+            calibrationSection.style.display = 'block';
+            calibrationSection.scrollIntoView({ behavior: 'smooth' });
+            renderCalibrationPatches();
+            // Wake lock + light-mode hint kick off here, before the
+            // first plate. Both are best-effort — fall through silently
+            // on browsers / devices that don't support them.
+            requestWakeLock();
+            warnIfLightMode();
+        }
+
+        // Keep the screen awake during the test so a 90-second pause
+        // (reading the methodology between plates, hunting for the
+        // shape) doesn't trigger sleep. Released on results show.
+        var wakeLockSentinel = null;
+        async function requestWakeLock() {
+            if (!('wakeLock' in navigator)) return;
+            try {
+                wakeLockSentinel = await navigator.wakeLock.request('screen');
+                document.addEventListener('visibilitychange', reacquireWakeLock);
+            } catch (e) { /* user gesture required, or denied — fine */ }
+        }
+        async function reacquireWakeLock() {
+            if (document.visibilityState === 'visible' && wakeLockSentinel === null) {
+                requestWakeLock();
+            }
+        }
+        function releaseWakeLock() {
+            if (wakeLockSentinel) {
+                wakeLockSentinel.release().catch(function(){});
+                wakeLockSentinel = null;
+            }
+        }
+
+        // Light mode = the system is rendering UI in light theme. Our
+        // CSS forces dark, so the page itself looks fine, but the
+        // surrounding OS chrome (status bar on iOS, address bar on
+        // some browsers) leaks white into peripheral vision and biases
+        // chromatic adaptation. Surface a one-time inline hint.
+        function warnIfLightMode() {
+            try {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                    var hint = document.createElement('div');
+                    hint.style.cssText = 'margin-bottom:14px; padding:10px 14px; background:rgba(80,112,217,0.08); border:1px solid rgba(80,112,217,0.3); border-radius:var(--radius-sm); font-size:0.82rem; color:var(--text-muted); text-align:left;';
+                    hint.innerHTML = 'Your system is in light mode. Dark mode may reduce glare from the browser controls surrounding the page; it does not calibrate screen colors.';
+                    var anchor = document.getElementById('calibration-warning-filters');
+                    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(hint, anchor.nextSibling);
+                }
+            } catch (e) {}
+        }
+
+        function renderCalibrationPatches() {
+            calibrationFeedback.textContent = '';
+            calibrationFeedback.style.color = '';
+            calibrationRetry.style.display = 'none';
+            calibrationSkip.style.display = 'none';
+            calibrationPatches.innerHTML = '';
+            calibrationOddIndex = (window.CVT_UITEST_PROFILE || window.CVT_AUTOANSWER)
+                ? 3
+                : Math.floor(Math.random() * 4);
+            // Base L*=55 (mid-luminance, comfortable on both bright and dim screens),
+            // odd patch L*=61 (6 ΔL* difference — clearly visible on a calibrated
+            // screen, blends on a dimmed/filtered one).
+            for (var i = 0; i < 4; i++) {
+                var L = (i === calibrationOddIndex) ? 61 : 55;
+                var hex = labToHex(L, 0, 0);
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.style.cssText = 'width:64px; height:64px; border-radius:8px; border:2px solid var(--border); cursor:pointer; padding:0;';
+                btn.style.background = hex;
+                btn.setAttribute('aria-label', 'Gray patch ' + (i + 1) + ' of 4');
+                btn.dataset.index = String(i);
+                btn.addEventListener('click', onCalibrationPick);
+                calibrationPatches.appendChild(btn);
+            }
+        }
+
+        function onCalibrationPick(e) {
+            var picked = parseInt(e.currentTarget.dataset.index, 10);
+            if (picked === calibrationOddIndex) {
+                calibrationFeedback.textContent = 'Good. Continuing to the test.';
+                calibrationFeedback.style.color = 'var(--success)';
+                setTimeout(proceedFromCalibration, 600);
+            } else {
+                calibrationFeedback.textContent = "Hmm, that wasn't the brighter one. Your display may be too dim or have a color filter active.";
+                calibrationFeedback.style.color = 'var(--danger)';
+                calibrationRetry.style.display = '';
+                calibrationSkip.style.display = '';
+            }
+        }
+
+        function proceedFromCalibration() {
+            calibrationSection.style.display = 'none';
+            testSection.style.display = 'flex';
+            showDemo();
+            testSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        calibrationRetry.addEventListener('click', renderCalibrationPatches);
+        calibrationSkip.addEventListener('click', function() {
+            calibrationWarning = true;
+            proceedFromCalibration();
+        });
+
+        function showDemo() {
+            inDemo = true;
+            var size = plateSize();
+            renderPlate(testCanvas, DEMO_PLATE, size);
+            plateStartMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+            testCanvas.setAttribute('aria-label', 'Practice plate: a number rendered in dark dots on a light background. Type the number you see, then click Next.');
+            testCanvas.setAttribute('role', 'img');
+            // Hide progress dots during demo (not scored)
+            progressBar.style.visibility = 'hidden';
+            document.getElementById('plate-label').textContent = 'Practice plate (not scored)';
+            document.getElementById('plate-question').textContent = 'What number do you see? Type it, then click Next.';
+            numberAnswer.style.display = ''; shapeAnswer.style.display = 'none';
+            nextBtn.style.display = '';
+            answerInput.value = ''; answerInput.focus();
+        }
+
+        function showPlate(index) {
+            // Returning to plate display after the demo or between plates —
+            // make sure the progress bar is shown again.
+            progressBar.style.visibility = '';
+            currentPlate = index;
+            // Fetch via displayOrder so shuffled tests still pull the
+            // correct canonical plate. displayOrder[0] === 0 always so
+            // the control plate stays first.
+            var plate = PLATES[displayOrder[index]];
+            var size = plateSize();
+
+            var area = document.getElementById('plate-area');
+            area.classList.remove('plate-transition');
+            void area.offsetWidth;
+            area.classList.add('plate-transition');
+
+            renderPlate(testCanvas, plate, size);
+            // Record render-completion timestamp for response-time telemetry.
+            // Using performance.now() gives a high-resolution monotonic clock
+            // that's not affected by system clock changes.
+            plateStartMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+
+            // Accessible label for screen readers
+            var testName = plate.tests === 'control' ? 'control' : plate.tests;
+            var prompt = plate.type === 'number' ? 'identify the number' : 'identify the shape';
+            testCanvas.setAttribute('aria-label', 'Plate ' + (index + 1) + ' of ' + PLATES.length + ': ' + testName + ' test — ' + prompt + ' hidden in the colored dots');
+            testCanvas.setAttribute('role', 'img');
+
+            // Progress
+            var dots = progressBar.querySelectorAll('.progress-dot');
+            dots.forEach(function(d, i) {
+                d.className = 'progress-dot' + (i < index ? ' done' : i === index ? ' active' : '');
+            });
+            progressBar.setAttribute('aria-valuenow', index + 1);
+
+            // Label
+            document.getElementById('plate-label').textContent = 'Plate ' + (index + 1) + ' of ' + PLATES.length;
+
+            // Question and input type
+            if (plate.type === 'number') {
+                document.getElementById('plate-question').textContent = 'What number do you see?';
+                numberAnswer.style.display = ''; shapeAnswer.style.display = 'none';
+                nextBtn.style.display = '';
+                answerInput.value = ''; answerInput.focus();
+            } else {
+                document.getElementById('plate-question').textContent = 'What shape do you see?';
+                numberAnswer.style.display = 'none'; shapeAnswer.style.display = '';
+                nextBtn.style.display = 'none'; // shape buttons auto-advance
+                // Keep keyboard users in the flow: without this, focus drops
+                // to <body> on shape plates and they must Tab back in.
+                var firstShape = shapeAnswer.querySelector('.shape-btn');
+                if (firstShape) firstShape.focus();
+            }
+
+            // Screenshot-pipeline hook. The iOS shell injects
+            // window.CVT_AUTOANSWER only when its ScreenshotTest
+            // launches the app (XCUITest cannot type into a WKWebView
+            // text field — the post-keyboard relayout breaks tap
+            // delivery), so the control plate answers itself through
+            // the normal submit path after a beat. Never set on the
+            // web or on production devices.
+            if (window.CVT_AUTOANSWER && index === 0) {
+                setTimeout(function() {
+                    if (currentPlate === 0 && testSection.style.display !== 'none') {
+                        submitAnswer(PLATES[displayOrder[0]].correct, false);
+                    }
+                }, 2500);
+            }
+
+            // Deterministic end-to-end scoring profiles, injected only by
+            // XCUITest through the native shell's launch environment.
+            if (window.CVT_UITEST_PROFILE) {
+                setTimeout(function() {
+                    if (currentPlate !== index || testSection.style.display === 'none') return;
+                    var canonicalIndex = displayOrder[index];
+                    var misses = window.CVT_UITEST_PROFILE === 'tritan-mild'
+                        ? [3, 5]
+                        : window.CVT_UITEST_PROFILE === 'tritan-likely'
+                            ? [3, 5, 9]
+                            : [];
+                    if (misses.indexOf(canonicalIndex) >= 0) {
+                        submitAnswer('', true);
+                    } else {
+                        submitAnswer(plate.correct, false);
+                    }
+                }, 150);
+            }
+        }
+
+        var submitting = false;
+        function submitAnswer(value, cantSee) {
+            if (submitting) return;
+            submitting = true;
+            // Demo plate: not scored. Just transition to plate 0.
+            if (inDemo) {
+                inDemo = false;
+                showPlate(0);
+                submitting = false;
+                return;
+            }
+            var nowMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+            var responseMs = plateStartMs > 0 ? Math.round(nowMs - plateStartMs) : null;
+            // Critical: pull the plate via displayOrder so the user's
+            // answer is graded against the plate they actually saw,
+            // not the one in the canonical position.
+            var plate = PLATES[displayOrder[currentPlate]];
+            var val = cantSee ? '' : value.toLowerCase();
+            var correct = plate.correct.toLowerCase();
+            var isCorrect = !cantSee && val === correct;
+            var isNearMiss = !isCorrect && !cantSee && val !== '' &&
+                plate.nearMisses && plate.nearMisses.indexOf(val) !== -1;
+            answers.push({
+                // Store the CANONICAL plate index (PLATES[plate]) not the
+                // display position, so scoring + result grid work
+                // regardless of plate-order shuffling.
+                plate: displayOrder[currentPlate],
+                correct: plate.correct,
+                tests: plate.tests,
+                type: plate.type,
+                userAnswer: cantSee ? '' : value,
+                cantSee: cantSee,
+                isCorrect: isCorrect,
+                isNearMiss: isNearMiss,
+                response_ms: responseMs
+            });
+
+            // Adaptive early-exit was retired when plate order became
+            // randomized: with shuffling, the first 9 plates aren't
+            // guaranteed to cover all four test categories
+            // (control + RG + tritan + protan-only + deutan-only), so
+            // a clean run on a non-representative subset would falsely
+            // report Typical Color Vision. ~30s saved isn't worth that
+            // risk; always run all 14 plates now. If we ever want
+            // early-exit back, do a stratified shuffle that guarantees
+            // category coverage in the first N plates.
+
+            if (currentPlate < PLATES.length - 1) {
+                showPlate(currentPlate + 1);
+                submitting = false;
+            } else {
+                showResults();
+            }
+        }
+
+        // Number: Next button
+        nextBtn.addEventListener('click', function() {
+            submitAnswer(answerInput.value.trim(), false);
+        });
+        answerInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); submitAnswer(answerInput.value.trim(), false); }
+        });
+
+        // Shape: button click auto-advances
+        document.querySelectorAll('.shape-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                submitAnswer(btn.dataset.shape, false);
+            });
+        });
+
+        // Can't see
+        document.getElementById('cant-see-btn').addEventListener('click', function() {
+            submitAnswer('', true);
+        });
+
+        // Retake — reroll the session salt so dot patterns shift, then
+        // run the test from plate 1. The plate *answers* are unchanged
+        // (still "74", "8", etc.) but the constellation of dots looks
+        // different, so a user who memorized the answer key from a
+        // previous run can't game the result.
+        var retakeBtn = document.getElementById('retake-btn');
+        if (retakeBtn) {
+            retakeBtn.addEventListener('click', function() {
+                // The final submitAnswer() leaves `submitting` latched true
+                // (its showResults branch never advances a plate); clear it
+                // or every input on the retake run is swallowed.
+                submitting = false;
+                resultsSection.style.display = 'none';
+                testSection.style.display = 'flex';
+                document.body.classList.add('testing');
+                currentPlate = 0; answers.length = 0;
+                calibrationWarning = false;
+                rerollSessionSalt();
+                reshufflePlateOrder();
+                // Skip the demo on retake — user has already done it.
+                showPlate(0);
+                testSection.scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+
+        // ── Scoring ──────────────────────────────────────────────────
+
+        function scoreResults() {
+            // Group answers by the plate design, not by an established diagnosis.
+            // IDs are retained for native history and companion-app compatibility.
+            var c = {
+                rgScreen:   { fail: 0, total: 0, nearMiss: 0 },
+                protanOnly: { fail: 0, total: 0, nearMiss: 0 },
+                deutanOnly: { fail: 0, total: 0, nearMiss: 0 },
+                tritan:     { fail: 0, total: 0, nearMiss: 0 },
+            };
+            answers.forEach(function(a) {
+                var tests = Array.isArray(a.tests) ? a.tests : (a.tests ? [a.tests] : []);
+                var hasP = tests.indexOf('protan') >= 0;
+                var hasD = tests.indexOf('deutan') >= 0;
+                var hasT = tests.indexOf('tritan') >= 0;
+                var bucket = null;
+                if (hasP && hasD)      bucket = 'rgScreen';
+                else if (hasP)         bucket = 'protanOnly';
+                else if (hasD)         bucket = 'deutanOnly';
+                else if (hasT)         bucket = 'tritan';
+                if (!bucket) return;  // control plate
+                c[bucket].total++;
+                if (!a.isCorrect) {
+                    c[bucket].fail++;
+                    if (a.isNearMiss) c[bucket].nearMiss++;
+                }
+            });
+
+            var rgFailed = c.rgScreen.fail;
+            var protanOnlyFailed = c.protanOnly.fail;
+            var deutanOnlyFailed = c.deutanOnly.fail;
+            var tritanFailed = c.tritan.fail;
+            var totalRGFails = rgFailed + protanOnlyFailed + deutanOnlyFailed;
+            var totalRGNearMiss = c.rgScreen.nearMiss + c.protanOnly.nearMiss + c.deutanOnly.nearMiss;
+            var totalNearMiss = totalRGNearMiss + c.tritan.nearMiss;
+            var hasAnyNearMiss = totalNearMiss > 0;
+            var totalFails = totalRGFails + tritanFailed;
+            // Preserve the existing heuristic for multiple near-miss answers.
+            var allFailsAreNearMisses = totalFails >= 2
+                && totalRGFails === totalRGNearMiss
+                && tritanFailed === c.tritan.nearMiss;
+
+            var controlOk = answers[0].isCorrect;
+            var nearMissNote = hasAnyNearMiss
+                ? ' Some answers matched the predefined near-miss list. This does not establish the type or severity of a color vision difference.'
+                : '';
+
+            function result(type, label, badgeClass, desc, addNote) {
+                return {
+                    type: type,
+                    label: label,
+                    badgeClass: badgeClass,
+                    description: desc + (addNote ? nearMissNote : ''),
+                    rgFailed: totalRGFails,
+                    rgTotal: c.rgScreen.total + c.protanOnly.total + c.deutanOnly.total,
+                    byFailed: tritanFailed,
+                    byTotal: c.tritan.total,
+                    breakdown: {
+                        rgScreen:   c.rgScreen,
+                        protanOnly: c.protanOnly,
+                        deutanOnly: c.deutanOnly,
+                        tritan:     c.tritan,
+                    },
+                };
+            }
+
+            // 1. Failed calibration was explicitly skipped. Even if the
+            // control plate passes, the display check says the color result
+            // is not reliable enough to classify.
+            if (calibrationWarning) {
+                return result('inconclusive', 'Inconclusive', 'badge-inconclusive',
+                    'The display calibration check was not passed. The gray-patch check cannot establish color accuracy, and this run is inconclusive. Try again with screen filters off and comfortable, bright viewing conditions.');
+            }
+
+            // 2. Control fail — display/lighting suspect, cannot trust the test
+            if (!controlOk) {
+                return result('inconclusive', 'Inconclusive', 'badge-inconclusive',
+                    'The control plate was not identified correctly, so this run is inconclusive. Display, lighting, input, and vision can affect answers; the screening cannot determine the cause.');
+            }
+
+            // 2. All-near-miss — anomalous trichromacy across the failed axis
+            if (allFailsAreNearMisses) {
+                var axes = [];
+                if (totalRGNearMiss > 0) axes.push('red-green');
+                if (c.tritan.nearMiss > 0) axes.push('blue-yellow');
+                return result('anomalous', 'Close answers on several plates', 'badge-cvd',
+                    'Your answers were close but not exact on ' + totalFails + ' plates (' + axes.join(' and ') + '). A near-miss answer does not identify a clinical condition.');
+            }
+
+            // 3. Protan-type signal — fails protan-only plates, passes deutan-only.
+            //    Requires either both classifier plates or one classifier plus
+            //    two screeners: a single classifier miss + one screener miss is
+            //    within noise for a self-administered web test, and the
+            //    classifiers are tuned to dichromat confusion lines, which
+            //    anomalous trichromats only partially follow.
+            if (deutanOnlyFailed === 0 && (protanOnlyFailed >= 2 || (protanOnlyFailed === 1 && rgFailed >= 2))) {
+                return result('protan', 'Misses in the protan-design group', 'badge-cvd',
+                    'You missed ' + protanOnlyFailed + ' of ' + c.protanOnly.total + ' experimental protan-design plates and matched the deutan-design plates. This describes the plate group; it does not establish protanopia or protanomaly.');
+            }
+
+            // 4. Deutan-type signal — same gating rationale as rule 3.
+            if (protanOnlyFailed === 0 && (deutanOnlyFailed >= 2 || (deutanOnlyFailed === 1 && rgFailed >= 2))) {
+                return result('deutan', 'Misses in the deutan-design group', 'badge-cvd',
+                    'You missed ' + deutanOnlyFailed + ' of ' + c.deutanOnly.total + ' experimental deutan-design plates and matched the protan-design plates. This describes the plate group; it does not establish deuteranopia or deuteranomaly.');
+            }
+
+            // 5. Mixed classifier — fails both classifier sets. Needs three
+            //    classifier misses or a corroborating screener miss: exactly
+            //    one miss on each side is two independent noise events away
+            //    from "Typical", too thin a base for a "Strong" label.
+            if (protanOnlyFailed >= 1 && deutanOnlyFailed >= 1 &&
+                (protanOnlyFailed + deutanOnlyFailed >= 3 || rgFailed >= 1)) {
+                return result('red-green-mixed', 'Misses across both red-green groups', 'badge-cvd',
+                    'You missed ' + totalRGFails + ' red-green plates, including both experimental classifier groups. The number of misses does not establish severity or a subtype.');
+            }
+
+            // 6. Generic red-green CVD
+            if (rgFailed >= 3 && tritanFailed <= 1) {
+                return result('red-green', 'Several red-green plates missed', 'badge-cvd',
+                    'You missed ' + rgFailed + ' of ' + c.rgScreen.total + ' general red-green plates. This answer pattern does not establish a clinical color vision difference.');
+            }
+
+            // 7. Tritan/blue-yellow
+            if (tritanFailed >= 3 && totalRGFails <= 1) {
+                return result('tritan', 'Several blue-yellow plates missed', 'badge-cvd',
+                    'You missed ' + tritanFailed + ' of ' + c.tritan.total + ' blue-yellow plates. The tritan simulation is approximate; these misses do not establish tritanopia or tritanomaly.');
+            }
+
+            // 8. Combined RG + tritan
+            if (totalRGFails >= 2 && tritanFailed >= 1) {
+                return result('multiple', 'Misses across both color groups', 'badge-cvd',
+                    'You missed ' + totalRGFails + ' red-green and ' + tritanFailed + ' blue-yellow plates. This screening cannot determine why.');
+            }
+
+            // 9. Mild combined
+            if (totalRGFails >= 1 && tritanFailed >= 1) {
+                return result('mild-combined', 'Some plates missed in both groups', 'badge-cvd',
+                    'You missed ' + totalRGFails + ' red-green and ' + tritanFailed + ' blue-yellow plates. These counts do not establish a mild condition or a clinical subtype.');
+            }
+
+            // 10. Mild red-green only — requires 2+ misses to clear the noise
+            //     floor for a 14-plate self-administered web test (a single
+            //     missed plate is well within typical normal-vision noise:
+            //     glance distraction, font confusion 3/8/0/6, mobile fat-
+            //     finger, or input typo). Real Ishihara screening tolerates
+            //     up to 7 of 24 misses (~29%) before classifying as CVD.
+            if (totalRGFails >= 2) {
+                return result('mild-red-green', 'Some red-green plates missed', 'badge-cvd',
+                    'You missed ' + totalRGFails + ' red-green plates. Display, viewing conditions, recognition, and input can affect answers; the screening cannot distinguish these causes.');
+            }
+
+            // 11. Mild tritan only
+            if (tritanFailed >= 2) {
+                return result('mild-tritan', 'Some blue-yellow plates missed', 'badge-cvd',
+                    'You missed ' + tritanFailed + ' blue-yellow plates. Display, viewing conditions, recognition, and input can affect answers; the screening cannot distinguish these causes.');
+            }
+
+            // 12. Typical color vision (with note if any noise misses)
+            var noiseNote = totalFails === 1
+                ? ' One plate was missed.'
+                : '';
+            return result('normal', 'Most or all plates matched', 'badge-normal',
+                    'You matched ' + (answers.length - totalFails) + ' of ' + answers.length + ' plates.' + noiseNote + ' This result does not rule out a color vision difference.');
+        }
+
+        // Guidance applies to answer patterns, without assigning a diagnosis.
+        var RESULT_CONTEXT = [
+            'These generated plates and scoring rules have not been clinically validated.',
+            'A retake changes dot positions and plate order, but keeps the same answers. Familiarity can affect later attempts.',
+            'If you want to understand your color vision, an eye care professional can provide a clinical evaluation.'
+        ];
+
+        function showResults() {
+            // The final submitAnswer set submitting=true and lands here
+            // without the mid-plate reset — clear it or every answer on
+            // a retake hits the early return and the plates go dead.
+            submitting = false;
+            testSection.style.display = 'none';
+            resultsSection.style.display = 'flex';
+            document.body.classList.remove('testing');
+            releaseWakeLock();
+            var result = scoreResults();
+
+            // Hand the result to the What Color Is This? app: /test/ shares
+            // an origin with the app root on every domain, so the app's
+            // Settings can offer "Use my test result" without a backend.
+            try {
+                localStorage.setItem('whatcolor_test_result', JSON.stringify({
+                    visionType: result.type,
+                    label: result.label,
+                    at: new Date().toISOString()
+                }));
+            } catch (e) { /* private mode / storage full — sync is best-effort */ }
+
+            document.getElementById('result-badge').textContent =
+                result.type === 'normal' ? 'Screening summary' :
+                result.type === 'inconclusive' ? 'Inconclusive' : 'Answer pattern';
+            document.getElementById('result-badge').className = 'result-badge ' + result.badgeClass;
+            document.getElementById('result-type').textContent = result.label;
+            document.getElementById('result-description').textContent = result.description;
+
+            // What this might mean day-to-day — populated only for non-normal results
+            var meaningCard = document.getElementById('result-meaning');
+            var bullets = RESULT_CONTEXT;
+            if (bullets && bullets.length > 0 && result.type !== 'normal') {
+                var ul = document.getElementById('result-meaning-bullets');
+                ul.innerHTML = '';
+                bullets.forEach(function(b) {
+                    var li = document.createElement('li');
+                    li.textContent = b;
+                    ul.appendChild(li);
+                });
+                meaningCard.style.display = '';
+            } else {
+                meaningCard.style.display = 'none';
+            }
+
+            // Plate-by-plate grid
+            var grid = document.getElementById('plate-results-grid');
+            grid.innerHTML = '';
+            answers.forEach(function(a, i) {
+                // Use canonical PLATES index from the answer (a.plate),
+                // not the display position (i), so the rendered mini
+                // plate matches what the user actually saw under
+                // randomized order.
+                var plate = PLATES[a.plate];
+                var item = document.createElement('div');
+                item.className = 'plate-result-item';
+
+                // Render a recognizable mini plate (80px)
+                var mini = document.createElement('canvas');
+                renderPlate(mini, plate, 80);
+                mini.style.width = '56px'; mini.style.height = '56px';
+                item.appendChild(mini);
+
+                var info = document.createElement('div');
+                info.className = 'plate-result-info';
+
+                // Label: plate number + what it tests
+                var label = document.createElement('div');
+                label.className = 'plate-result-label';
+                var testsArr = Array.isArray(plate.tests) ? plate.tests : (plate.tests ? [plate.tests] : []);
+                var testName;
+                if (testsArr.length === 0)                                          testName = 'Control';
+                else if (testsArr.length === 2 && testsArr.indexOf('protan') >= 0
+                         && testsArr.indexOf('deutan') >= 0)                        testName = 'Red-green';
+                else if (testsArr.length === 1 && testsArr[0] === 'protan')         testName = 'Protan classifier';
+                else if (testsArr.length === 1 && testsArr[0] === 'deutan')         testName = 'Deutan classifier';
+                else if (testsArr.length === 1 && testsArr[0] === 'tritan')         testName = 'Blue-yellow';
+                else                                                                testName = testsArr.join('+');
+                label.textContent = 'Plate ' + (i + 1) + ' \u00b7 ' + testName;
+                info.appendChild(label);
+
+                // User's answer
+                var answer = document.createElement('div');
+                var userText = a.cantSee ? 'Can\'t see' : (a.userAnswer || 'No answer');
+                if (a.isCorrect) {
+                    answer.className = 'plate-result-answer pass';
+                    answer.textContent = userText;
+                } else if (a.isNearMiss) {
+                    answer.className = 'plate-result-answer partial';
+                    answer.textContent = userText + ' (close)';
+                } else {
+                    answer.className = 'plate-result-answer fail';
+                    answer.textContent = userText;
+                }
+                info.appendChild(answer);
+
+                // Correct answer (show when wrong or near-miss)
+                if (!a.isCorrect) {
+                    var correct = document.createElement('div');
+                    correct.className = 'plate-result-correct';
+                    correct.textContent = 'Answer: ' + plate.correct;
+                    info.appendChild(correct);
+                }
+
+                item.appendChild(info);
+                grid.appendChild(item);
+            });
+
+            resultsSection.dataset.visionType = result.type;
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+
+            // Native iOS shell (ios/): persist this screening to the
+            // on-device history (Settings → Screening History). The
+            // result object already carries everything the native
+            // store needs. No-op on the web.
+            if (window.CVT_NATIVE && window.webkit && window.webkit.messageHandlers
+                && window.webkit.messageHandlers.screeningResult) {
+                try {
+                    window.webkit.messageHandlers.screeningResult.postMessage({
+                        type: result.type,
+                        label: result.label,
+                        rgFailed: result.rgFailed,
+                        rgTotal: result.rgTotal,
+                        byFailed: result.byFailed,
+                        byTotal: result.byTotal
+                    });
+                } catch (e) { /* bridge unavailable — fine */ }
+            }
+        }
+
+        // ── Share ────────────────────────────────────────────────────
+
+        document.getElementById('share-btn').addEventListener('click', function() {
+            var url = 'https://whatcoloristhis.one/test/';
+            var text = 'Explore 14 generated color vision plates. Experimental screening with sources; not a clinical diagnosis.';
+            // Native iOS shell: navigator.share and navigator.clipboard
+            // don't exist in a file:// WKWebView (not a secure context),
+            // so route to the native share sheet instead.
+            if (window.CVT_NATIVE && window.webkit && window.webkit.messageHandlers
+                && window.webkit.messageHandlers.share) {
+                window.webkit.messageHandlers.share.postMessage({ text: text, url: url });
+                return;
+            }
+            if (navigator.share) { navigator.share({title:'Color Vision Screening', text:text, url:url}).catch(function(){}); }
+            else if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(function() {
+                    var b = document.getElementById('share-btn'); var o = b.textContent;
+                    b.textContent = 'Link copied!'; setTimeout(function(){ b.textContent = o; }, 2000);
+                });
+            }
+        });
+
+        // ── Visual viewport tracking ─────────────────────────────────
+        // See the body.kb-up CSS: the system keyboard never resizes the
+        // layout viewport on iOS, so visualViewport is the only honest
+        // signal that it's covering the page. The 0.8 threshold keeps
+        // URL-bar collapses from registering as a keyboard.
+        if (window.visualViewport) {
+            var updateViewport = function() {
+                var kbUp = window.visualViewport.height < window.innerHeight * 0.8;
+                document.body.classList.toggle('kb-up', kbUp);
+                document.documentElement.style.setProperty('--vvh', window.visualViewport.height + 'px');
+                if (kbUp) window.scrollTo(0, 0);
+            };
+            window.visualViewport.addEventListener('resize', updateViewport);
+            updateViewport();
+        }
+
+        // ── Native iOS shell adjustments ─────────────────────────────
+        // The iOS app (ios/) injects window.CVT_NATIVE at document
+        // start. In native mode: collapse the companion-app card to a
+        // single link (TestFlight/APK links inside a shipping app read
+        // as a Guideline 2.2 beta-distribution problem to App Review),
+        // and add a settings gear that opens the native Settings screen.
+        if (window.CVT_NATIVE) {
+            // Remote favicon/touch-icon links point at the live site;
+            // WKWebView doesn't fetch them in practice, but removing
+            // them makes the "zero network calls" review-note claim
+            // unfalsifiable.
+            document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]').forEach(function(l) {
+                l.parentNode.removeChild(l);
+            });
+            var nativeActions = document.querySelector('.testflight-actions');
+            if (nativeActions) {
+                // TODO: swap href to the App Store URL once
+                // What Color Is This? is live there.
+                nativeActions.innerHTML =
+                    '<a class="btn btn-primary" href="https://whatcoloristhis.one" target="_blank" rel="noopener">Get What Color Is This?</a>';
+            }
+            var gear = document.createElement('button');
+            gear.id = 'native-settings-btn';
+            gear.type = 'button';
+            gear.setAttribute('aria-label', 'Settings');
+            // Gear icon from Feather Icons (MIT).
+            gear.innerHTML = '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>';
+            gear.addEventListener('click', function() {
+                if (window.webkit && window.webkit.messageHandlers
+                    && window.webkit.messageHandlers.settings) {
+                    window.webkit.messageHandlers.settings.postMessage('open');
+                }
+            });
+            document.body.appendChild(gear);
+        }
+
+        // ── Init ─────────────────────────────────────────────────────
+
+        initHero();
+        window.addEventListener('resize', function() { if (heroSection.style.display !== 'none') initHero(); });
+    })();
+    </script>
+    <script>
+    // Android app-install banner. iOS Safari shows the native smart
+    // banner via the apple-itunes-app meta tag, so this only fills the
+    // Android gap. Dismissal is remembered so it shows at most once per
+    // visitor (until they clear storage).
+    (function () {
+        var banner = document.getElementById('app-banner');
+        if (!banner) return;
+        var dismissed = false;
+        try { dismissed = localStorage.getItem('cvp_android_banner_dismissed') === '1'; } catch (e) {}
+        if (!/Android/i.test(navigator.userAgent) || dismissed) return;
+        banner.classList.add('is-visible');
+        document.getElementById('app-banner-dismiss').addEventListener('click', function () {
+            banner.classList.remove('is-visible');
+            try { localStorage.setItem('cvp_android_banner_dismissed', '1'); } catch (e) {}
+        });
+    })();
+    </script>
+    <!-- GoatCounter Analytics — web only. The iOS app sets
+         window.CVT_NATIVE and ships with no analytics at all; its
+         App Store privacy label says "no data collected" and the
+         privacy manifest must stay truthful. -->
+    <script>
+    if (!window.CVT_NATIVE) {
+        var gcScript = document.createElement('script');
+        gcScript.async = true;
+        gcScript.src = 'https://stats.dr.eamer.dev/count.js';
+        gcScript.setAttribute('data-goatcounter', 'https://stats.dr.eamer.dev/count');
+        document.body.appendChild(gcScript);
+    }
+    </script>
+</body>
+</html>

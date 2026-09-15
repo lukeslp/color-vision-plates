@@ -1,0 +1,36 @@
+# Deliverfile — what `fastlane upload_listing` pushes to App Store
+# Connect. Source of truth for the copy is ../app-store-listing.md;
+# the files under fastlane/metadata/ mirror it in deliver's format.
+
+app_identifier("one.whatcoloristhis.visiontest")
+# Deliverfile team_id is the App Store Connect team (numeric), NOT
+# the Developer Portal team id. 117870543 = Bridge City Lab LLC in
+# ASC; 596T7J7FB6 is the same org in the Developer Portal and lives
+# in project.yml / the Appfile.
+team_id("117870543")
+
+# Apple ID for App Store Connect. Override with FASTLANE_USER if the
+# developer account uses a different login.
+username("luke@lukesteuber.com")
+
+# The binary is uploaded via Xcode Organizer / Transporter, not here.
+skip_binary_upload(true)
+
+# CFBundleVersion lives in project.yml, bumped by hand per release.
+skip_app_version_update(true)
+
+# Phased release toggled in the ASC UI, not from here.
+automatic_release(false)
+
+# Don't auto-submit. TestFlight first, then the full submit dance.
+submit_for_review(false)
+
+# Skip the HTML preview prompt (CI-friendly).
+force(true)
+
+# Review contact + notes live in metadata/review_information/ —
+# deliver's native layout. (Don't File.read here: fastlane evals this
+# file, so __FILE__/relative paths don't resolve.)
+
+# Supply phone_number.txt locally before an authorized listing upload.
+# It is intentionally ignored because it contains private review contact data.

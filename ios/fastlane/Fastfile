@@ -1,0 +1,38 @@
+# Fastfile — one lane: push listing metadata + screenshots to App
+# Store Connect.
+#
+# Run from ios/:
+#   brew install fastlane          # once — self-contained, no sudo;
+#                                  # system-Ruby bundler wants sudo for
+#                                  # /Library/Ruby/Gems and 2.6 is EOL
+#   fastlane upload_listing        # prompts for Apple ID 2FA on first run
+#
+# Screenshots come from scripts/capture_screenshots.sh output in
+# ../screenshots/{iphone-6.9,ipad-13}/. The lane stages them into
+# deliver's per-locale layout (device class is inferred from pixel
+# dimensions, so a flat en-US dir is enough).
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Upload listing metadata + screenshots to App Store Connect"
+  lane :upload_listing do
+    staging = File.expand_path("screenshots/en-US", __dir__)
+    FileUtils.rm_rf(staging)
+    FileUtils.mkdir_p(staging)
+    {
+      "iphone-6.9" => "iphone69",
+      "ipad-13"    => "ipad13",
+    }.each do |src, prefix|
+      Dir[File.expand_path("../screenshots/#{src}/0[1-6]-*.png", __dir__)].each do |f|
+        FileUtils.cp(f, File.join(staging, "#{prefix}-#{File.basename(f)}"))
+      end
+    end
+
+    deliver(
+      screenshots_path: File.expand_path("screenshots", __dir__),
+      metadata_path: File.expand_path("metadata", __dir__),
+      overwrite_screenshots: true
+    )
+  end
+end

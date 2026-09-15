@@ -1,0 +1,12 @@
+source "https://rubygems.org"
+
+# Fastlane drives the App Store Connect upload (deliver): all listing
+# text from fastlane/metadata/ and the screenshots captured by
+# scripts/capture_screenshots.sh.
+#
+# On this Mac use Homebrew's self-contained fastlane (`brew install
+# fastlane`, then plain `fastlane upload_listing`) — system-Ruby
+# bundler needs sudo for /Library/Ruby/Gems. This Gemfile exists for
+# CI or any machine with a modern Ruby where `bundle install` is
+# preferred.
+gem "fastlane"

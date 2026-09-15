@@ -1,0 +1,152 @@
+name: ColorVisionPlates
+options:
+  bundleIdPrefix: one.whatcoloristhis
+  deploymentTarget:
+    iOS: "16.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+  groupSortPosition: top
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    DEVELOPMENT_TEAM: 596T7J7FB6
+    SWIFT_VERSION: "5.9"
+    ENABLE_BITCODE: NO
+    CODE_SIGN_STYLE: Automatic
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+    SUPPORTS_MACCATALYST: NO
+    SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: YES
+    # xcodegen rewrites the .xcodeproj on every regen, so Xcode-UI
+    # choices don't stick — declare the asset-symbol opt-out here
+    # (same fix as whatcolor's project.yml).
+    ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOL_EXTENSIONS: NO
+    ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: NO
+    ASSETCATALOG_COMPILER_GENERATE_OBJC_ASSET_SYMBOL_EXTENSIONS: NO
+
+targets:
+  ColorVisionTest:
+    type: application
+    platform: iOS
+    sources:
+      - path: ColorVisionTest
+      # Web assets pulled directly from the repo root — one source of
+      # truth, no copies. xcodegen has no 'resources:' target field;
+      # files must live under 'sources:' with buildPhase: resources to
+      # land in the Copy Bundle Resources phase.
+      - path: ../index.html
+        buildPhase: resources
+      - path: ../color-math.js
+        buildPhase: resources
+      - path: ../icon-512.png
+        buildPhase: resources
+    info:
+      path: ColorVisionTest/Info.plist
+      properties:
+        CFBundleDisplayName: Color Vision Plates
+        CFBundleShortVersionString: "1.0.3"
+        CFBundleVersion: "9"
+        CFBundleDevelopmentRegion: en
+        CFBundleLocalizations:
+          - en
+        LSApplicationCategoryType: public.app-category.utilities
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: Default Configuration
+                UISceneDelegateClassName: "$(PRODUCT_MODULE_NAME).SceneDelegate"
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        # The page is permanently dark (#0d0d0d); VC-based appearance is
+        # unreliable through a bar-hidden UINavigationController, so pin
+        # the light status bar app-wide.
+        UIViewControllerBasedStatusBarAppearance: false
+        UIStatusBarStyle: UIStatusBarStyleLightContent
+        WKAppBoundDomains:
+          - whatcoloristhis.one
+          - whatcoloristhat.one
+          - whatcolouristhat.com
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: one.whatcoloristhis.visiontest
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UIRequiresFullScreen: NO
+
+    dependencies:
+      - target: ColorVisionWidget
+
+  ColorVisionTestUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: ColorVisionTestUITests
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: one.whatcoloristhis.visiontest.uitests
+        TEST_TARGET_NAME: ColorVisionTest
+    dependencies:
+      - target: ColorVisionTest
+
+  ColorVisionWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: ColorVisionWidget
+    info:
+      path: ColorVisionWidget/Info.plist
+      properties:
+        CFBundleDisplayName: Ishihara Clock
+        CFBundleShortVersionString: "1.0.3"
+        CFBundleVersion: "9"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: one.whatcoloristhis.visiontest.widget
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+
+  ColorVisionWidgetTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: ColorVisionWidgetTests
+      - path: ColorVisionWidget/IshiharaPlate.swift
+        buildPhase: sources
+      - path: ColorVisionTest/Reviews/ReviewPromptPolicy.swift
+        buildPhase: sources
+      - path: ../index.html
+        buildPhase: resources
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: one.whatcoloristhis.visiontest.widget.tests
+
+schemes:
+  ColorVisionPlates:
+    build:
+      targets:
+        ColorVisionTest: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - ColorVisionTestUITests
+        - ColorVisionWidgetTests
+    archive:
+      config: Release
