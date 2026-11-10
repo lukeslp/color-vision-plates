@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Colorblindness Test</title>
-    <meta name="description" content="Explore 14 generated color vision plates with source code and references. Experimental screening, not a clinical diagnosis.">
+    <meta name="description" content="Colorblindness test. A real one: free, open source, with citations. Experimental screening, not a diagnosis.">
     <link rel="canonical" href="https://whatcoloristhis.one/test/">
     <meta property="og:title" content="Colorblindness Test">
-    <meta property="og:description" content="Explore 14 generated color vision plates with source code and references. Experimental screening, not a clinical diagnosis.">
+    <meta property="og:description" content="Colorblindness test. A real one: free, open source, with citations. Experimental screening, not a diagnosis.">
     <meta property="og:image" content="https://whatcoloristhis.one/test/icon-512.png">
     <meta property="og:image:width" content="512">
     <meta property="og:image:height" content="512">
@@ -17,7 +17,7 @@
     <meta property="og:site_name" content="What Color Is This?">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Colorblindness Test">
-    <meta name="twitter:description" content="Explore 14 generated color vision plates with source code and references. Experimental screening, not a clinical diagnosis.">
+    <meta name="twitter:description" content="Colorblindness test. A real one: free, open source, with citations. Experimental screening, not a diagnosis.">
     <meta name="twitter:image" content="https://whatcoloristhis.one/test/icon-512.png">
     <meta name="theme-color" content="#1a1a1a">
     <link rel="manifest" href="pwa.webmanifest">
@@ -430,18 +430,18 @@
 </head>
 <body>
     <a href="#main" class="skip-link">Skip to content</a>
-    <!-- Android availability banner. Hidden until JS confirms Android;
-         iOS Safari gets its own native banner from the apple-itunes-app
-         meta tag in <head>. The Android build is still in testing, so this
-         deliberately links to its status page rather than a false APK URL. -->
-    <aside class="app-banner" id="app-banner" aria-label="Color Vision Plates Android availability">
+    <!-- Android app banner. Hidden until JS confirms Android; iOS Safari
+         gets its own native banner from the apple-itunes-app meta tag in
+         <head>. Links to the downloads page, which carries the current
+         release, so no APK file name is fixed here. -->
+    <aside class="app-banner" id="app-banner" aria-label="Get the Color Vision Plates app">
         <button type="button" class="app-banner__dismiss" id="app-banner-dismiss" aria-label="Dismiss app banner">&times;</button>
         <img class="app-banner__icon" src="icon-512.png" alt="" width="38" height="38">
         <div class="app-banner__body">
             <div class="app-banner__name">Color Vision Plates</div>
-            <div class="app-banner__tagline">Android is in testing. See release status.</div>
+            <div class="app-banner__tagline">Available for Android.</div>
         </div>
-        <a class="app-banner__cta" id="app-banner-install" href="https://dr.eamer.dev/downloads/apps/color-vision-plates/">Status</a>
+        <a class="app-banner__cta" id="app-banner-install" href="https://dr.eamer.dev/downloads/apps/colorblindness-tools/">Get</a>
     </aside>
     <main id="main">
         <!-- Hero -->
@@ -568,7 +568,7 @@
                     <p class="subtitle">A color identification app built for how you actually see.</p>
                     <div class="testflight-actions">
                         <a class="btn btn-primary" href="https://apps.apple.com/us/app/what-color-is-this/id6767490668" target="_blank" rel="noopener">iOS (App Store)</a>
-                        <a class="btn btn-secondary" href="https://dr.eamer.dev/downloads/apps/what-color-is-this/">Android (in testing)</a>
+                        <a class="btn btn-secondary" href="https://dr.eamer.dev/downloads/apps/colorblindness-tools/">Android</a>
                         <a class="btn btn-secondary" href="https://whatcoloristhis.one" target="_blank" rel="noopener">Web</a>
                     </div>
                     <p class="testflight-fineprint">Free. No accounts, no ads, and the app itself contains no analytics or tracking. Camera identification, ~32,000 named colors, colorblind-safe palettes, CVD simulation.</p>
@@ -1781,7 +1781,7 @@
 
         document.getElementById('share-btn').addEventListener('click', function() {
             var url = 'https://whatcoloristhis.one/test/';
-            var text = 'Explore 14 generated color vision plates. Experimental screening with sources; not a clinical diagnosis.';
+            var text = 'Colorblindness test. A real one: free, open source, with citations. Experimental screening, not a diagnosis.';
             // Native iOS shell: navigator.share and navigator.clipboard
             // don't exist in a file:// WKWebView (not a secure context),
             // so route to the native share sheet instead.
