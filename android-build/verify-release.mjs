@@ -10,11 +10,11 @@ import { resolve } from 'node:path';
 const ROOT = resolve(import.meta.dirname, '..');
 const EXPECTED = Object.freeze({
   packageId: 'one.whatcoloristhis.plates.twa',
-  versionName: '1.0.0',
-  versionCode: 1,
+  versionName: '1.0.1',
+  versionCode: 3,
   startUrl: '/test/',
   scope: '/test/',
-  fingerprint: '03:C2:31:72:80:A1:CB:25:2D:E0:7F:56:3F:E9:DB:88:64:D6:F5:F6:37:71:A2:19:73:A4:BA:2D:F1:91:97:01',
+  fingerprint: 'F3:3B:8E:5D:F9:51:1E:D7:0A:FE:44:97:4D:A0:3E:2F:35:07:48:51:D4:23:C3:A9:9D:FD:18:C5:BF:95:35:51',
 });
 
 function readJson(path) {

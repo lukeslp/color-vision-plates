@@ -18,11 +18,11 @@
   "monochromeIconUrl": "",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
-    "path": "./plates-keystore.jks",
-    "alias": "plates"
+    "path": "./release-keystore.jks",
+    "alias": "color-vision-plates-release"
   },
-  "appVersionName": "1.0.0",
-  "appVersionCode": 1,
+  "appVersionName": "1.0.1",
+  "appVersionCode": 3,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "fallbackType": "customtabs",
@@ -39,7 +39,7 @@
   "fingerprints": [
     {
       "name": "assetlinks",
-      "value": "03:C2:31:72:80:A1:CB:25:2D:E0:7F:56:3F:E9:DB:88:64:D6:F5:F6:37:71:A2:19:73:A4:BA:2D:F1:91:97:01"
+      "value": "F3:3B:8E:5D:F9:51:1E:D7:0A:FE:44:97:4D:A0:3E:2F:35:07:48:51:D4:23:C3:A9:9D:FD:18:C5:BF:95:35:51"
     }
   ],
   "additionalTrustedOrigins": [
@@ -50,5 +50,5 @@
   ],
   "retainedBundles": [],
   "displayOverride": [],
-  "appVersion": "1.0.0"
+  "appVersion": "1.0.1"
 }

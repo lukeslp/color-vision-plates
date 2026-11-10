@@ -7,7 +7,7 @@ material are deliberately ignored. `twa-manifest.json` is the source of truth.
 ## Release contract
 
 - Package ID: `one.whatcoloristhis.plates.twa`
-- Version: `1.0.0` (`versionCode` `1`)
+- Version: `1.0.1` (`versionCode` `3`)
 - Canonical scope: `https://whatcoloristhis.one/test/`
 - Digital Asset Links source:
   `../.well-known/assetlinks.json`
@@ -59,16 +59,39 @@ shasum -a 256 -c release/SHA256SUMS.txt
 The ignored `release/` directory contains the renamed artifacts and
 `SHA256SUMS.txt`.
 
-## Signed-release blocker
+## Signed release
 
-The retained manifest intentionally refers to `./plates-keystore.jks` with
-alias `plates`, but no keystore is present in this checkout or the documented
-local backup location. A signed release cannot be created or verified until
-the existing release keystore is restored at that path and can be opened using
-the existing alias. Never add the keystore or passwords to this repository,
-scripts, environment files, logs, or release staging.
+Since 1.0.1 the app is signed with its own release key, certificate SHA-256
+`F3:3B:8E:5D:F9:51:1E:D7:0A:FE:44:97:4D:A0:3E:2F:35:07:48:51:D4:23:C3:A9:9D:FD:18:C5:BF:95:35:51`.
+The keystore named in earlier revisions (`plates-keystore.jks`, certificate
+`03:C2:31…`) could not be found in November 2026, so 1.0.1 starts a new signing
+lineage. The 1.0.0 test APKs that were handed out were signed with the Android
+debug key; anyone who has one must uninstall it once before installing 1.0.1 or
+later.
 
-Once the keystore is available and the public PWA manifest plus Digital Asset
-Links endpoint have been deployed and verified, run Bubblewrap without
-`--skipSigning` or `--skipPwaValidation`; allow it to obtain credentials
-interactively from the established local secret store.
+The key and its password are not in this repository. The key lives in the
+release toolkit's store and the password in the login Keychain, so the signed
+build runs through the toolkit:
+
+```bash
+~/workspace/android-release-toolkit/scripts/android-release \
+  with-signing --profile color-vision-plates -- android-build/build-signed.sh
+```
+
+`build-signed.sh` runs `npm run verify`, regenerates the Android project from
+`twa-manifest.json`, builds the unsigned aligned APK with Bubblewrap, signs it
+with `apksigner`, and stages `release/color-vision-plates-<version>.apk` with
+`SHA256SUMS.txt`. It refuses a debuggable APK and one whose certificate is not
+the fingerprint in `twa-manifest.json`. The `signingKey` entry in the manifest
+is a placeholder; Bubblewrap does not sign this build.
+
+The app opens full screen only when the canonical host's
+`/.well-known/assetlinks.json` lists the release certificate for
+`one.whatcoloristhis.plates.twa`. Until that file is deployed with the new
+fingerprint, Android shows the page in a browser tab with an address bar. The
+source file in this repository keeps the earlier fingerprint beside the new one.
+
+The 1.0.1 build used `--skipPwaValidation`, because
+`https://whatcoloristhis.one/test/pwa.webmanifest` was not being served on the
+day it was built. Serve the PWA manifest and drop that flag before treating a
+build as a store candidate.
