@@ -1,6 +1,7 @@
-Color Vision Plates 1.0.3 is a quiet stability update.
+Color Vision Plates 1.0.4 describes its results more carefully.
 
-- Improves reliability when returning to the app after a screening.
-- Same 14-plate flow, same on-device history, same free offline screening.
+- Results now name the plate groups you missed. They no longer suggest a type or severity, which a phone screening can't establish.
+- The method and limits sections say plainly what has and hasn't been validated.
+- Same 14 plates, same on-device history, same free offline screening.
 
 Questions: luke@lukesteuber.com.
