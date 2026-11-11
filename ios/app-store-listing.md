@@ -119,7 +119,7 @@ From the maker of What Color Is This?, the camera color-identifier built for col
 
 Made by Luke Steuber. Published by Bridge City Lab LLC.
 ```
-*(~2700 chars — leaves room for editorial additions)*
+*(~3000 chars as of 1.0.4)*
 
 ---
 
@@ -169,12 +169,8 @@ Upload order: results (04) first or second — it's the conversion shot. Suggest
 **Data Not Collected.** The app makes no network requests: no analytics, no crash reporting, no accounts. Screening history is stored in UserDefaults on-device only. (`PrivacyInfo.xcprivacy` declares UserDefaults access, reason CA92.1, and nothing else.)
 
 - Privacy Policy URL: `https://whatcoloristhis.one/privacy.html`
-  (live today — `/test/privacy.html` 404'd during deliver validation
-  because this repo wasn't deployed yet. whatcolor's `privacy.html`
-  now has an explicit "Color Vision Plates (companion app)" section
-  so it isn't a 5.1.1(i) metadata mismatch; **deploy whatcolor before
-  App Review** so the section is live. This repo's own `privacy.html`
-  remains and will serve at `/test/privacy.html` once deployed.)
+  (This repo's own `privacy.html` has also been live at `/test/privacy.html`
+  since the 2026-11-10 deploy of the test page.)
 
 ---
 
@@ -198,7 +194,7 @@ Native iOS surface beyond the screening itself: on-device screening history with
 
 This is a screening tool, not a medical device, and it does not claim to diagnose. The "screening, not a medical diagnosis" disclaimer is persistent: shown on the test screen, on every results page, and in the screening history. Results that fail the built-in display-calibration control are reported as inconclusive rather than scored. All methodology is cited in-app (Ishihara 1917; Hardy-Rand-Rittler 1954; Brettel-Viénot-Mollon 1997; Sharma-Wu-Dalal 2005).
 
-The matching audited web experience is at https://whatcoloristhis.one/test/ ; the iOS app is the same validated test with native iOS integrations. Companion app: What Color Is This? (one.whatcoloristhis.ios), same developer.
+The same screening runs on the web at https://whatcoloristhis.one/test/ ; the iOS app adds native iOS integrations. The plates and scoring rules are experimental and have not been clinically validated, and the app says so. Companion app: What Color Is This? (one.whatcoloristhis.ios), same developer.
 
 No demo account needed — there are no accounts. To see a full flow quickly: Start Screening → tap the brighter gray patch → answer the practice plate → answer or skip the 14 plates → results → gear icon (top right) → Screening History.
 ```
