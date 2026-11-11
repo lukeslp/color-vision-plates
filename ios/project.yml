@@ -46,8 +46,8 @@ targets:
       path: ColorVisionTest/Info.plist
       properties:
         CFBundleDisplayName: Color Vision Plates
-        CFBundleShortVersionString: "1.0.3"
-        CFBundleVersion: "9"
+        CFBundleShortVersionString: "1.0.4"
+        CFBundleVersion: "10"
         CFBundleDevelopmentRegion: en
         CFBundleLocalizations:
           - en
@@ -111,8 +111,8 @@ targets:
       path: ColorVisionWidget/Info.plist
       properties:
         CFBundleDisplayName: Ishihara Clock
-        CFBundleShortVersionString: "1.0.3"
-        CFBundleVersion: "9"
+        CFBundleShortVersionString: "1.0.4"
+        CFBundleVersion: "10"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
