@@ -1,5 +1,7 @@
 # Launch post copy — colorblindness-test
 
+> **Historical drafts, do not post as written (note added 2026-11-10).** These predate the September 2026 rework. They say the plates are "validated", that the test separates protan from deutan, and they link a TestFlight beta. The app and page now describe an experimental screening that reports which plate groups were missed and claims no validation. Rewrite against the current `README.md` and `index.html` before using any of this.
+
 Drafts for the channels where this actually lives. The test ships at `https://whatcoloristhis.one/test/` (canonical URL). All posts written in Luke's voice — colorblind dev, Bridge City Lab LLC, OR colleague-of-Luke voice where the dev shouldn't be the protagonist.
 
 ---

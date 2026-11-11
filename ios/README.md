@@ -68,11 +68,19 @@ source art.
 
 ## Release assets
 
-`app-store-listing.md`, fastlane metadata, and the checked-in screenshots
-are retained release materials from earlier versions. They are not proof
-of current store status and may show older result wording. Before another
-store submission, reconcile the listing and capture screenshots from the
-exact candidate binary. Source preparation alone does not update a store.
+`app-store-listing.md`, the fastlane metadata, and the checked-in screenshots
+were reconciled with the app for 1.0.4 (build 10), submitted for review on
+2026-11-10: the description names answer patterns, not types, and the
+screenshots were captured from that source. They are still not proof of
+current store status. Before each submission, check the listing against the
+result wording in `index.html` and recapture screenshots if screens changed.
+Source preparation alone does not update a store.
+
+The iPhone app bundles `index.html`, so a change to the page reaches it only
+with a new build. Keep the checkout folder named `colorblindness-test`;
+XcodeGen derives a group name from it and rewrites the committed project
+otherwise. Pass a simulator UDID to `capture_screenshots.sh` if the device
+name does not resolve.
 
 `scripts/capture_screenshots.sh` runs the separate `ScreenshotTest` capture
 flow. It is not part of the regression command above. Supply the ignored
