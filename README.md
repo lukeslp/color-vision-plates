@@ -66,7 +66,7 @@ The page's `verifyPlates` checks color distances within that implementation and 
 
 ## Privacy
 
-The screening runs in the browser. Answers are not submitted to the Flask server. After a completed run, the page stores the result category, label, and timestamp in local storage under `whatcolor_test_result`, allowing the companion app on the same origin to read it. The Android banner stores its dismissal locally. The iOS shell stores screening history on the device through its native bridge.
+The screening runs in the browser. Answers are not submitted to the Flask server. After a completed run, the page stores the result category, label, and timestamp in local storage under `whatcolor_test_result`, allowing the companion app on the same origin to read it. The Android banner stores its dismissal locally. Inside the Android apps the page hides that banner and its store buttons; it remembers that it is inside an app in session storage and under `wc-native-shell` in local storage. A service worker (`sw.js`) keeps a copy of the page's own files so it can open without a connection. The iOS shell stores screening history on the device through its native bridge.
 
 The current web page loads pageview analytics from `stats.dr.eamer.dev`. The bundled iOS path disables analytics; the page uses local system fonts. Sharing is initiated by the user. Server access logs can record page requests. The former signup API has been removed; no signup database is required or included in the source release.
 
