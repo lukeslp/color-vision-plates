@@ -27,6 +27,57 @@
          Android has no meta-tag equivalent; its banner is built in JS
          (see #app-banner) and links to the sideload APK. -->
     <meta name="apple-itunes-app" content="app-id=6778625150">
+    <script>
+    // Android app marker, set before first paint so CSS hides the
+    // install banner and store buttons inside the Android apps (the
+    // person already has the app, and Google Play does not allow links
+    // to installs outside Play). Same convention as the What Color page
+    // at the site root: the app's launch URL carries android_package,
+    // every launch arrives with an android-app:// referrer, and the
+    // result is remembered so in-app navigation keeps the marker.
+    // Either signal alone is enough.
+    (function() {
+        var ANDROID_APP_PACKAGES = ['one.whatcoloristhis.plates.twa', 'one.whatcoloristhis.twa'];
+        function detectAndroidApp(search, referrer, session, local, standalone) {
+            var found = false, i, prefix, rest;
+            try {
+                var marker = new URLSearchParams(search || '').get('android_package');
+                if (marker && ANDROID_APP_PACKAGES.indexOf(marker) !== -1) found = true;
+            } catch (e) {}
+            referrer = referrer || '';
+            for (i = 0; i < ANDROID_APP_PACKAGES.length && !found; i++) {
+                prefix = 'android-app://' + ANDROID_APP_PACKAGES[i];
+                if (referrer.indexOf(prefix) === 0) {
+                    rest = referrer.charAt(prefix.length);
+                    if (rest === '' || rest === '/') found = true;
+                }
+            }
+            if (found) {
+                // Session memory covers reloads and in-page navigation.
+                // The shared key is the one the What Color page reads.
+                try { session.setItem('cvp-android-app', '1'); } catch (e) {}
+                try { local.setItem('wc-native-shell', 'android'); } catch (e) {}
+                return true;
+            }
+            try { if (session.getItem('cvp-android-app') === '1') return true; } catch (e) {}
+            // Opened from inside the What Color Android app in a new tab:
+            // no marker and an ordinary referrer, but the shared key is
+            // set and the page runs without browser chrome.
+            try { if (standalone && local.getItem('wc-native-shell') === 'android') return true; } catch (e) {}
+            return false;
+        }
+        var session = null, local = null, standalone = false;
+        try { session = window.sessionStorage; } catch (e) {}
+        try { local = window.localStorage; } catch (e) {}
+        try { standalone = window.matchMedia('(display-mode: standalone)').matches; } catch (e) {}
+        var root = document.documentElement;
+        if (!window.CVT_NATIVE && detectAndroidApp(location.search, document.referrer, session, local, standalone)) {
+            root.setAttribute('data-android-app', '');
+        }
+        // Wording for display settings differs by platform.
+        if (/Android/i.test(navigator.userAgent)) root.setAttribute('data-os', 'android');
+    })();
+    </script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -125,7 +176,7 @@
         body.testing.kb-up .progress-bar { margin-bottom: 4px; }
         body.testing.kb-up .plate-label { margin-bottom: 2px; }
         /* The inline-styled disclaimer line under the plate label. */
-        body.testing.kb-up #plate-label + p { margin-bottom: 6px !important; }
+        body.testing.kb-up #plate-label + p { margin-top: 0 !important; margin-bottom: 6px !important; }
         body.testing.kb-up .plate-question { margin: 6px 0; }
         .progress-bar { display: flex; gap: 6px; justify-content: center; margin-bottom: 28px; }
         .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
@@ -393,6 +444,14 @@
            plates. */
         .app-banner { display: none; align-items: center; gap: 12px; padding: 9px 12px; background: var(--surface); border-bottom: 1px solid var(--border); }
         .app-banner.is-visible { display: flex; }
+        /* Inside the Android apps: no install banner and no store or
+           download buttons. Set from <head>, so nothing flashes. */
+        html[data-android-app] .app-banner,
+        html[data-android-app] .store-link { display: none !important; }
+        /* Display-setting names: Apple's by default, Android's on Android. */
+        .os-android { display: none; }
+        html[data-os="android"] .os-android { display: inline; }
+        html[data-os="android"] .os-other { display: none; }
         .app-banner__dismiss { flex: none; width: 28px; height: 28px; display: grid; place-items: center; background: none; border: none; color: var(--text-muted); font-size: 1.4rem; line-height: 1; cursor: pointer; border-radius: 50%; }
         .app-banner__dismiss:hover { color: var(--text); background: var(--surface-raised); }
         .app-banner__icon { flex: none; width: 38px; height: 38px; border-radius: 9px; }
@@ -464,7 +523,7 @@
                 <h2 style="font-size:1.4rem; margin-bottom:8px;">Quick screen check</h2>
                 <p style="color:var(--text-muted); margin-bottom:24px; font-size:0.95rem;">One of these gray squares is slightly brighter than the others. Tap it. This checks whether you can distinguish these gray patches; it does not calibrate screen colors.</p>
                 <div id="calibration-warning-filters" style="margin-bottom:18px; padding:12px 16px; background:rgba(240,200,80,0.08); border:1px solid rgba(240,200,80,0.3); border-radius:var(--radius-sm); font-size:0.85rem; color:var(--text); text-align:left;">
-                    <strong>Before you start:</strong> turn off Night Shift, True Tone, and any blue-light filters. They warm the white point and shift hues, especially affecting the blue-yellow plates. Set screen brightness to maximum.
+                    <strong>Before you start:</strong> turn off <span class="os-other">Night Shift, True Tone,</span><span class="os-android">Night Light, eye comfort or reading modes, adaptive color,</span> and any blue-light filters. They warm the white point and shift hues, especially affecting the blue-yellow plates. Set screen brightness to maximum.
                 </div>
                 <div id="calibration-patches" style="display:flex; gap:14px; justify-content:center; margin-bottom:24px;" role="group" aria-label="Click the patch that looks different"></div>
                 <div id="calibration-feedback" style="min-height:36px; margin-bottom:16px;"></div>
@@ -543,7 +602,7 @@
                     <summary>What can affect my answers?</summary>
                     <ul class="result-card-list" style="color:var(--text-muted); font-size:0.92rem;">
                         <li><strong>Display calibration.</strong> Displays differ in color rendering. The gray-patch check cannot establish accurate color reproduction.</li>
-                        <li><strong>Night Shift / True Tone / blue-light filters.</strong> These warm the white point and shift hues, especially affecting blue-yellow plates. Turn them off and retake.</li>
+                        <li><strong><span class="os-other">Night Shift / True Tone</span><span class="os-android">Night Light / eye comfort / adaptive color</span> / blue-light filters.</strong> These warm the white point and shift hues, especially affecting blue-yellow plates. Turn them off and retake.</li>
                         <li><strong>Ambient lighting.</strong> Bright sunlight or warm indoor lighting can wash out the chromatic contrast the test relies on.</li>
                         <li><strong>Screen brightness.</strong> Low brightness can make dot boundaries harder to see.</li>
                         <li><strong>Fatigue or fast clicking.</strong> Color discrimination is harder when you're tired or rushing. Slow down on retake.</li>
@@ -567,8 +626,8 @@
                     <h2>What Color Is This?</h2>
                     <p class="subtitle">A color identification app built for how you actually see.</p>
                     <div class="testflight-actions">
-                        <a class="btn btn-primary" href="https://apps.apple.com/us/app/what-color-is-this/id6767490668" target="_blank" rel="noopener">iOS (App Store)</a>
-                        <a class="btn btn-secondary" href="https://dr.eamer.dev/downloads/apps/colorblindness-tools/">Android</a>
+                        <a class="btn btn-primary store-link" href="https://apps.apple.com/us/app/what-color-is-this/id6767490668" target="_blank" rel="noopener">iOS (App Store)</a>
+                        <a class="btn btn-secondary store-link" href="https://dr.eamer.dev/downloads/apps/colorblindness-tools/">Android</a>
                         <a class="btn btn-secondary" href="https://whatcoloristhis.one" target="_blank" rel="noopener">Web</a>
                     </div>
                     <p class="testflight-fineprint">Free. No accounts, no ads, and the app itself contains no analytics or tracking. Camera identification, ~32,000 named colors, colorblind-safe palettes, CVD simulation.</p>
@@ -615,6 +674,7 @@
     <footer>
         <div class="footer-links">
             <a href="#methodology-section">Methodology</a>
+            <a href="https://whatcoloristhis.one/test/privacy.html">Privacy</a>
             <a href="https://whatcoloristhis.one">The App</a>
             <a href="https://lukesteuber.com">Me</a>
             <a href="https://bsky.app/profile/lukesteuber.com">Bluesky</a>
@@ -1865,6 +1925,8 @@
     (function () {
         var banner = document.getElementById('app-banner');
         if (!banner) return;
+        // Never inside the Android apps (see the marker script in <head>).
+        if (document.documentElement.hasAttribute('data-android-app')) return;
         var dismissed = false;
         try { dismissed = localStorage.getItem('cvp_android_banner_dismissed') === '1'; } catch (e) {}
         if (!/Android/i.test(navigator.userAgent) || dismissed) return;
@@ -1874,6 +1936,16 @@
             try { localStorage.setItem('cvp_android_banner_dismissed', '1'); } catch (e) {}
         });
     })();
+    </script>
+    <script>
+    // Offline copy of this page's own files (see sw.js). Web and Android;
+    // the iOS app bundles the page and runs from file://, where service
+    // workers do not exist.
+    if (!window.CVT_NATIVE && 'serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('sw.js').catch(function () {});
+        });
+    }
     </script>
     <!-- GoatCounter Analytics — web only. The iOS app sets
          window.CVT_NATIVE and ships with no analytics at all; its
