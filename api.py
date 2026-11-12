@@ -60,6 +60,15 @@ def pwa_manifest():
     return send_from_directory('.', 'pwa.webmanifest', mimetype='application/manifest+json')
 
 
+@app.route('/sw.js')
+def service_worker():
+    # Offline copy of the page (scope: this app's folder). Browsers must
+    # always re-check the worker itself, so it is never cached.
+    response = send_from_directory('.', 'sw.js', mimetype='application/javascript')
+    response.headers['Cache-Control'] = 'no-cache'
+    return response
+
+
 @app.route('/.well-known/assetlinks.json')
 def digital_asset_links():
     return send_from_directory('.well-known', 'assetlinks.json', mimetype='application/json')
