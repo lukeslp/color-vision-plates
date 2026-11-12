@@ -7,7 +7,7 @@ material are deliberately ignored. `twa-manifest.json` is the source of truth.
 ## Release contract
 
 - Package ID: `one.whatcoloristhis.plates.twa`
-- Version: `1.0.1` (`versionCode` `3`)
+- Version: `1.0.2` (`versionCode` `4`), target API 36
 - Canonical scope: `https://whatcoloristhis.one/test/`
 - Digital Asset Links source:
   `../.well-known/assetlinks.json`
@@ -79,9 +79,13 @@ build runs through the toolkit:
 ```
 
 `build-signed.sh` runs `npm run verify`, regenerates the Android project from
-`twa-manifest.json`, builds the unsigned aligned APK with Bubblewrap, signs it
-with `apksigner`, and stages `release/color-vision-plates-<version>.apk` with
-`SHA256SUMS.txt`. It refuses a debuggable APK and one whose certificate is not
+`twa-manifest.json`, sets `targetSdkVersion 36` in the generated
+`app/build.gradle` (Bubblewrap 1.24.1 writes 35 and has no manifest field for
+it), builds the unsigned aligned APK and app bundle with Bubblewrap, signs the
+APK with `apksigner` and the bundle with `jarsigner`, and stages
+`release/color-vision-plates-<version>.apk` and
+`release/color-vision-plates-<version>-<code>.aab` with `SHA256SUMS.txt`. It refuses a debuggable APK, one that does not target API 36, and an APK or
+bundle whose certificate is not
 the fingerprint in `twa-manifest.json`. The `signingKey` entry in the manifest
 is a placeholder; Bubblewrap does not sign this build.
 

@@ -10,8 +10,8 @@ import { resolve } from 'node:path';
 const ROOT = resolve(import.meta.dirname, '..');
 const EXPECTED = Object.freeze({
   packageId: 'one.whatcoloristhis.plates.twa',
-  versionName: '1.0.1',
-  versionCode: 3,
+  versionName: '1.0.2',
+  versionCode: 4,
   startUrl: '/test/',
   scope: '/test/',
   fingerprint: 'F3:3B:8E:5D:F9:51:1E:D7:0A:FE:44:97:4D:A0:3E:2F:35:07:48:51:D4:23:C3:A9:9D:FD:18:C5:BF:95:35:51',
