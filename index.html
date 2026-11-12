@@ -171,6 +171,7 @@
             justify-content: flex-end;
             overflow: hidden;
             padding-bottom: 10px;
+            transform: translateY(var(--vvt, 0px));
         }
         body.testing.kb-up #plate-area canvas {
             width: calc(var(--vvh, 100vh) * 0.29) !important;
@@ -1877,9 +1878,15 @@
                 var kbUp = window.visualViewport.height < window.innerHeight * 0.8;
                 document.body.classList.toggle('kb-up', kbUp);
                 document.documentElement.style.setProperty('--vvh', window.visualViewport.height + 'px');
+                // Chrome on Android can pan the visual viewport down to
+                // the focused input before the compact layout applies,
+                // and scrollTo cannot undo that pan. Follow it instead,
+                // so the compact layout sits in the visible area.
+                document.documentElement.style.setProperty('--vvt', (kbUp ? window.visualViewport.offsetTop : 0) + 'px');
                 if (kbUp) window.scrollTo(0, 0);
             };
             window.visualViewport.addEventListener('resize', updateViewport);
+            window.visualViewport.addEventListener('scroll', updateViewport);
             updateViewport();
         }
 
