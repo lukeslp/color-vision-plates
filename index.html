@@ -150,6 +150,9 @@
            the full viewport, centering the plate. Restored on the
            results page (which links back down to methodology). */
         body.testing #methodology-section, body.testing footer { display: none; }
+        /* The web install banner also leaves during the test: with the
+           keyboard open it pushed the Next button off a short screen. */
+        body.testing .app-banner { display: none !important; }
         body.testing #calibration-section, body.testing #test-section {
             min-height: 100vh; min-height: 100dvh;
             padding-top: 0; padding-bottom: 0;
