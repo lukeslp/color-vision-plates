@@ -35,14 +35,11 @@ export JAVA_HOME="${jdk}" PATH="${jdk}/bin:${PATH}"
 npm run -s verify
 # Regenerate the Android project from the manifest, then build without signing.
 npm exec bubblewrap -- update --skipVersionUpgrade --manifest=./twa-manifest.json </dev/null
-# Bubblewrap 1.24.1 writes targetSdkVersion 35 into the generated project and
-# has no manifest field for it. Google Play needs 36, so set it here and stop
-# if the generated file no longer has the line this expects.
-sed -i.bak 's/^\( *targetSdkVersion\) 35$/\1 36/' app/build.gradle && rm -f app/build.gradle.bak
-if ! grep -q '^ *targetSdkVersion 36$' app/build.gradle; then
-  echo "Could not set targetSdkVersion 36 in the generated app/build.gradle." >&2
-  exit 1
-fi
+# Two things Bubblewrap 1.24.1 has no manifest field for: target API 36
+# (Google Play needs it) and letting tablets rotate while phones stay in
+# portrait. The script stops the build if the generated files are not what it
+# expects.
+node patch-generated-project.mjs
 npm run -s build:unsigned </dev/null
 
 unsigned="app-release-unsigned-aligned.apk"

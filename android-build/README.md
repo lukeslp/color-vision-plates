@@ -27,23 +27,12 @@ It does not prove the public endpoint is deployed.
   names there; the four entries used before 1.0.3 carried a scheme, so Android
   reported them as invalid app-link hosts. Written correctly they would make
   this app offer to open every link on those sites, which it should not.
-- `orientation` is `default` since 1.0.3, so tablets and foldables get the
-  full screen in landscape. Phones rotate only when auto-rotate is on, as in
-  the iOS app. Set it back to `portrait` to hold phones upright; tablets then
-  show a portrait column with black bars on Android 15 and older.
-
-Before any signed release, the canonical host must serve both endpoints with
-successful HTTPS responses and without redirects:
-
-```bash
-curl --fail --location https://whatcoloristhis.one/test/pwa.webmanifest
-curl --fail --location https://whatcoloristhis.one/.well-known/assetlinks.json
-```
-
-The PWA manifest is served by this Flask application at `/test/pwa.webmanifest`.
-Digital Asset Links is a required origin-root path, so the production proxy or
-canonical web host must route `/.well-known/assetlinks.json` to this file. It
-cannot be satisfied by a file only at `/test/.well-known/assetlinks.json`.
+- `orientation` stays `portrait`, which suits a phone: in landscape the number
+  keyboard covers the plate. A Trusted Web Activity has one orientation
+  setting for every device, so tablets in landscape used to get a portrait
+  column with black bars. Since 1.0.3 `patch-generated-project.mjs` changes
+  the generated launcher so screens at least 600dp on their short side are
+  free to rotate. Phones keep the lock.
 
 ## Reproducible unsigned build
 
@@ -55,13 +44,15 @@ export JAVA_HOME="$(/usr/libexec/java_home -v 17)" # macOS; use a JDK 17 home el
 npm exec bubblewrap -- updateConfig --jdkPath "$JAVA_HOME"
 npm ci
 npm run verify
+npm exec bubblewrap -- update --skipVersionUpgrade --manifest=./twa-manifest.json
+node patch-generated-project.mjs
 npm run build:unsigned
 ```
 
 The unsigned command intentionally skips online PWA validation because it is a
 pre-deployment build. Do not use that flag for a signed production candidate.
 Bubblewrap regenerates its Android project from `twa-manifest.json`; do not
-hand-edit generated files. The `updateConfig` command persists the JDK path in
+hand-edit generated files (the patch script is the one place that changes them). The `updateConfig` command persists the JDK path in
 Bubblewrap's user-level configuration; it may also request an Android SDK path
 if one has not already been configured.
 
@@ -95,9 +86,11 @@ build runs through the toolkit:
 ```
 
 `build-signed.sh` runs `npm run verify`, regenerates the Android project from
-`twa-manifest.json`, sets `targetSdkVersion 36` in the generated
-`app/build.gradle` (Bubblewrap 1.24.1 writes 35 and has no manifest field for
-it), builds the unsigned aligned APK and app bundle with Bubblewrap, signs the
+`twa-manifest.json`, runs `patch-generated-project.mjs` (it sets
+`targetSdkVersion 36` in the generated `app/build.gradle`, because Bubblewrap
+1.24.1 writes 35 and has no manifest field for it, and frees large screens
+from the portrait lock; it stops the build if the generated files are not
+what it expects), builds the unsigned aligned APK and app bundle with Bubblewrap, signs the
 APK with `apksigner` and the bundle with `jarsigner`, and stages
 `release/color-vision-plates-<version>.apk` and
 `release/color-vision-plates-<version>-<code>.aab` with `SHA256SUMS.txt`. It refuses a debuggable APK, one that does not target API 36, and an APK or
