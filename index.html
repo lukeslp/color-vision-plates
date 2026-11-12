@@ -173,9 +173,14 @@
             padding-bottom: 10px;
         }
         body.testing.kb-up #plate-area canvas {
-            width: calc(var(--vvh, 100vh) * 0.32) !important;
-            height: calc(var(--vvh, 100vh) * 0.32) !important;
+            width: calc(var(--vvh, 100vh) * 0.29) !important;
+            height: calc(var(--vvh, 100vh) * 0.29) !important;
         }
+        /* Tight gaps so the progress dots and plate label stay on a
+           short screen (about 365px left above an Android keyboard),
+           even when the practice plate's question wraps to two lines. */
+        body.testing.kb-up .plate-container { margin-bottom: 8px; }
+        body.testing.kb-up .answer-group { margin-bottom: 8px; }
         body.testing.kb-up .progress-bar { margin-bottom: 4px; }
         body.testing.kb-up .plate-label { margin-bottom: 2px; }
         /* The inline-styled disclaimer line under the plate label. */
