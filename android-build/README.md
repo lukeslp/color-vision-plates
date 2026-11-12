@@ -7,7 +7,7 @@ material are deliberately ignored. `twa-manifest.json` is the source of truth.
 ## Release contract
 
 - Package ID: `one.whatcoloristhis.plates.twa`
-- Version: `1.0.2` (`versionCode` `4`), target API 36
+- Version: `1.0.3` (`versionCode` `5`), target API 36
 - Canonical scope: `https://whatcoloristhis.one/test/`
 - Digital Asset Links source:
   `../.well-known/assetlinks.json`
@@ -15,6 +15,22 @@ material are deliberately ignored. `twa-manifest.json` is the source of truth.
 `npm run verify` checks the package ID, version, PWA scope, and certificate
 fingerprint agreement across the TWA manifest and Digital Asset Links source.
 It does not prove the public endpoint is deployed.
+
+## What the wrapper tells the page
+
+- The start URL is `/test/?android_package=one.whatcoloristhis.plates.twa`.
+  The page reads that value (and the `android-app://` referrer every launch
+  carries) and hides its install banner and store buttons inside the app.
+  Google Play does not allow links to installs outside Play, so do not remove
+  the marker. `tests/android-app.test.cjs` checks both sides.
+- `additionalTrustedOrigins` is empty on purpose. Bubblewrap wants bare host
+  names there; the four entries used before 1.0.3 carried a scheme, so Android
+  reported them as invalid app-link hosts. Written correctly they would make
+  this app offer to open every link on those sites, which it should not.
+- `orientation` is `default` since 1.0.3, so tablets and foldables get the
+  full screen in landscape. Phones rotate only when auto-rotate is on, as in
+  the iOS app. Set it back to `portrait` to hold phones upright; tablets then
+  show a portrait column with black bars on Android 15 and older.
 
 Before any signed release, the canonical host must serve both endpoints with
 successful HTTPS responses and without redirects:

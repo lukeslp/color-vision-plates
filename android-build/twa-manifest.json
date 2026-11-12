@@ -35,7 +35,7 @@
   "isMetaQuest": false,
   "fullScopeUrl": "https://whatcoloristhis.one/test/",
   "minSdkVersion": 21,
-  "orientation": "portrait",
+  "orientation": "default",
   "fingerprints": [
     {
       "name": "assetlinks",
