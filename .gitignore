@@ -32,6 +32,7 @@ android-build/*
 !android-build/verify-release.mjs
 !android-build/stage-release.mjs
 !android-build/build-signed.sh
+!android-build/patch-generated-project.mjs
 
 # Local development environments
 .venv/

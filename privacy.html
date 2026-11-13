@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy — Color Vision Plates</title>
-    <meta name="description" content="Privacy policy for the Color Vision Plates screening (web and iOS).">
+    <meta name="description" content="Privacy policy for the Color Vision Plates screening (web, iOS and Android).">
     <style>
         :root {
             --bg: #0d0d0d; --surface: #1a1a1a; --text: #e8e8e8;
@@ -28,7 +28,7 @@
 <body>
 <main>
     <h1>Color Vision Plates — Privacy</h1>
-    <p class="updated">Last updated: September 15, 2026</p>
+    <p class="updated">Last updated: November 12, 2026</p>
 
     <p><strong>The screening runs on your device.</strong> It does not submit
     your answers to the server. The website uses pageview analytics and server
@@ -41,13 +41,25 @@
     web analytics. Opening an external link or choosing to share a link uses
     the destination app or website and its own privacy policy.</p>
 
+    <h2>The Android app</h2>
+    <p>The Android app has no screens of its own. It shows the web version at
+    <code>whatcoloristhis.one/test/</code> full screen, using Chrome or your
+    default browser, so everything under &ldquo;The web version&rdquo; below
+    applies to it, including pageview analytics and server request logs. The
+    app asks for no Android permissions and adds no data collection of its own.
+    It tells the page that it is running inside the app, through the page
+    address and the referrer, so the page can hide its install banner and store
+    links. The page remembers that in the browser's session storage and under
+    <code>wc-native-shell</code> in local storage.</p>
+
     <h2>The web version</h2>
     <p>Answers are scored in your browser. After a completed run, the page saves
     a result category, label, and timestamp in local storage under
     <code>whatcolor_test_result</code>. The companion What Color app on the same
     website origin can read that summary. The Android availability banner also
-    remembers dismissal locally. You can remove this storage by clearing the
-    website's data in your browser.</p>
+    remembers dismissal locally. The page keeps a copy of its own files in the
+    browser's cache storage so it can open without a connection. You can remove
+    all of this by clearing the website's data in your browser.</p>
     <p>The screening page loads
     <a href="https://www.goatcounter.com/">GoatCounter</a> pageview analytics
     from <code>stats.dr.eamer.dev</code>. The screening code does not send

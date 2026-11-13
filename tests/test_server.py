@@ -23,7 +23,7 @@ class StaticRoutesTest(unittest.TestCase):
         self.client = api.app.test_client()
         self.root = Path(self.directory.name)
         for name in ("index.html", "color-math.js", "privacy.html", "pwa.webmanifest", "og-beta.png",
-                     "icon-512.png", "icon-512-maskable.png"):
+                     "sw.js", "icon-512.png", "icon-512-maskable.png"):
             (self.root / name).write_text("public fixture " + name)
         (self.root / ".well-known").mkdir()
         (self.root / ".well-known/assetlinks.json").write_text("[]")
@@ -36,13 +36,19 @@ class StaticRoutesTest(unittest.TestCase):
 
     def test_public_routes_remain_available(self):
         for path in ("/", "/color-math.js", "/privacy", "/privacy.html", "/pwa.webmanifest",
-                     "/og-beta.png", "/og-beta-v2.png", "/.well-known/assetlinks.json"):
+                     "/sw.js", "/og-beta.png", "/og-beta-v2.png", "/.well-known/assetlinks.json"):
             with self.subTest(path=path):
                 with self.client.get(path) as response:
                     self.assertEqual(response.status_code, 200)
         with self.client.get("/health") as response:
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json["status"], "healthy")
+
+    def test_service_worker_is_javascript_and_revalidated(self):
+        with self.client.get("/sw.js") as response:
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.mimetype, "application/javascript")
+            self.assertEqual(response.headers["Cache-Control"], "no-cache")
 
     def test_page_and_manifest_icons_are_local_and_served(self):
         class IconLinks(HTMLParser):

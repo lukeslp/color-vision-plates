@@ -12,7 +12,7 @@
   "navigationDividerColorDark": "#1A1A1A",
   "backgroundColor": "#0D0D0D",
   "enableNotifications": false,
-  "startUrl": "/test/",
+  "startUrl": "/test/?android_package=one.whatcoloristhis.plates.twa",
   "iconUrl": "https://whatcoloristhis.one/plates-icon-512.png",
   "maskableIconUrl": "https://whatcoloristhis.one/plates-icon-512-maskable.png",
   "monochromeIconUrl": "",
@@ -21,8 +21,8 @@
     "path": "./release-keystore.jks",
     "alias": "color-vision-plates-release"
   },
-  "appVersionName": "1.0.1",
-  "appVersionCode": 3,
+  "appVersionName": "1.0.3",
+  "appVersionCode": 5,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "fallbackType": "customtabs",
@@ -42,13 +42,8 @@
       "value": "F3:3B:8E:5D:F9:51:1E:D7:0A:FE:44:97:4D:A0:3E:2F:35:07:48:51:D4:23:C3:A9:9D:FD:18:C5:BF:95:35:51"
     }
   ],
-  "additionalTrustedOrigins": [
-    "https://whatcoloristhat.one",
-    "https://whatcolouristhat.com",
-    "https://dr.eamer.dev",
-    "https://lukesteuber.com"
-  ],
+  "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "displayOverride": [],
-  "appVersion": "1.0.1"
+  "appVersion": "1.0.3"
 }

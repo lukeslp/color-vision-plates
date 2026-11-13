@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Build the release-signed Color Vision Plates APK for direct download.
+# Build the release-signed Color Vision Plates APK (direct download) and app
+# bundle (Google Play).
 #
 # Bubblewrap builds the unsigned, aligned APK from twa-manifest.json; this
 # script then signs it with apksigner. The signing values come from the
@@ -34,6 +35,11 @@ export JAVA_HOME="${jdk}" PATH="${jdk}/bin:${PATH}"
 npm run -s verify
 # Regenerate the Android project from the manifest, then build without signing.
 npm exec bubblewrap -- update --skipVersionUpgrade --manifest=./twa-manifest.json </dev/null
+# Two things Bubblewrap 1.24.1 has no manifest field for: target API 36
+# (Google Play needs it) and letting tablets rotate while phones stay in
+# portrait. The script stops the build if the generated files are not what it
+# expects.
+node patch-generated-project.mjs
 npm run -s build:unsigned </dev/null
 
 unsigned="app-release-unsigned-aligned.apk"
@@ -62,6 +68,27 @@ if [[ "${certificate}" != "${expected}" ]]; then
   echo "The APK's certificate is not the one twa-manifest.json and Asset Links name." >&2
   exit 1
 fi
-(cd release && shasum -a 256 "$(basename "${apk}")" > SHA256SUMS.txt)
+target_sdk="$(sed -n "s/^targetSdkVersion:'\\([0-9]*\\)'.*/\\1/p" <<<"${badging}")"
+if [[ "${target_sdk}" != "36" ]]; then
+  echo "The release APK targets API ${target_sdk}, not 36; refusing to stage it." >&2
+  exit 1
+fi
+
+# The same Gradle run also leaves an unsigned app bundle, which is what Google
+# Play takes. Sign it with the same key (jarsigner; bundles have no v2 scheme).
+version_code="$(node -e 'console.log(JSON.parse(require("fs").readFileSync("twa-manifest.json","utf8")).appVersionCode)')"
+aab="release/color-vision-plates-${version_name}-${version_code}.aab"
+cp app/build/outputs/bundle/release/app-release.aab "${aab}"
+jarsigner -keystore "${COLOR_VISION_PLATES_RELEASE_STORE_FILE}" \
+  -storepass:env COLOR_VISION_PLATES_RELEASE_STORE_PASSWORD \
+  -keypass:env COLOR_VISION_PLATES_RELEASE_KEY_PASSWORD \
+  "${aab}" "${COLOR_VISION_PLATES_RELEASE_KEY_ALIAS}" >/dev/null
+bundle_certificate="$(keytool -printcert -jarfile "${aab}" \
+  | sed -n 's/^.*SHA256: //p' | head -1 | tr -d ':' | tr 'A-F' 'a-f')"
+if [[ "${bundle_certificate}" != "${expected}" ]]; then
+  echo "The bundle's certificate is not the one twa-manifest.json and Asset Links name." >&2
+  exit 1
+fi
+(cd release && shasum -a 256 "$(basename "${apk}")" "$(basename "${aab}")" > SHA256SUMS.txt)
 printf 'Release certificate SHA-256: %s\n' "${certificate}" > release/RELEASE-CERTIFICATE.txt
 echo "Signed Color Vision Plates ${version_name} staged in ${here}/release."

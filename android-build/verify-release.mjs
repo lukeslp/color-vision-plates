@@ -10,9 +10,10 @@ import { resolve } from 'node:path';
 const ROOT = resolve(import.meta.dirname, '..');
 const EXPECTED = Object.freeze({
   packageId: 'one.whatcoloristhis.plates.twa',
-  versionName: '1.0.1',
-  versionCode: 3,
+  versionName: '1.0.3',
+  versionCode: 5,
   startUrl: '/test/',
+  launchUrl: '/test/?android_package=one.whatcoloristhis.plates.twa',
   scope: '/test/',
   fingerprint: 'F3:3B:8E:5D:F9:51:1E:D7:0A:FE:44:97:4D:A0:3E:2F:35:07:48:51:D4:23:C3:A9:9D:FD:18:C5:BF:95:35:51',
 });
@@ -34,7 +35,12 @@ const assetLinks = readJson(resolve(ROOT, '.well-known', 'assetlinks.json'));
 assertEqual('TWA package ID', twa.packageId, EXPECTED.packageId);
 assertEqual('TWA version name', twa.appVersionName, EXPECTED.versionName);
 assertEqual('TWA version code', twa.appVersionCode, EXPECTED.versionCode);
-assertEqual('TWA start URL', twa.startUrl, EXPECTED.startUrl);
+// The launch URL carries the package so the page can tell it is inside the
+// app (it hides install banners and store links there). Path stays in scope.
+assertEqual('TWA start URL', twa.startUrl, EXPECTED.launchUrl);
+// Bare host names only. An entry with a scheme becomes an invalid app-link
+// host, and a valid extra host would make this app claim that whole site.
+assertEqual('TWA additional trusted origins', JSON.stringify(twa.additionalTrustedOrigins), '[]');
 assertEqual('TWA full scope URL', twa.fullScopeUrl, 'https://whatcoloristhis.one/test/');
 assertEqual('PWA ID', pwa.id, EXPECTED.startUrl);
 assertEqual('PWA start URL', pwa.start_url, EXPECTED.startUrl);

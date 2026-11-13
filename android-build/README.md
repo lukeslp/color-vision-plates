@@ -7,7 +7,7 @@ material are deliberately ignored. `twa-manifest.json` is the source of truth.
 ## Release contract
 
 - Package ID: `one.whatcoloristhis.plates.twa`
-- Version: `1.0.1` (`versionCode` `3`)
+- Version: `1.0.3` (`versionCode` `5`), target API 36
 - Canonical scope: `https://whatcoloristhis.one/test/`
 - Digital Asset Links source:
   `../.well-known/assetlinks.json`
@@ -16,18 +16,23 @@ material are deliberately ignored. `twa-manifest.json` is the source of truth.
 fingerprint agreement across the TWA manifest and Digital Asset Links source.
 It does not prove the public endpoint is deployed.
 
-Before any signed release, the canonical host must serve both endpoints with
-successful HTTPS responses and without redirects:
+## What the wrapper tells the page
 
-```bash
-curl --fail --location https://whatcoloristhis.one/test/pwa.webmanifest
-curl --fail --location https://whatcoloristhis.one/.well-known/assetlinks.json
-```
-
-The PWA manifest is served by this Flask application at `/test/pwa.webmanifest`.
-Digital Asset Links is a required origin-root path, so the production proxy or
-canonical web host must route `/.well-known/assetlinks.json` to this file. It
-cannot be satisfied by a file only at `/test/.well-known/assetlinks.json`.
+- The start URL is `/test/?android_package=one.whatcoloristhis.plates.twa`.
+  The page reads that value (and the `android-app://` referrer every launch
+  carries) and hides its install banner and store buttons inside the app.
+  Google Play does not allow links to installs outside Play, so do not remove
+  the marker. `tests/android-app.test.cjs` checks both sides.
+- `additionalTrustedOrigins` is empty on purpose. Bubblewrap wants bare host
+  names there; the four entries used before 1.0.3 carried a scheme, so Android
+  reported them as invalid app-link hosts. Written correctly they would make
+  this app offer to open every link on those sites, which it should not.
+- `orientation` stays `portrait`, which suits a phone: in landscape the number
+  keyboard covers the plate. A Trusted Web Activity has one orientation
+  setting for every device, so tablets in landscape used to get a portrait
+  column with black bars. Since 1.0.3 `patch-generated-project.mjs` changes
+  the generated launcher so screens at least 600dp on their short side are
+  free to rotate. Phones keep the lock.
 
 ## Reproducible unsigned build
 
@@ -39,13 +44,15 @@ export JAVA_HOME="$(/usr/libexec/java_home -v 17)" # macOS; use a JDK 17 home el
 npm exec bubblewrap -- updateConfig --jdkPath "$JAVA_HOME"
 npm ci
 npm run verify
+npm exec bubblewrap -- update --skipVersionUpgrade --manifest=./twa-manifest.json
+node patch-generated-project.mjs
 npm run build:unsigned
 ```
 
 The unsigned command intentionally skips online PWA validation because it is a
 pre-deployment build. Do not use that flag for a signed production candidate.
 Bubblewrap regenerates its Android project from `twa-manifest.json`; do not
-hand-edit generated files. The `updateConfig` command persists the JDK path in
+hand-edit generated files (the patch script is the one place that changes them). The `updateConfig` command persists the JDK path in
 Bubblewrap's user-level configuration; it may also request an Android SDK path
 if one has not already been configured.
 
@@ -79,9 +86,15 @@ build runs through the toolkit:
 ```
 
 `build-signed.sh` runs `npm run verify`, regenerates the Android project from
-`twa-manifest.json`, builds the unsigned aligned APK with Bubblewrap, signs it
-with `apksigner`, and stages `release/color-vision-plates-<version>.apk` with
-`SHA256SUMS.txt`. It refuses a debuggable APK and one whose certificate is not
+`twa-manifest.json`, runs `patch-generated-project.mjs` (it sets
+`targetSdkVersion 36` in the generated `app/build.gradle`, because Bubblewrap
+1.24.1 writes 35 and has no manifest field for it, and frees large screens
+from the portrait lock; it stops the build if the generated files are not
+what it expects), builds the unsigned aligned APK and app bundle with Bubblewrap, signs the
+APK with `apksigner` and the bundle with `jarsigner`, and stages
+`release/color-vision-plates-<version>.apk` and
+`release/color-vision-plates-<version>-<code>.aab` with `SHA256SUMS.txt`. It refuses a debuggable APK, one that does not target API 36, and an APK or
+bundle whose certificate is not
 the fingerprint in `twa-manifest.json`. The `signingKey` entry in the manifest
 is a placeholder; Bubblewrap does not sign this build.
 
