@@ -64,6 +64,8 @@ def pwa_manifest():
 def service_worker():
     # Offline copy of the page (scope: this app's folder). Browsers must
     # always re-check the worker itself, so it is never cached.
+    # Production serves this folder as static files from Caddy, not from
+    # this app; there sw.js only has to be copied next to index.html.
     response = send_from_directory('.', 'sw.js', mimetype='application/javascript')
     response.headers['Cache-Control'] = 'no-cache'
     return response
