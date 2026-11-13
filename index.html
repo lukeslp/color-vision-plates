@@ -105,7 +105,7 @@
         }
         .skip-link {
             position: absolute; top: -100px; left: 16px; background: var(--accent);
-            color: #fff; padding: 8px 16px; border-radius: var(--radius-sm); z-index: 100;
+            color: #fff; padding: 12px 16px; border-radius: var(--radius-sm); z-index: 100;
         }
         .skip-link:focus { top: 16px; }
         /* Container fills the viewport. Phone-narrow centering was
@@ -123,7 +123,9 @@
         .hero-plate { margin: 0 auto 32px; width: min(320px, 85vw); height: min(320px, 85vw); }
         .hero h1 { font-size: clamp(1.8rem, 6vw, 2.4rem); font-weight: 700; margin-bottom: 12px; letter-spacing: -0.02em; }
         .hero p { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 8px; }
-        .hero .note { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 28px; opacity: 0.7; }
+        /* No opacity here: 70% of the muted gray fell to 3.9:1 on the
+           page background, under the 4.5:1 small text needs. */
+        .hero .note { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 28px; }
         /* Breathing room between the Start Screening button and the
            methodology paragraph below. Was zero — now reads as a
            clean visual pause. */
@@ -229,7 +231,12 @@
             background: var(--surface); color: var(--text); font-size: 0.95rem; font-weight: 500;
             cursor: pointer; transition: border-color 0.2s, background 0.2s; min-height: 48px;
         }
-        .shape-btn:hover { border-color: var(--accent); background: var(--surface-raised); }
+        /* Hover only where there is a real pointer. On a touch screen the
+           hover state sticks to whatever sits under the last tap, which
+           left one shape highlighted as if it were suggested. */
+        @media (hover: hover) {
+            .shape-btn:hover { border-color: var(--accent); background: var(--surface-raised); }
+        }
         .shape-btn:active { transform: scale(0.96); }
         .test-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
         .plate-transition { animation: fadeInUp 0.35s ease forwards; }
@@ -244,7 +251,8 @@
         .result-description { color: var(--text-muted); font-size: 1rem; margin-bottom: 24px; max-width: 380px; margin-left: auto; margin-right: auto; line-height: 1.5; }
         .result-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 20px; }
         .badge-normal { background: rgba(85,184,122,0.15); color: var(--success); }
-        .badge-cvd { background: rgba(108,140,255,0.15); color: var(--accent); }
+        /* A lighter blue than --accent, which was 3.6:1 on this tint. */
+        .badge-cvd { background: rgba(108,140,255,0.15); color: #93a8f4; }
         .badge-inconclusive { background: rgba(153,153,153,0.15); color: var(--text-muted); }
         /* ──────────────────────────────────────────────────────────
            Results-page card system: ONE consistent shape.
@@ -274,6 +282,7 @@
         .plate-result-answer.partial { color: #d4a54a; }
         .plate-result-answer.fail { color: var(--danger); }
         .plate-result-correct { font-size: 0.75rem; color: var(--text-muted); }
+        .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
         @media (max-width: 420px) { .plate-results-grid { grid-template-columns: 1fr; } }
         /* Disclaimer card variant — subtle accent tint to mark it as
            "important note" without breaking the unified card shape. */
@@ -358,7 +367,10 @@
         .hero-method-link {
             display: block;
             text-align: center;
-            margin: 0 auto 28px;
+            /* Padding with matching negative margin: a 48px touch
+               target without moving anything. */
+            padding: 14px 0;
+            margin: -14px auto 14px;
             font-size: 0.82rem;
             font-weight: 600;
             color: var(--text-muted);
@@ -366,7 +378,7 @@
             text-underline-offset: 3px;
         }
         .hero-method-link:hover { color: var(--text); }
-        .methodology-link { color: var(--text-muted); font-size: 0.9rem; text-decoration: underline; text-underline-offset: 3px; }
+        .methodology-link { display: inline-block; padding: 15px 12px; margin: -15px 0; color: var(--text-muted); font-size: 0.9rem; text-decoration: underline; text-underline-offset: 3px; }
         .methodology-link:hover { color: var(--text); }
         html { scroll-behavior: smooth; }
 
@@ -439,7 +451,9 @@
         footer { text-align: center; padding: 36px 20px; color: var(--text-muted); font-size: 0.82rem; border-top: 1px solid var(--border); }
         footer a { color: var(--text-muted); }
         footer a:hover { color: var(--text); }
-        .footer-links { display: flex; gap: 20px; justify-content: center; margin-top: 8px; }
+        .footer-links { display: flex; gap: 4px; justify-content: center; margin-top: 8px; flex-wrap: wrap; }
+        /* 48px touch targets; the padding replaces most of the old 20px gap. */
+        .footer-links a { display: inline-block; min-width: 48px; padding: 14px 8px; margin: -14px 0; text-align: center; }
         /* Animations */
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         .fade-in { animation: fadeInUp 0.4s ease forwards; }
@@ -546,7 +560,7 @@
         <!-- Test -->
         <section id="test-section" class="container" aria-label="Color vision test" role="region" aria-live="polite">
             <div>
-                <div class="progress-bar" role="progressbar" aria-valuemin="1" aria-valuemax="14" aria-valuenow="1" id="progress">
+                <div class="progress-bar" role="progressbar" aria-label="Progress" aria-valuemin="1" aria-valuemax="14" aria-valuenow="1" aria-valuetext="Plate 1 of 14" id="progress">
                     <div class="progress-dot active"></div>
                     <div class="progress-dot"></div>
                     <div class="progress-dot"></div>
@@ -576,7 +590,7 @@
                 </div>
                 <!-- Shape buttons -->
                 <div class="answer-group" id="shape-answer" style="display:none">
-                    <div class="shape-buttons">
+                    <div class="shape-buttons" id="shape-buttons" role="group" aria-labelledby="plate-question" tabindex="-1" style="outline:none;">
                         <button type="button" class="shape-btn" data-shape="circle">Circle</button>
                         <button type="button" class="shape-btn" data-shape="triangle">Triangle</button>
                         <button type="button" class="shape-btn" data-shape="star">Star</button>
@@ -665,7 +679,7 @@
                 <p>The control plate uses brightness contrast. If it is missed, or the gray-patch check is skipped after a miss, the result is inconclusive. Other results summarize answer patterns using experimental rules.</p>
                 <p><strong>Limitations:</strong> Sensitivity, specificity, subtype accuracy, and severity assessment have not been established for this screening. Display colors, lighting, viewing distance, number recognition, and repeated exposure can affect answers. The gray-patch check does not calibrate colors. Matching every plate does not rule out a color vision difference. For a clinical assessment, see an eye care professional.</p>
                 <details style="margin-top:18px;">
-                    <summary style="cursor:pointer; font-weight:600; font-size:0.85rem; color:var(--text);">Citations &amp; references</summary>
+                    <summary style="cursor:pointer; font-weight:600; font-size:0.85rem; color:var(--text); padding:13px 0; margin:-13px 0;">Citations &amp; references</summary>
                     <div style="margin-top:12px;">
                         <div class="citation">Ishihara, S. (1917). <em>Tests for Colour-Blindness</em>. Handaya, Tokyo, Hongo Harukicho.</div>
                         <div class="citation">Hardy, L.H., Rand, G., &amp; Rittler, M.C. (1954). <em>HRR Pseudoisochromatic Plates for Detecting and Classifying Color Vision Deficiency</em>. American Optical Company.</div>
@@ -683,7 +697,7 @@
     <footer>
         <div class="footer-links">
             <a href="#methodology-section">Methodology</a>
-            <a href="https://whatcoloristhis.one/test/privacy.html">Privacy</a>
+            <a href="https://whatcoloristhis.one/test/privacy.html" target="_blank" rel="noopener">Privacy</a>
             <a href="https://whatcoloristhis.one">The App</a>
             <a href="https://lukesteuber.com">Me</a>
             <a href="https://bsky.app/profile/lukesteuber.com">Bluesky</a>
@@ -1377,9 +1391,11 @@
             plateStartMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
 
             // Accessible label for screen readers
-            var testName = plate.tests === 'control' ? 'control' : plate.tests;
+            // The plate group is not named here: sighted users do not
+            // see it during the test either. (This used to read
+            // "Plate 1 of 14:  test" for the control plate.)
             var prompt = plate.type === 'number' ? 'identify the number' : 'identify the shape';
-            testCanvas.setAttribute('aria-label', 'Plate ' + (index + 1) + ' of ' + PLATES.length + ': ' + testName + ' test — ' + prompt + ' hidden in the colored dots');
+            testCanvas.setAttribute('aria-label', 'Plate ' + (index + 1) + ' of ' + PLATES.length + ': ' + prompt + ' hidden in the colored dots');
             testCanvas.setAttribute('role', 'img');
 
             // Progress
@@ -1388,6 +1404,7 @@
                 d.className = 'progress-dot' + (i < index ? ' done' : i === index ? ' active' : '');
             });
             progressBar.setAttribute('aria-valuenow', index + 1);
+            progressBar.setAttribute('aria-valuetext', 'Plate ' + (index + 1) + ' of ' + PLATES.length);
 
             // Label
             document.getElementById('plate-label').textContent = 'Plate ' + (index + 1) + ' of ' + PLATES.length;
@@ -1404,8 +1421,11 @@
                 nextBtn.style.display = 'none'; // shape buttons auto-advance
                 // Keep keyboard users in the flow: without this, focus drops
                 // to <body> on shape plates and they must Tab back in.
-                var firstShape = shapeAnswer.querySelector('.shape-btn');
-                if (firstShape) firstShape.focus();
+                // Focus goes to the group, not to the first button: a
+                // focus ring on "Circle" looked like a suggested answer.
+                // One Tab reaches the first shape.
+                var shapeGroup = document.getElementById('shape-buttons');
+                if (shapeGroup) shapeGroup.focus();
             }
 
             // Screenshot-pipeline hook. The iOS shell injects
@@ -1800,16 +1820,31 @@
                 // User's answer
                 var answer = document.createElement('div');
                 var userText = a.cantSee ? 'Can\'t see' : (a.userAnswer || 'No answer');
+                // Each state carries a mark and a spoken word as well
+                // as its color, so nobody has to tell green from red.
+                var mark, spoken;
                 if (a.isCorrect) {
                     answer.className = 'plate-result-answer pass';
                     answer.textContent = userText;
+                    mark = '\u2713'; spoken = 'Matched: ';
                 } else if (a.isNearMiss) {
                     answer.className = 'plate-result-answer partial';
                     answer.textContent = userText + ' (close)';
+                    mark = '\u2248'; spoken = 'Close: ';
                 } else {
                     answer.className = 'plate-result-answer fail';
                     answer.textContent = userText;
+                    mark = '\u2717'; spoken = 'Missed: ';
                 }
+                var markEl = document.createElement('span');
+                markEl.className = 'plate-result-mark';
+                markEl.setAttribute('aria-hidden', 'true');
+                markEl.textContent = mark + ' ';
+                var spokenEl = document.createElement('span');
+                spokenEl.className = 'visually-hidden';
+                spokenEl.textContent = spoken;
+                answer.insertBefore(spokenEl, answer.firstChild);
+                answer.insertBefore(markEl, answer.firstChild);
                 info.appendChild(answer);
 
                 // Correct answer (show when wrong or near-miss)
