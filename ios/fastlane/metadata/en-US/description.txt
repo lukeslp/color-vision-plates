@@ -1,11 +1,11 @@
 I'm colorblind. Every "color blind test" app I tried was either a marketing funnel, an ad farm, or scientifically wrong. So I built the one I wanted: the method written down, sources cited, nothing to sign up for.
 
-Color Vision Plates is a 14-plate screening for red-green and blue-yellow color vision differences. It tells you which groups of plates you missed. It does not name a type or a severity, because a phone screening can't establish either.
+Color Vision Plates is a 14-plate screening for red-green and blue-yellow color vision differences. It gives you a plain result, such as "Likely Red-Type Color Difference", and a short note on what that might mean day to day. It is a screening, not a diagnosis.
 
 HOW IT WORKS
 
 • Number plates and shape plates inspired by the Ishihara (1917) and HRR (1954) tests. These are original generated plates, not scans of the clinical sets
-• Plates are grouped into red-green, experimental protan-design and deutan-design, blue-yellow, and control sets
+• Plates are grouped into red-green, red-type, green-type, blue-yellow, and control sets
 • Plate colors are specified in CIELAB and checked with color-vision simulations (Brettel, Viénot & Mollon 1997) and the CIEDE2000 color difference. Those checks describe the math, not what any one person will see
 • A gray-patch check before the test starts, because a dimmed or Night-Shifted screen changes what you see. It does not calibrate your screen's colors
 • A brightness-contrast control plate. Miss it and the result is marked inconclusive instead of guessing

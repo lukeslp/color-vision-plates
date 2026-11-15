@@ -69,10 +69,12 @@ source art.
 ## Release assets
 
 `app-store-listing.md`, the fastlane metadata, and the checked-in screenshots
-were reconciled with the app for 1.0.4 (build 10), submitted for review on
-2026-11-10. Since 2026-11-14 the results screen uses the plain result labels
+are prepared for 1.0.5 (build 11), which is not built or submitted. 1.0.4
+(build 10) was submitted for review on 2026-11-10 with plate-group result
+wording. Since 2026-11-14 the results screen uses the plain result labels
 again ("Typical Color Vision", "Likely Red-Type Color Difference"); the
-description quotes those and the results screenshots were recaptured. They are still not proof of
+description and release notes say so and the results screenshots were
+recaptured. They are still not proof of
 current store status. Before each submission, check the listing against the
 result wording in `index.html` and recapture screenshots if screens changed.
 Source preparation alone does not update a store.
@@ -102,7 +104,7 @@ test screen, the results page, and the history footer.
 ## Validation boundaries
 
 The root page uses experimental scoring. Internal result IDs are retained
-for history compatibility; visible answer summaries do not establish a
+for history compatibility; visible result labels do not establish a
 diagnosis, subtype, or severity. Simulator checks cover the bridge and
 workflow, not physical display accuracy or clinical performance.
 
