@@ -13,7 +13,7 @@ HOW IT WORKS
 
 WHAT YOU GET
 
-• A plain result that describes your answers, such as "Several red-green plates missed" or "Most or all plates matched"
+• A plain result, such as "Typical Color Vision" or "Likely Red-Type Color Difference"
 • What can affect your answers: display, brightness, color filters, lighting
 • A plate-by-plate review of every answer
 • Screening history saved on your device, so you can retest over time and compare

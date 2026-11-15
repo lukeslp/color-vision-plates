@@ -118,12 +118,12 @@ final class SmokeTest: XCTestCase {
 
     func testTwoTritanMissesDescribeAnswers() {
         let app = beginProfiledScreening("tritan-mild")
-        XCTAssertTrue(app.webViews.firstMatch.staticTexts["Some blue-yellow plates missed"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.webViews.firstMatch.staticTexts["Possible Mild Blue-Yellow Color Difference"].waitForExistence(timeout: 10))
     }
 
     func testThreeTritanMissesDescribeAnswers() {
         let app = beginProfiledScreening("tritan-likely")
-        XCTAssertTrue(app.webViews.firstMatch.staticTexts["Several blue-yellow plates missed"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.webViews.firstMatch.staticTexts["Likely Blue-Yellow Color Difference"].waitForExistence(timeout: 10))
     }
 
     private func launch(profile: String) -> XCUIApplication {

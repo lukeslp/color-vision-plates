@@ -70,8 +70,9 @@ source art.
 
 `app-store-listing.md`, the fastlane metadata, and the checked-in screenshots
 were reconciled with the app for 1.0.4 (build 10), submitted for review on
-2026-11-10: the description names answer patterns, not types, and the
-screenshots were captured from that source. They are still not proof of
+2026-11-10. Since 2026-11-14 the results screen uses the plain result labels
+again ("Typical Color Vision", "Likely Red-Type Color Difference"); the
+description quotes those and the results screenshots were recaptured. They are still not proof of
 current store status. Before each submission, check the listing against the
 result wording in `index.html` and recapture screenshots if screens changed.
 Source preparation alone does not update a store.
