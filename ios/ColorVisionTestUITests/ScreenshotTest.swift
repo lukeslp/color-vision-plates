@@ -90,7 +90,7 @@ final class ScreenshotTest: XCTestCase {
         }
 
         // 4. Results (with the what-this-means card populated)
-        let resultBadge = webView.staticTexts["Answer pattern"]
+        let resultBadge = webView.staticTexts["Color vision difference"]
         XCTAssertTrue(resultBadge.waitForExistence(timeout: 10))
         Thread.sleep(forTimeInterval: 1.0)
         snap("04-results")
