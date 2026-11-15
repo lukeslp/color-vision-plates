@@ -116,8 +116,6 @@ REFERENCES
 Ishihara (1917); Hardy, Rand & Rittler (1954); Brettel, Viénot & Mollon (1997); Viénot, Brettel & Mollon (1999); Sharma, Wu & Dalal (2005) for CIEDE2000 color difference; Birch (2012) on prevalence.
 
 From the maker of What Color Is This?, the camera color-identifier built for colorblind people. About 1 in 12 men and 1 in 200 women have a color vision difference. Most found out by accident.
-
-Made by Luke Steuber. Published by Bridge City Lab LLC.
 ```
 *(~3000 chars as of 1.0.5)*
 
