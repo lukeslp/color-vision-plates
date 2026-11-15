@@ -13,7 +13,7 @@ Run `node --test tests/*.test.cjs` and `python -m unittest discover -s tests -p 
 - Keep the single-page architecture: index.html owns rendering, plate definitions, scoring, and the native bridge. Do not add a bundler or framework.
 - color-math.js is shared original code from What Color. This repository's standalone fixtures replace the former private sibling test requirement.
 - Use CIELAB plate specifications. Preserve foreground/background luminance conventions and the control exception. Changes to PLATES require numerical fixtures and a browser verifier check, followed by a complete screening and retake.
-- Preserve scoring order, internal result identifiers, and native history compatibility unless the task explicitly changes them. Visible labels describe answer patterns, not established diagnoses.
+- Preserve scoring order, internal result identifiers, and native history compatibility unless the task explicitly changes them. Visible result labels are plain names such as "Typical Color Vision" or "Likely Red-Type Color Difference". Do not reword the results screen into answer-pattern or plate-group text, and do not write new result copy unasked; the screening limitation on that screen carries the not-a-diagnosis message.
 - api.py serves only explicit public routes. Do not enable a static route covering the repository root.
 
 ## Native contracts

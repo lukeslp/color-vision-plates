@@ -133,3 +133,16 @@ test('display-setting names have an Android wording next to the Apple one', () =
     .replace(/<span class="os-other">[^<]*<\/span>/g, '');
   assert.doesNotMatch(visible, /Night Shift|True Tone/, 'Apple setting names outside the Apple-only spans');
 });
+
+test('result text names Android display settings on Android', () => {
+  const source = html.match(/^        function displayFilterNames\(\) \{[^]*?^        }/m);
+  assert.ok(source, 'Missing displayFilterNames');
+  const names = os => vm.runInContext(source[0] + '\ndisplayFilterNames()', vm.createContext({
+    document: { documentElement: { getAttribute: () => os } },
+  }));
+  assert.equal(names('android'), 'Night Light, eye comfort modes');
+  assert.equal(names(null), 'Night Shift, True Tone');
+  const scripts = html.replace(source[0], '');
+  assert.doesNotMatch(scripts.match(/function scoreResults[^]*?function showResults/)[0],
+    /Night Shift|True Tone/, 'Apple setting names hard-coded in result text');
+});

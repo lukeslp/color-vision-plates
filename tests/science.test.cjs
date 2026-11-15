@@ -24,7 +24,7 @@ const context = vm.createContext({
 });
 vm.runInContext([
   declaration('labToHex'), platesSource[0], declaration('verifyPlates'),
-  declaration('scoreResults'),
+  declaration('displayFilterNames'), declaration('scoreResults'),
 ].join('\n'), context);
 const plain = value => JSON.parse(JSON.stringify(value));
 const plates = plain(context.PLATES);

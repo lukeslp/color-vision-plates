@@ -1565,6 +1565,14 @@
 
         // ── Scoring ──────────────────────────────────────────────────
 
+        // Display-setting names differ by platform; the page header sets
+        // data-os="android" from the user agent.
+        function displayFilterNames() {
+            var android = typeof document !== 'undefined' &&
+                document.documentElement.getAttribute('data-os') === 'android';
+            return android ? 'Night Light, eye comfort modes' : 'Night Shift, True Tone';
+        }
+
         function scoreResults() {
             // Group answers by the plate design, not by an established diagnosis.
             // IDs are retained for native history and companion-app compatibility.
@@ -1635,7 +1643,7 @@
             // is not reliable enough to classify.
             if (calibrationWarning) {
                 return result('inconclusive', 'Inconclusive', 'badge-inconclusive',
-                    'The display calibration check was not passed. The screen may be too dim or a color filter may be active, so this screening cannot classify your color vision reliably. Retake at maximum brightness with Night Shift, True Tone, and blue-light filters turned off.');
+                    'The display calibration check was not passed. The screen may be too dim or a color filter may be active, so this screening cannot classify your color vision reliably. Retake at maximum brightness with ' + displayFilterNames() + ', and blue-light filters turned off.');
             }
 
             // 2. Control fail — display/lighting suspect, cannot trust the test
@@ -1664,14 +1672,14 @@
             if (deutanOnlyFailed === 0 && (protanOnlyFailed >= 2 || (protanOnlyFailed === 1 && rgFailed >= 2))) {
                 var sev = (protanOnlyFailed >= 2 && rgFailed >= 2) ? 'Likely Red-Type Color Difference' : 'Possible Red-Type Color Difference';
                 return result('protan', sev, 'badge-cvd',
-                    'Your pattern matches the red-weakness signature — plates designed to vanish for the red-type pattern (' + protanOnlyFailed + ' of ' + c.protanOnly.total + ' missed) while the green-type plates came through clearly. About 1% of men have this pattern. The clinical name is protanopia or protanomaly.', true);
+                    'Your pattern matches the red-weakness signature — the red-type plates were missed (' + protanOnlyFailed + ' of ' + c.protanOnly.total + ') while the green-type plates came through clearly. About 1% of men have this pattern. The clinical name is protanopia or protanomaly.', true);
             }
 
             // 4. Deutan-type signal — same gating rationale as rule 3.
             if (protanOnlyFailed === 0 && (deutanOnlyFailed >= 2 || (deutanOnlyFailed === 1 && rgFailed >= 2))) {
                 var sevD = (deutanOnlyFailed >= 2 && rgFailed >= 2) ? 'Likely Green-Type Color Difference' : 'Possible Green-Type Color Difference';
                 return result('deutan', sevD, 'badge-cvd',
-                    'Your pattern matches the green-weakness signature — plates designed to vanish for the green-type pattern (' + deutanOnlyFailed + ' of ' + c.deutanOnly.total + ' missed) while the red-type plates came through clearly. About 5% of men have this pattern. The clinical name is deuteranopia or deuteranomaly.', true);
+                    'Your pattern matches the green-weakness signature — the green-type plates were missed (' + deutanOnlyFailed + ' of ' + c.deutanOnly.total + ') while the red-type plates came through clearly. About 5% of men have this pattern. The clinical name is deuteranopia or deuteranomaly.', true);
             }
 
             // 5. Mixed classifier — fails both classifier sets. Needs three
@@ -1769,7 +1777,7 @@
             'mild-combined': ['Mild differences across both red-green and blue-yellow axes — this combination is unusual.',
                           'Worth a clinical evaluation to confirm the pattern, especially if you also notice difficulty in real life.'],
             'inconclusive': ['The display calibration or control plate was not passed, which usually points to viewing conditions rather than vision.',
-                          'Try maximum brightness, no Night Shift, True Tone, or blue-light filters, and a moderately lit room.',
+                          'Try maximum brightness, no ' + displayFilterNames() + ', or blue-light filters, and a moderately lit room.',
                           'If the control still fails on retake, the device or browser may not render the test plates faithfully.'],
         };
 
