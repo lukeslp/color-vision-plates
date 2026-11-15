@@ -1689,7 +1689,7 @@
             if (protanOnlyFailed >= 1 && deutanOnlyFailed >= 1 &&
                 (protanOnlyFailed + deutanOnlyFailed >= 3 || rgFailed >= 1)) {
                 return result('red-green-mixed', 'Strong Red-Green Color Difference', 'badge-cvd',
-                    'You missed plates from both red-type and green-type classifier sets — unusual, since each typically passes one and fails the other. Your pattern fits a strong red-green difference where overall contrast cues are also reduced, or a less-common color vision pattern. ' + totalRGFails + ' of ' + (c.rgScreen.total + c.protanOnly.total + c.deutanOnly.total) + ' red-green plates were missed.', true);
+                    'You missed both red-type and green-type plates — unusual, since people typically pass one kind and miss the other. Your pattern fits a strong red-green difference where overall contrast cues are also reduced, or a less-common color vision pattern. ' + totalRGFails + ' of ' + (c.rgScreen.total + c.protanOnly.total + c.deutanOnly.total) + ' red-green plates were missed.', true);
             }
 
             // 6. Generic red-green CVD
@@ -1697,7 +1697,7 @@
                 return result('red-green',
                     'Likely Red-Green Color Difference',
                     'badge-cvd',
-                    'You missed ' + rgFailed + ' of ' + c.rgScreen.total + ' general red-green plates. The classifier plates did not point clearly to the red-type or green-type subtype, so which kind is uncertain. About 8% of men and 0.5% of women have some form of red-green color vision difference.', true);
+                    'You missed ' + rgFailed + ' of ' + c.rgScreen.total + ' general red-green plates. The other plates did not point clearly to the red-type or green-type subtype, so which kind is uncertain. About 8% of men and 0.5% of women have some form of red-green color vision difference.', true);
             }
 
             // 7. Tritan/blue-yellow
@@ -1855,8 +1855,8 @@
                 if (testsArr.length === 0)                                          testName = 'Control';
                 else if (testsArr.length === 2 && testsArr.indexOf('protan') >= 0
                          && testsArr.indexOf('deutan') >= 0)                        testName = 'Red-green';
-                else if (testsArr.length === 1 && testsArr[0] === 'protan')         testName = 'Protan classifier';
-                else if (testsArr.length === 1 && testsArr[0] === 'deutan')         testName = 'Deutan classifier';
+                else if (testsArr.length === 1 && testsArr[0] === 'protan')         testName = 'Red-type';
+                else if (testsArr.length === 1 && testsArr[0] === 'deutan')         testName = 'Green-type';
                 else if (testsArr.length === 1 && testsArr[0] === 'tritan')         testName = 'Blue-yellow';
                 else                                                                testName = testsArr.join('+');
                 label.textContent = 'Plate ' + (i + 1) + ' \u00b7 ' + testName;
