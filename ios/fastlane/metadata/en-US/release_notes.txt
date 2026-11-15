@@ -1,7 +1,7 @@
-Color Vision Plates 1.0.4 describes its results more carefully.
+Color Vision Plates 1.0.5 brings back plain results.
 
-- Results now name the plate groups you missed. They no longer suggest a type or severity, which a phone screening can't establish.
-- The method and limits sections say plainly what has and hasn't been validated.
-- Same 14 plates, same on-device history, same free offline screening.
+- Results use plain names again, such as "Typical Color Vision" or "Likely Red-Type Color Difference", with a short note on what that might mean day to day.
+- The plate-group wording from 1.0.4 is gone.
+- Still a screening, not a diagnosis. The app says so before the test and on your results.
 
 Questions: luke@lukesteuber.com.
