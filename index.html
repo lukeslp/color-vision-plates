@@ -613,7 +613,7 @@
 
                 <!-- What this might mean day-to-day (populated by JS based on result type) -->
                 <div class="card" id="result-meaning" style="display:none;">
-                    <h3 id="result-meaning-title">Understanding this result</h3>
+                    <h3 id="result-meaning-title">What this might mean day-to-day</h3>
                     <ul class="result-card-list" id="result-meaning-bullets"></ul>
                 </div>
 
@@ -1608,7 +1608,7 @@
 
             var controlOk = answers[0].isCorrect;
             var nearMissNote = hasAnyNearMiss
-                ? ' Some answers matched the predefined near-miss list. This does not establish the type or severity of a color vision difference.'
+                ? ' Some answers were close but not exact — that pattern points to reduced rather than absent color discrimination.'
                 : '';
 
             function result(type, label, badgeClass, desc, addNote) {
@@ -1635,13 +1635,13 @@
             // is not reliable enough to classify.
             if (calibrationWarning) {
                 return result('inconclusive', 'Inconclusive', 'badge-inconclusive',
-                    'The display calibration check was not passed. The gray-patch check cannot establish color accuracy, and this run is inconclusive. Try again with screen filters off and comfortable, bright viewing conditions.');
+                    'The display calibration check was not passed. The screen may be too dim or a color filter may be active, so this screening cannot classify your color vision reliably. Retake at maximum brightness with Night Shift, True Tone, and blue-light filters turned off.');
             }
 
             // 2. Control fail — display/lighting suspect, cannot trust the test
             if (!controlOk) {
                 return result('inconclusive', 'Inconclusive', 'badge-inconclusive',
-                    'The control plate was not identified correctly, so this run is inconclusive. Display, lighting, input, and vision can affect answers; the screening cannot determine the cause.');
+                    'The control plate was not identified correctly. This usually indicates a display brightness or lighting issue rather than a color vision deficiency. Try again with screen brightness at maximum in a well-lit room.');
             }
 
             // 2. All-near-miss — anomalous trichromacy across the failed axis
@@ -1649,8 +1649,10 @@
                 var axes = [];
                 if (totalRGNearMiss > 0) axes.push('red-green');
                 if (c.tritan.nearMiss > 0) axes.push('blue-yellow');
-                return result('anomalous', 'Close answers on several plates', 'badge-cvd',
-                    'Your answers were close but not exact on ' + totalFails + ' plates (' + axes.join(' and ') + '). A near-miss answer does not identify a clinical condition.');
+                return result('anomalous', 'Likely Mild Color Difference', 'badge-cvd',
+                    'Your answers were close but not exact on ' + (totalRGFails + tritanFailed) +
+                    ' plate' + (totalRGFails + tritanFailed > 1 ? 's' : '') +
+                    ' (' + axes.join(' and ') + '). You can probably see most colors, but the subtle differences are a little harder to catch. The clinical name for this pattern is anomalous trichromacy (deuteranomaly or protanomaly).');
             }
 
             // 3. Protan-type signal — fails protan-only plates, passes deutan-only.
@@ -1660,14 +1662,16 @@
             //    classifiers are tuned to dichromat confusion lines, which
             //    anomalous trichromats only partially follow.
             if (deutanOnlyFailed === 0 && (protanOnlyFailed >= 2 || (protanOnlyFailed === 1 && rgFailed >= 2))) {
-                return result('protan', 'Misses in the protan-design group', 'badge-cvd',
-                    'You missed ' + protanOnlyFailed + ' of ' + c.protanOnly.total + ' experimental protan-design plates and matched the deutan-design plates. This describes the plate group; it does not establish protanopia or protanomaly.');
+                var sev = (protanOnlyFailed >= 2 && rgFailed >= 2) ? 'Likely Red-Type Color Difference' : 'Possible Red-Type Color Difference';
+                return result('protan', sev, 'badge-cvd',
+                    'Your pattern matches the red-weakness signature — plates designed to vanish for the red-type pattern (' + protanOnlyFailed + ' of ' + c.protanOnly.total + ' missed) while the green-type plates came through clearly. About 1% of men have this pattern. The clinical name is protanopia or protanomaly.', true);
             }
 
             // 4. Deutan-type signal — same gating rationale as rule 3.
             if (protanOnlyFailed === 0 && (deutanOnlyFailed >= 2 || (deutanOnlyFailed === 1 && rgFailed >= 2))) {
-                return result('deutan', 'Misses in the deutan-design group', 'badge-cvd',
-                    'You missed ' + deutanOnlyFailed + ' of ' + c.deutanOnly.total + ' experimental deutan-design plates and matched the protan-design plates. This describes the plate group; it does not establish deuteranopia or deuteranomaly.');
+                var sevD = (deutanOnlyFailed >= 2 && rgFailed >= 2) ? 'Likely Green-Type Color Difference' : 'Possible Green-Type Color Difference';
+                return result('deutan', sevD, 'badge-cvd',
+                    'Your pattern matches the green-weakness signature — plates designed to vanish for the green-type pattern (' + deutanOnlyFailed + ' of ' + c.deutanOnly.total + ' missed) while the red-type plates came through clearly. About 5% of men have this pattern. The clinical name is deuteranopia or deuteranomaly.', true);
             }
 
             // 5. Mixed classifier — fails both classifier sets. Needs three
@@ -1676,32 +1680,34 @@
             //    from "Typical", too thin a base for a "Strong" label.
             if (protanOnlyFailed >= 1 && deutanOnlyFailed >= 1 &&
                 (protanOnlyFailed + deutanOnlyFailed >= 3 || rgFailed >= 1)) {
-                return result('red-green-mixed', 'Misses across both red-green groups', 'badge-cvd',
-                    'You missed ' + totalRGFails + ' red-green plates, including both experimental classifier groups. The number of misses does not establish severity or a subtype.');
+                return result('red-green-mixed', 'Strong Red-Green Color Difference', 'badge-cvd',
+                    'You missed plates from both red-type and green-type classifier sets — unusual, since each typically passes one and fails the other. Your pattern fits a strong red-green difference where overall contrast cues are also reduced, or a less-common color vision pattern. ' + totalRGFails + ' of ' + (c.rgScreen.total + c.protanOnly.total + c.deutanOnly.total) + ' red-green plates were missed.', true);
             }
 
             // 6. Generic red-green CVD
             if (rgFailed >= 3 && tritanFailed <= 1) {
-                return result('red-green', 'Several red-green plates missed', 'badge-cvd',
-                    'You missed ' + rgFailed + ' of ' + c.rgScreen.total + ' general red-green plates. This answer pattern does not establish a clinical color vision difference.');
+                return result('red-green',
+                    'Likely Red-Green Color Difference',
+                    'badge-cvd',
+                    'You missed ' + rgFailed + ' of ' + c.rgScreen.total + ' general red-green plates. The classifier plates did not point clearly to the red-type or green-type subtype, so which kind is uncertain. About 8% of men and 0.5% of women have some form of red-green color vision difference.', true);
             }
 
             // 7. Tritan/blue-yellow
             if (tritanFailed >= 3 && totalRGFails <= 1) {
-                return result('tritan', 'Several blue-yellow plates missed', 'badge-cvd',
-                    'You missed ' + tritanFailed + ' of ' + c.tritan.total + ' blue-yellow plates. The tritan simulation is approximate; these misses do not establish tritanopia or tritanomaly.');
+                return result('tritan', 'Likely Blue-Yellow Color Difference', 'badge-cvd',
+                    'You missed ' + tritanFailed + ' of ' + c.tritan.total + ' blue-yellow plates. The pattern is consistent with blue-weakness — difficulty telling certain blues from yellows. This is rare (about 1 in 10,000) but real, and the companion app was built for you. The clinical name is tritanopia or tritanomaly.', true);
             }
 
             // 8. Combined RG + tritan
             if (totalRGFails >= 2 && tritanFailed >= 1) {
-                return result('multiple', 'Misses across both color groups', 'badge-cvd',
-                    'You missed ' + totalRGFails + ' red-green and ' + tritanFailed + ' blue-yellow plates. This screening cannot determine why.');
+                return result('multiple', 'Atypical Color Vision Pattern', 'badge-cvd',
+                    'Your answers suggest unusual color perception across both red-green and blue-yellow ranges (' + totalRGFails + ' red-green, ' + tritanFailed + ' blue-yellow). This pattern is uncommon and a clinical evaluation can pinpoint what is going on.', true);
             }
 
             // 9. Mild combined
             if (totalRGFails >= 1 && tritanFailed >= 1) {
-                return result('mild-combined', 'Some plates missed in both groups', 'badge-cvd',
-                    'You missed ' + totalRGFails + ' red-green and ' + tritanFailed + ' blue-yellow plates. These counts do not establish a mild condition or a clinical subtype.');
+                return result('mild-combined', 'Possible Mild Color Difference', 'badge-cvd',
+                    'You missed ' + totalRGFails + ' red-green and ' + tritanFailed + ' blue-yellow plate' + (tritanFailed > 1 ? 's' : '') + '. This could be a mild color vision difference across both ranges, or it could be display or attention noise.', true);
             }
 
             // 10. Mild red-green only — requires 2+ misses to clear the noise
@@ -1711,30 +1717,61 @@
             //     finger, or input typo). Real Ishihara screening tolerates
             //     up to 7 of 24 misses (~29%) before classifying as CVD.
             if (totalRGFails >= 2) {
-                return result('mild-red-green', 'Some red-green plates missed', 'badge-cvd',
-                    'You missed ' + totalRGFails + ' red-green plates. Display, viewing conditions, recognition, and input can affect answers; the screening cannot distinguish these causes.');
+                return result('mild-red-green', 'Possible Mild Red-Green Color Difference', 'badge-cvd',
+                    'You missed ' + totalRGFails + ' red-green plates. This could be a mild color vision difference, or it could be display or attention factors.', true);
             }
 
             // 11. Mild tritan only
             if (tritanFailed >= 2) {
-                return result('mild-tritan', 'Some blue-yellow plates missed', 'badge-cvd',
-                    'You missed ' + tritanFailed + ' blue-yellow plates. Display, viewing conditions, recognition, and input can affect answers; the screening cannot distinguish these causes.');
+                return result('mild-tritan', 'Possible Mild Blue-Yellow Color Difference', 'badge-cvd',
+                    'You missed ' + tritanFailed + ' blue-yellow plates. This could be a mild blue-weakness, or it could be display calibration.', true);
             }
 
             // 12. Typical color vision (with note if any noise misses)
             var noiseNote = totalFails === 1
-                ? ' One plate was missed.'
+                ? ' One plate was missed, which is within the typical noise floor for a self-administered test of this length.'
                 : '';
-            return result('normal', 'Most or all plates matched', 'badge-normal',
-                    'You matched ' + (answers.length - totalFails) + ' of ' + answers.length + ' plates.' + noiseNote + ' This result does not rule out a color vision difference.');
+            return result('normal', 'Typical Color Vision', 'badge-normal',
+                'Your answers are consistent with typical color vision.' + noiseNote + ' About 1 in 12 men and 1 in 200 women have some form of color vision difference, so this still matters for design and accessibility work even when your own vision is typical.');
         }
 
-        // Guidance applies to answer patterns, without assigning a diagnosis.
-        var RESULT_CONTEXT = [
-            'These generated plates and scoring rules have not been clinically validated.',
-            'A retake changes dot positions and plate order, but keeps the same answers. Familiarity can affect later attempts.',
-            'If you want to understand your color vision, an eye care professional can provide a clinical evaluation.'
-        ];
+        // Day-to-day implications per result type, surfaced on the
+        // results page so users get specific framing not just a label.
+        // Phrasing is descriptive, not prescriptive — these are
+        // possibilities, not predictions.
+        var DAY_TO_DAY = {
+            'protan':    ['Red lights and red signage may look dimmer or browner than they do for trichromats — a known concern when judging brake lights at night.',
+                          'Ripe vs unripe red fruit (cherries, strawberries) and red-vs-green traffic signals can be harder to distinguish at a glance.',
+                          'Red ink or red text on a green or brown background may be effectively invisible — a common accessibility issue in product UIs.'],
+            'deutan':    ['Red and green of similar brightness can blur together, especially in dim light or on small screens.',
+                          'Status indicators (green = ok, red = error) collapse to a single visual cue when only color separates them — surface text labels matter.',
+                          'Charts using red/green to encode categories often fall apart for you. Look for shape or pattern fallbacks.'],
+            'red-green': ['Reds, greens, browns, and oranges may share a perceptual neighborhood that trichromats see as distinct.',
+                          'Color-coded charts and maps can be hard to read when only hue distinguishes categories — color-blind-safe palettes (Wong 2011) work much better.',
+                          'Some shades of pink may look gray or beige.'],
+            'red-green-mixed': ['You see strong overlap in the red-green range, more than typical protan-only or deutan-only patterns.',
+                          'Color-coded UIs that rely on red vs green will be especially difficult — text or icon labels are essential.',
+                          'A clinical exam can characterize this more precisely than a screen-based test.'],
+            'tritan':    ['Blues and purples may look similar; greens and yellows may also blur. The classic "is this teal or blue-gray" disagreement.',
+                          'Sky and water in photos can lose their gradient; some artwork loses depth.',
+                          'Tritan-type CVD is the rarest form (~1 in 10,000) and can sometimes be acquired (rather than congenital) — worth mentioning to an eye doctor.'],
+            'multiple':  ['Your responses don\'t fit a single common pattern, which can happen with strong CVD, with some acquired vision conditions, or with display issues.',
+                          'A clinical evaluation will give you a much clearer picture than this screen-based test can.',
+                          'In the meantime, prefer interfaces that label colors with text or symbols.'],
+            'anomalous': ['Your color discrimination is reduced but not absent — many people with this pattern function normally with mild caveats.',
+                          'Subtle hue distinctions (deep red vs maroon, teal vs blue) may take longer than they would for a typical trichromat.',
+                          'Most color-blind-safe palettes are designed for stronger CVD and will work fine for you too.'],
+            'mild-red-green': ['You showed mild difficulty with red-green discrimination on the more subtle plates.',
+                          'This may be true mild anomaly, or display/attention noise. A retake in better lighting will clarify.',
+                          'About 5-8% of men have some form of mild red-green difference, often without realizing it.'],
+            'mild-tritan': ['You showed mild difficulty with blue-yellow discrimination.',
+                          'True tritan-type difference is rare; this could also reflect screen calibration. Retake with a recalibrated display if possible.'],
+            'mild-combined': ['Mild differences across both red-green and blue-yellow axes — this combination is unusual.',
+                          'Worth a clinical evaluation to confirm the pattern, especially if you also notice difficulty in real life.'],
+            'inconclusive': ['The display calibration or control plate was not passed, which usually points to viewing conditions rather than vision.',
+                          'Try maximum brightness, no Night Shift, True Tone, or blue-light filters, and a moderately lit room.',
+                          'If the control still fails on retake, the device or browser may not render the test plates faithfully.'],
+        };
 
         function showResults() {
             // The final submitAnswer set submitting=true and lands here
@@ -1759,15 +1796,15 @@
             } catch (e) { /* private mode / storage full — sync is best-effort */ }
 
             document.getElementById('result-badge').textContent =
-                result.type === 'normal' ? 'Screening summary' :
-                result.type === 'inconclusive' ? 'Inconclusive' : 'Answer pattern';
+                result.type === 'normal' ? 'Typical color vision' :
+                result.type === 'inconclusive' ? 'Inconclusive' : 'Color vision difference';
             document.getElementById('result-badge').className = 'result-badge ' + result.badgeClass;
             document.getElementById('result-type').textContent = result.label;
             document.getElementById('result-description').textContent = result.description;
 
             // What this might mean day-to-day — populated only for non-normal results
             var meaningCard = document.getElementById('result-meaning');
-            var bullets = RESULT_CONTEXT;
+            var bullets = DAY_TO_DAY[result.type];
             if (bullets && bullets.length > 0 && result.type !== 'normal') {
                 var ul = document.getElementById('result-meaning-bullets');
                 ul.innerHTML = '';
